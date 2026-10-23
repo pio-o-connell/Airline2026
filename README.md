@@ -6,6 +6,11 @@ The goal of this repository is to preserve the original PHP architecture and int
 
 Originally developed as part of the **Higher Diploma in Cloud and Mobile with Data Science**, the project reflects the web development practices and conventions of its time.
 
+
+| Screen | Description |
+|---|---|
+| ![Home screen](assets/Images/newHome.jpg) | Guest home screen with route, ticket, and date search |
+
 ## Technologies
 
 The project uses the following technologies:

@@ -2,73 +2,54 @@
 
 abstract class OutsideView {
 
-    function top($info) {
-
-
-        echo "
-            
-            <html>
-
-            <head>
-
-	<link rel=\"stylesheet\" href=\"mystyles.css\">
-            </head>
-
-            <body>
-
-	<div id=\"main\" class=\"old\">
-		<div id=\"header\" class=\"old\">
-			<h1>Header</h1>
-		</div>
-            
-            ";
+    // Shared public-page shell. Keep the original IDs for legacy markup/CSS.
+    function top($info = false) {
+        echo '
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHP Airlines</title>
+    <link rel="stylesheet" href="mystyles.css">
+</head>
+<body class="public-page">
+    <div id="main" class="old">
+        <header id="header" class="old">
+            <h1>PHP Airlines.com</h1>
+            <p class="tagline">Your journey starts here</p>
+        </header>
+';
     }
 
-    public function menu($info) {
-        //         echo "here";
-        //         echo $_COOKIE["username"];
-        if (isset($_COOKIE["username"]) || $info) {
-            echo "
-                 <div id=\"menu\" class=\"old\">
-                <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
-                   
-            </div>
-
-
-            ";
-        } else {
-            echo "
-                 <div id=\"menu\" class=\"old\">
-                <a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>
-
-
-            ";
-        }
+    public function menu($info = false) {
+        echo '
+        <nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>
+            <a href="controller.php?cmd=login">Login</a>
+            <a href="controller.php?cmd=register">Register</a>
+            <a href="controller.php?cmd=login">Staff / admin</a>
+        </nav>
+';
     }
 
     public function bloggerList() {
-        echo "
-                 <div id=\"bloggerlist\" class=\"old\">
-                    <h3> Routes  - open period for selected route </h3>";
-
-        //                $DBM = new DBManager();
-        //                $DBM->retrieveallblogsanddisplay();  
-
-        echo "</div>"
-        ;
+        // Retained for compatibility with older views that call this method.
+        echo '\n        <aside id="bloggerlist" class="old"></aside>\n';
     }
 
     function bottom() {
-        echo "
-            </div>
-
-            </body>
-            </html>        
-            ";
+        echo '
+        <footer id="footer" class="old">
+            <span>PHP Airlines.com</span>
+            <a href=\"controller.php\">Public home</a>
+        </footer>
+    </div>
+</body>
+</html>
+';
     }
-
 }
 
 class InsideView {
@@ -90,7 +71,7 @@ class InsideView {
 
         echo " 
 
-	<div id=\"content\" class=\"old\">
+	<div id=\"content\">
                   <h1> Add a post!!</h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
 
@@ -125,8 +106,8 @@ class InsideView {
 
             <body>
 
-	<div id=\"main\" class=\"old\">
-		<div id=\"header\" class=\"old\">
+	<div id=\"main\">
+		<div id=\"header\">
 			<h1>Header</h1>
 		</div>
             
@@ -135,7 +116,8 @@ class InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\" class=\"old\">
+                 <div id=\"menu\">
+                <a href=\"controller.php\">Public home</a> &nbsp;
                 <a href=\"controller.php?cmd=login\">Add</a> <br>               
                        <a href=\"controller.php?cmd=register\">Delete</a><br>
                        <a href=\"controller.php?cmd=register\">logout</a><br>
@@ -150,7 +132,7 @@ class InsideView {
 
 
         echo "
-                 <div id=\"bloggerlist\" class=\"old\">               
+                 <div id=\"bloggerlist\">               
                     <h3> blogger list </h3>";
         //echo "in bloggerlist";
         // $DBM = new DBManager();
@@ -200,24 +182,22 @@ class loginView extends OutsideView {
 
         $this->bottom();
     }
-
-    public function menu($info) {
-        echo "
-                 <div id=\"menu\" class=\"old\">
-                <a href=\"controller.php?cmd=\"\"\"> << Back    </a>&nbsp;
-                <a href=\"controller.php?cmd=login\">Login</a> &nbsp;               
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>
-
-
-            ";
+    public function menu($info = false) {
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>
+            <a href="controller.php?cmd=login">Login</a>
+            <a href="controller.php?cmd=register">Register</a>
+            <a href="controller.php?cmd=login">Staff / admin</a>
+        </nav>';
     }
 
+    
     public function content() {
 
         echo "
 
-	<div id=\"content\" class=\"old\">
+	<div id=\"content\">
                   <h1> login </h1>
                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
 
@@ -233,18 +213,11 @@ class loginView extends OutsideView {
             </div>
             ";
     }
-
-    function top($info) {
-
-        echo "<html> 
-                    <head><link rel=\"stylesheet\" href=\"mystyles.css\">
-                   </head>
-                    <body>
-                    <H1>Welcome to PHP Airlines.com</H1>
-                ";
+    function top($info = false) {
+        parent::top($info);
     }
 
-}
+    }
 
 class adminView extends InsideView {
 
@@ -261,7 +234,7 @@ class adminView extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\" class=\"old\">
+        echo "<div id=\"content\">
                   <h1> Administrator  -Edit/Delete Routes</h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"deleteRoutes\">
@@ -292,8 +265,8 @@ class adminView extends InsideView {
 
             <body>
 
-	<div id=\"main\" class=\"old\">
-		<div id=\"header\" class=\"old\">
+	<div id=\"main\">
+		<div id=\"header\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -302,7 +275,8 @@ class adminView extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\" class=\"old\">             
+                 <div id=\"menu\">
+                <a href=\"controller.php\">Public home</a> &nbsp;             
                        <a href=\"controller.php?cmd=addRoutes\">Add <br> Route</a><br>
                        <a href=\"controller.php?cmd=manifest\">View<br> Manifest</a><br>
                    
@@ -346,7 +320,7 @@ class adminEditView extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\" class=\"old\">
+        echo "<div id=\"content\">
                   <h1> Administrator  -Edit Route# {$info} </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"amendroute\">
@@ -377,8 +351,8 @@ class adminEditView extends InsideView {
 
             <body>
 
-	<div id=\"main\" class=\"old\">
-		<div id=\"header\" class=\"old\">
+	<div id=\"main\">
+		<div id=\"header\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -387,7 +361,8 @@ class adminEditView extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\" class=\"old\">             
+                 <div id=\"menu\">
+                <a href=\"controller.php\">Public home</a> &nbsp;             
                        <a href=\"controller.php?cmd=addRoutes\">Add <br> Route</a><br>
                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -428,7 +403,7 @@ class adminAddRoute extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\" class=\"old\">
+        echo "<div id=\"content\">
                   <h1> Administrator  -Add Route# - max. 8 </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"addRoute\">
@@ -493,8 +468,8 @@ class adminAddRoute extends InsideView {
 
             <body>
 
-	<div id=\"main\" class=\"old\">
-		<div id=\"header\" class=\"old\">
+	<div id=\"main\">
+		<div id=\"header\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -503,7 +478,8 @@ class adminAddRoute extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\" class=\"old\">             
+                 <div id=\"menu\">
+                <a href=\"controller.php\">Public home</a> &nbsp;             
                        <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -546,7 +522,7 @@ class adminAddRoute extends InsideView {
   }
 
   public function content($info){
-  echo "<div id=\"content\" class=\"old\">
+  echo "<div id=\"content\">
   <h1> Administrator  -Add Route# - max. 8 </h1>
   <FORM METHOD=\"post\" ACTION=\"controller.php\">
   <input type=\"hidden\" name=\"cmd\" value=\"addRoute\">
@@ -616,8 +592,8 @@ class adminAddRoute extends InsideView {
 
   <body>
 
-  <div id=\"main\" class=\"old\">
-  <div id=\"header\" class=\"old\">
+  <div id=\"main\">
+  <div id=\"header\">
   <h1>Aireline.com</h1>
   </div>
 
@@ -627,7 +603,7 @@ class adminAddRoute extends InsideView {
 
   public function menu(){
   echo "
-  <div id=\"menu\" class=\"old\">
+  <div id=\"menu\">
   <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
   <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
   <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -673,7 +649,7 @@ class adminManifest extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\" class=\"old\">
+        echo "<div id=\"content\">
                   <h1> Administrator  -Display flights by date # - </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"viewFlightdetails\">
@@ -716,8 +692,8 @@ class adminManifest extends InsideView {
 
             <body>
 
-	<div id=\"main\" class=\"old\">
-		<div id=\"header\" class=\"old\">
+	<div id=\"main\">
+		<div id=\"header\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -726,7 +702,8 @@ class adminManifest extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\" class=\"old\">             
+                 <div id=\"menu\">
+                <a href=\"controller.php\">Public home</a> &nbsp;             
                        <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
                        <a href=\"controller.php?cmd=manifest\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -766,24 +743,22 @@ class registerView extends OutsideView {
 
         $this->bottom();
     }
-
-    public function menu($info) {
-        echo "
-                 <div id=\"menu\" class=\"old\">
-                <a href=\"controller.php\"> << Back    </a>&nbsp;
-                <a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>
-
-
-            ";
+    public function menu($info = false) {
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>
+            <a href="controller.php?cmd=login">Login</a>
+            <a href="controller.php?cmd=register">Register</a>
+            <a href="controller.php?cmd=login">Staff / admin</a>
+        </nav>';
     }
 
+    
     public function content() {
 
         echo "
 
-	<div id=\"content\" class=\"old\">
+	<div id=\"content\">
                   <h1> Register </h1>
                     <form action=\"controller.php\" method=\"post\">
                 <input type=\"hidden\" name=\"cmd\" value=\"registerRequest\">
@@ -821,18 +796,11 @@ class registerView extends OutsideView {
             </form>
             ";
     }
-
-    function top($info) {
-
-        echo "<html> 
-                    <head><link rel=\"stylesheet\" href=\"mystyles.css\">
-                   </head>
-                    <body>
-                    <H1>Welcome to PHP Airlines.com</H1>
-                ";
+    function top($info = false) {
+        parent::top($info);
     }
 
-}
+    }
 
 class Cart {
 
@@ -1006,7 +974,7 @@ class SearchView extends OutsideView {
 
     function searchDiv() {
 
-        echo "<div id=\"content\" class=\"old\">";
+        echo "<div id=\"content\">";
         echo "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
         echo "<div id=\"search\">
                 <form action=\"controller.php\" method=\"post\">
@@ -1072,66 +1040,31 @@ class SearchView extends OutsideView {
         </div>
         ";
     }
-
-    function top($hasCookie) {
-
-        if ($hasCookie) {
-            if (isset($_COOKIE['username'])) {
-                $username = $_COOKIE['username'];
-                echo "<html> 
-                    <head><link rel=\"stylesheet\" href=\"mystyles.css\">
-                   </head>
-                    <body>
-                    <H1>Welcome $username to PHP Airlines.com</H1>
-          ";
-            } else {
-                $username = $_SESSION['username'];
-                echo "<html> 
-                    <head><link rel=\"stylesheet\" href=\"mystyles.css\">
-                   </head>
-                    <body>
-                    <H1>Welcome  $username to PHP Airlines.com</H1> ";
-            }
-        } else {
-            $username = $_SESSION['username'];
-            echo "<html> 
-                    <head><link rel=\"stylesheet\" href=\"mystyles.css\">
-                   </head>
-                    <body>
-                    <H1>Welcome $username to PHP Airlines.com</H1> ";
+    function top($hasCookie = false) {
+        parent::top($hasCookie);
+        $username = $_COOKIE['username'] ?? ($_SESSION['username'] ?? '');
+        if ($username !== '') {
+            echo '<p class="welcome-message">Welcome ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</p>';
         }
     }
-
-    public function menu($info) {
-        if ($info) {
-            echo "
-                 <div id=\"menu\" class=\"old\">
-                <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
-                   
-            </div>
-
-
-            ";
+    public function menu($info = false) {
+        $loggedIn = !empty($info) || isset($_COOKIE['username']);
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>';
+        if ($loggedIn) {
+            echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo "
-                 <div id=\"menu\" class=\"old\">
-                <a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>
-
-
-            ";
+            echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
         }
+        echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
     }
 
-    function bottom() {
-        echo "
-            </body>
-            </html>
-         ";
+        function bottom() {
+        parent::bottom();
     }
 
-}
+    }
 
 class ResultsView extends SearchView {
 
@@ -1153,34 +1086,20 @@ class ResultsView extends SearchView {
         $this->results();
         $this->bottom();
     }
-
-    public function menu($info) {
-        //       echo "here";
-        //     echo $_COOKIE['username'];
-        //      echo $info;
-        $hasCookie = false;
-        //      echo $_COOKIE['username'];
-        if (isset($_COOKIE['username'])) {
-            // only create the cart when the session starts
-            $hasCookie = true;
-        }
-
-
-
-        echo "<div id=\"menu\" class=\"old\">";
-
-        if ($hasCookie) {
-            echo "
-                <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
-                   
-            </div> ";
+    public function menu($info = false) {
+        $loggedIn = !empty($info) || isset($_COOKIE['username']);
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>';
+        if ($loggedIn) {
+            echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo "<a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>";
+            echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
         }
+        echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
     }
 
+    
     public function results() {
 
         //echo "<br><br><br>";
@@ -1277,31 +1196,20 @@ class purchaseView extends SearchView {
 
         $this->bottom();
     }
-
-    public function menu($info) {
-
-        $hasCookie = false;
-
-        if (isset($_COOKIE['username'])) {
-            $hasCookie = true;
-        }
-
-
-
-        echo "<div id=\"menu\" class=\"old\">";
-
-        if ($hasCookie) {
-            echo "
-                <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
-                   
-            </div> ";
+    public function menu($info = false) {
+        $loggedIn = !empty($info) || isset($_COOKIE['username']);
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>';
+        if ($loggedIn) {
+            echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo "<a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>";
+            echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
         }
+        echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
     }
 
+    
     public function getUserdetails($hasCookie) {
         $hasCookie = false;
         //      echo $_COOKIE['username'];
@@ -1311,7 +1219,7 @@ class purchaseView extends SearchView {
         }
 
         //      $info1=$info;
-        echo "<div id=\"content\" class=\"old\">";
+        echo "<div id=\"content\">";
         //      echo   "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
         //      echo "<a href=\"controller.php?cmd=login\">Login</a> &nbsp;";<a href
         if (!$hasCookie) {
@@ -1378,37 +1286,25 @@ class CheckoutView extends SearchView {
         $this->searchDiv();
         $this->bottom();
     }
-
-    public function menu($info) {
-
-        $hasCookie = false;
-
-        if (isset($_COOKIE['username'])) {
-            // only create the cart when the session starts
-            $hasCookie = true;
-        }
-
-
-
-        echo "<div id=\"menu\" class=\"old\">";
-
-        if ($hasCookie) {
-            echo "
-                <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
-                   
-            </div> ";
+    public function menu($info = false) {
+        $loggedIn = !empty($info) || isset($_COOKIE['username']);
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
+            <a href="controller.php">Home</a>
+            <a href="controller.php?cmd=search">Search flights</a>';
+        if ($loggedIn) {
+            echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo "<a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
-                       <a href=\"controller.php?cmd=register\">Register</a>
-            </div>";
+            echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
         }
+        echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
     }
 
+    
     function searchDiv() {
 
 
         //      $info1=$info;
-        echo "<div id=\"content\" class=\"old\">
+        echo "<div id=\"content\">
                      <form action=\"controller.php\" method=\"post\">
             
                      <input type=\"hidden\" name=\"cmd\" value=\"Update\">
