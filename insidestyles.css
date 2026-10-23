@@ -1,4 +1,4 @@
-#main {
+/* #main {
     width:800px;
     margin:auto;
     border:black solid 1px;
@@ -7,17 +7,17 @@
 
 #header{
     /*@import "mystyles.css";*/
-    text-align:center;
+ /*   text-align:center;
     border:black solid 1px; 
-}
-
+} 
+/*
 #menu{
     height:40px;
     border:black solid 1px;
     text-align:right;
     float:left;
     /*                width:100px;*/
-
+/*
 }
 
 #bloggerlist{
@@ -33,6 +33,39 @@
     border:white solid 1px;
     padding:10px
 
+} */
+
+
+/* Inside / authenticated views — legacy layout */
+
+#main.old {
+    width: 800px;
+    margin: auto;
+    border: black solid 1px;
+    overflow: auto;
 }
 
+#header.old {
+    text-align: center;
+    border: black solid 1px;
+}
 
+#menu.old {
+    height: 40px;
+    border: black solid 1px;
+    text-align: right;
+    float: left;
+}
+
+#bloggerlist.old {
+    float: left;
+    width: 100px;
+    border: white solid 1px;
+}
+
+#content.old {
+    float: left;
+    width: 576px;
+    border: white solid 1px;
+    padding: 10px;
+}

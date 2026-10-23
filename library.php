@@ -16,8 +16,8 @@ abstract class OutsideView {
 
             <body>
 
-	<div id=\"main\">
-		<div id=\"header\">
+	<div id=\"main\" class=\"old\">
+		<div id=\"header\" class=\"old\">
 			<h1>Header</h1>
 		</div>
             
@@ -29,7 +29,7 @@ abstract class OutsideView {
         //         echo $_COOKIE["username"];
         if (isset($_COOKIE["username"]) || $info) {
             echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
                    
             </div>
@@ -38,7 +38,7 @@ abstract class OutsideView {
             ";
         } else {
             echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
                        <a href=\"controller.php?cmd=register\">Register</a>
             </div>
@@ -50,7 +50,7 @@ abstract class OutsideView {
 
     public function bloggerList() {
         echo "
-                 <div id=\"bloggerlist\">
+                 <div id=\"bloggerlist\" class=\"old\">
                     <h3> Routes  - open period for selected route </h3>";
 
         //                $DBM = new DBManager();
@@ -90,7 +90,7 @@ class InsideView {
 
         echo " 
 
-	<div id=\"content\">
+	<div id=\"content\" class=\"old\">
                   <h1> Add a post!!</h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
 
@@ -125,8 +125,8 @@ class InsideView {
 
             <body>
 
-	<div id=\"main\">
-		<div id=\"header\">
+	<div id=\"main\" class=\"old\">
+		<div id=\"header\" class=\"old\">
 			<h1>Header</h1>
 		</div>
             
@@ -135,7 +135,7 @@ class InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php?cmd=login\">Add</a> <br>               
                        <a href=\"controller.php?cmd=register\">Delete</a><br>
                        <a href=\"controller.php?cmd=register\">logout</a><br>
@@ -150,7 +150,7 @@ class InsideView {
 
 
         echo "
-                 <div id=\"bloggerlist\">               
+                 <div id=\"bloggerlist\" class=\"old\">               
                     <h3> blogger list </h3>";
         //echo "in bloggerlist";
         // $DBM = new DBManager();
@@ -203,7 +203,7 @@ class loginView extends OutsideView {
 
     public function menu($info) {
         echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php?cmd=\"\"\"> << Back    </a>&nbsp;
                 <a href=\"controller.php?cmd=login\">Login</a> &nbsp;               
                        <a href=\"controller.php?cmd=register\">Register</a>
@@ -217,7 +217,7 @@ class loginView extends OutsideView {
 
         echo "
 
-	<div id=\"content\">
+	<div id=\"content\" class=\"old\">
                   <h1> login </h1>
                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
 
@@ -261,7 +261,7 @@ class adminView extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\">
+        echo "<div id=\"content\" class=\"old\">
                   <h1> Administrator  -Edit/Delete Routes</h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"deleteRoutes\">
@@ -292,8 +292,8 @@ class adminView extends InsideView {
 
             <body>
 
-	<div id=\"main\">
-		<div id=\"header\">
+	<div id=\"main\" class=\"old\">
+		<div id=\"header\" class=\"old\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -302,7 +302,7 @@ class adminView extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\">             
+                 <div id=\"menu\" class=\"old\">             
                        <a href=\"controller.php?cmd=addRoutes\">Add <br> Route</a><br>
                        <a href=\"controller.php?cmd=manifest\">View<br> Manifest</a><br>
                    
@@ -346,7 +346,7 @@ class adminEditView extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\">
+        echo "<div id=\"content\" class=\"old\">
                   <h1> Administrator  -Edit Route# {$info} </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"amendroute\">
@@ -377,8 +377,8 @@ class adminEditView extends InsideView {
 
             <body>
 
-	<div id=\"main\">
-		<div id=\"header\">
+	<div id=\"main\" class=\"old\">
+		<div id=\"header\" class=\"old\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -387,7 +387,7 @@ class adminEditView extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\">             
+                 <div id=\"menu\" class=\"old\">             
                        <a href=\"controller.php?cmd=addRoutes\">Add <br> Route</a><br>
                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -428,7 +428,7 @@ class adminAddRoute extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\">
+        echo "<div id=\"content\" class=\"old\">
                   <h1> Administrator  -Add Route# - max. 8 </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"addRoute\">
@@ -493,8 +493,8 @@ class adminAddRoute extends InsideView {
 
             <body>
 
-	<div id=\"main\">
-		<div id=\"header\">
+	<div id=\"main\" class=\"old\">
+		<div id=\"header\" class=\"old\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -503,7 +503,7 @@ class adminAddRoute extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\">             
+                 <div id=\"menu\" class=\"old\">             
                        <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -546,7 +546,7 @@ class adminAddRoute extends InsideView {
   }
 
   public function content($info){
-  echo "<div id=\"content\">
+  echo "<div id=\"content\" class=\"old\">
   <h1> Administrator  -Add Route# - max. 8 </h1>
   <FORM METHOD=\"post\" ACTION=\"controller.php\">
   <input type=\"hidden\" name=\"cmd\" value=\"addRoute\">
@@ -616,8 +616,8 @@ class adminAddRoute extends InsideView {
 
   <body>
 
-  <div id=\"main\">
-  <div id=\"header\">
+  <div id=\"main\" class=\"old\">
+  <div id=\"header\" class=\"old\">
   <h1>Aireline.com</h1>
   </div>
 
@@ -627,7 +627,7 @@ class adminAddRoute extends InsideView {
 
   public function menu(){
   echo "
-  <div id=\"menu\">
+  <div id=\"menu\" class=\"old\">
   <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
   <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
   <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -673,7 +673,7 @@ class adminManifest extends InsideView {
     }
 
     public function content($info) {
-        echo "<div id=\"content\">
+        echo "<div id=\"content\" class=\"old\">
                   <h1> Administrator  -Display flights by date # - </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
                     <input type=\"hidden\" name=\"cmd\" value=\"viewFlightdetails\">
@@ -716,8 +716,8 @@ class adminManifest extends InsideView {
 
             <body>
 
-	<div id=\"main\">
-		<div id=\"header\">
+	<div id=\"main\" class=\"old\">
+		<div id=\"header\" class=\"old\">
 			<h1>Aireline.com</h1>
 		</div>
             
@@ -726,7 +726,7 @@ class adminManifest extends InsideView {
 
     public function menu() {
         echo "
-                 <div id=\"menu\">             
+                 <div id=\"menu\" class=\"old\">             
                        <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
                        <a href=\"controller.php?cmd=manifest\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
@@ -769,7 +769,7 @@ class registerView extends OutsideView {
 
     public function menu($info) {
         echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php\"> << Back    </a>&nbsp;
                 <a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
                        <a href=\"controller.php?cmd=register\">Register</a>
@@ -783,7 +783,7 @@ class registerView extends OutsideView {
 
         echo "
 
-	<div id=\"content\">
+	<div id=\"content\" class=\"old\">
                   <h1> Register </h1>
                     <form action=\"controller.php\" method=\"post\">
                 <input type=\"hidden\" name=\"cmd\" value=\"registerRequest\">
@@ -1006,7 +1006,7 @@ class SearchView extends OutsideView {
 
     function searchDiv() {
 
-        echo "<div id=\"content\">";
+        echo "<div id=\"content\" class=\"old\">";
         echo "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
         echo "<div id=\"search\">
                 <form action=\"controller.php\" method=\"post\">
@@ -1105,7 +1105,7 @@ class SearchView extends OutsideView {
     public function menu($info) {
         if ($info) {
             echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php?cmd=logout\">Logout</a> &nbsp;                
                    
             </div>
@@ -1114,7 +1114,7 @@ class SearchView extends OutsideView {
             ";
         } else {
             echo "
-                 <div id=\"menu\">
+                 <div id=\"menu\" class=\"old\">
                 <a href=\"controller.php?cmd=login\">Login</a> &nbsp;                
                        <a href=\"controller.php?cmd=register\">Register</a>
             </div>
@@ -1167,7 +1167,7 @@ class ResultsView extends SearchView {
 
 
 
-        echo "<div id=\"menu\">";
+        echo "<div id=\"menu\" class=\"old\">";
 
         if ($hasCookie) {
             echo "
@@ -1288,7 +1288,7 @@ class purchaseView extends SearchView {
 
 
 
-        echo "<div id=\"menu\">";
+        echo "<div id=\"menu\" class=\"old\">";
 
         if ($hasCookie) {
             echo "
@@ -1311,7 +1311,7 @@ class purchaseView extends SearchView {
         }
 
         //      $info1=$info;
-        echo "<div id=\"content\">";
+        echo "<div id=\"content\" class=\"old\">";
         //      echo   "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
         //      echo "<a href=\"controller.php?cmd=login\">Login</a> &nbsp;";<a href
         if (!$hasCookie) {
@@ -1390,7 +1390,7 @@ class CheckoutView extends SearchView {
 
 
 
-        echo "<div id=\"menu\">";
+        echo "<div id=\"menu\" class=\"old\">";
 
         if ($hasCookie) {
             echo "
@@ -1408,7 +1408,7 @@ class CheckoutView extends SearchView {
 
 
         //      $info1=$info;
-        echo "<div id=\"content\">
+        echo "<div id=\"content\" class=\"old\">
                      <form action=\"controller.php\" method=\"post\">
             
                      <input type=\"hidden\" name=\"cmd\" value=\"Update\">
