@@ -1,743 +1,501 @@
 <?php
 
 // Shared base view for public pages.
-abstract class PublicBaseView {
+    abstract class PublicBaseView {
 
-    // Shared public-page shell. Keep the original IDs for legacy markup/CSS.
-    function top($info = false) {
-        echo '
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHP Airlines</title>
-    <link rel="stylesheet" href="mystyles.css">
-</head>
-<body class="public-page">
-    <div id="main" class="old">
-        <header id="header" class="old">
-            <h1>PHP Airlines.com</h1>
-            <p class="tagline">Your journey starts here</p>
-        </header>
-';
-    }
+        // Shared public-page shell. Keep the original IDs for legacy markup/CSS.
+        function top($info = false) {
+            echo '
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>PHP Airlines</title>
+                    <link rel="stylesheet" href="mystyles.css">
+                </head>
+                <body class="public-page">
+                    <div id="main" class="old">
+                        <header id="header" class="old">
+                            <h1>PHP Airlines.com</h1>
+                            <p class="tagline">Your journey starts here</p>
+                        </header>
+                ';
+                    }
 
-    public function menu($info = false) {
-        echo '
-        <nav id="menu" class="old" aria-label="Main navigation">
-            <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=searchFlights">Search flights</a>
-            <a href="controller.php?cmd=showLogin">Login</a>
-            <a href="controller.php?cmd=showRegistration">Register</a>
-            <a href="controller.php?cmd=showLogin">Staff / admin</a>
-        </nav>
-';
-    }
+        public function menu($info = false) {
+            echo '
+            <nav id="menu" class="old" aria-label="Main navigation">
+                <a href="controller.php">Home</a>
+                <a href="controller.php?cmd=searchFlights">Search flights</a>
+                <a href="controller.php?cmd=showLogin">Login</a>
+                <a href="controller.php?cmd=showRegistration">Register</a>
+                <a href="controller.php?cmd=showLogin">Staff / admin</a>
+            </nav>
+            ';
+        }
 
-    public function bloggerList() {
-        // Retained for compatibility with older views that call this method.
-        echo '\n        <aside id="bloggerlist" class="old"></aside>\n';
-    }
+        public function bloggerList() {
+            // Retained for compatibility with older views that call this method.
+            echo '\n        <aside id="bloggerlist" class="old"></aside>\n';
+        }
 
-    function bottom() {
-        echo '
-        <footer id="footer" class="old">
-            <span>PHP Airlines.com</span>
-            <a href=\"controller.php\">Public home</a>
-        </footer>
-    </div>
-</body>
-</html>
-';
+        function bottom() {
+            echo '
+                    <footer id="footer" class="old">
+                        <span>PHP Airlines.com</span>
+                        <a href=\"controller.php\">Public home</a>
+                    </footer>
+                </div>
+            </body>
+            </html>
+            ';
+            }
     }
-}
 
 // Shared base view for authenticated and administrator pages.
-class AuthenticatedBaseView {
+    class AuthenticatedBaseView {
 
-    public function __construct($info) {
-        $this->top();
-        $this->menu();
-        $this->content($info);
-        $this->bloggerList();
+        public function __construct($info) {
+            $this->top();
+            $this->menu();
+            $this->content($info);
+            $this->bloggerList();
+            $this->bottom();
+        }
 
+        public function content($info) {
 
-
-
-
-        $this->bottom();
-    }
-
-    public function content($info) {
-
-        echo " 
-
-	<div id=\"content\">
-                  <h1> Add a post!!</h1>
-                  <FORM METHOD=\"post\" ACTION=\"controller.php\">
-
-                 
-                        <input type=\"hidden\" name=\"cmd\" value=\"addPost\">
-                       // <textarea>
-                       <textarea name=\"textarea\" ROWS=6 COLS=50>
-                        Add post here!
-                        </textarea>
+            echo " 
+                <div id=\"content\">
+                            <h1> Add a post!!</h1>
+                            <FORM METHOD=\"post\" ACTION=\"controller.php\">
 
                             
-        
-                <input type=\"submit\" value=\"addPost\">
-            </FORM>
-              
-                
-            </div>
-            ";
+                                    <input type=\"hidden\" name=\"cmd\" value=\"addPost\">
+                                // <textarea>
+                                <textarea name=\"textarea\" ROWS=6 COLS=50>
+                                    Add post here!
+                                    </textarea>
+
+                                        
+                    
+                            <input type=\"submit\" value=\"addPost\">
+                        </FORM>
+                        
+                            
+                        </div>
+                        ";
+        }
+
+        function top() {
+
+
+            echo "          
+                    <html>
+                        <head>
+                            <link rel=\"stylesheet\" href=\"insidestyles.css\">
+                                </head>
+                                    <body>
+                                        <div id=\"main\">
+                                            <div id=\"header\">
+                                                <h1>Header</h1>
+                                            </div>
+                    
+                ";
+        }
+
+        public function menu() {
+            echo "
+                    <div id=\"menu\">
+                    <a href=\"controller.php\">Public home</a> &nbsp;
+                    <a href=\"controller.php?cmd=showLogin\">Add</a> <br>
+                        <a href=\"controller.php?cmd=showRegistration\">Delete</a><br>
+                        <a href=\"controller.php?cmd=showRegistration\">logout</a><br>                      
+                </div>
+                ";
+        }
+
+        public function bloggerList() {
+            echo "
+                    <div id=\"bloggerlist\">               
+                        <h3> blogger list </h3>";
+            echo "</div>";
+        }
+
+        function bottom() {
+            echo "
+                </div>
+                </body>
+                </html>        
+                ";
+        }
     }
-
-    function top() {
-
-
-        echo "
-            
-            <html>
-
-            <head>
-
-	<link rel=\"stylesheet\" href=\"insidestyles.css\">
-            </head>
-
-            <body>
-
-	<div id=\"main\">
-		<div id=\"header\">
-			<h1>Header</h1>
-		</div>
-            
-            ";
-    }
-
-    public function menu() {
-        echo "
-                 <div id=\"menu\">
-                <a href=\"controller.php\">Public home</a> &nbsp;
-                <a href=\"controller.php?cmd=showLogin\">Add</a> <br>
-                       <a href=\"controller.php?cmd=showRegistration\">Delete</a><br>
-                       <a href=\"controller.php?cmd=showRegistration\">logout</a><br>
-                       
-            </div>
-
-
-            ";
-    }
-
-    public function bloggerList() {
-
-
-        echo "
-                 <div id=\"bloggerlist\">               
-                    <h3> blogger list </h3>";
-        //echo "in bloggerlist";
-        // $DBM = new DBManager();
-        //  $DBM->retrieveblogs();
-        // get the blogs from the database
-        /*               $query = "select * from post";
-          $resultSet = $this->db->query($query);
-
-
-          for($i=0;$i<$resultSet->rowCount();$i++){
-
-          echo " here at least";
-          $blogger = $resultSet->fetch();
-
-          echo "<a href=\"controller.php?cmd=openblog\"> blogger['bloggerid']</a><br>";
-
-          //           if ($username == $blogger['username']){
-
-          }
-         */
-
-
-        echo "</div>";
-    }
-
-    function bottom() {
-        echo "
-            </div>
-
-            </body>
-            </html>        
-            ";
-    }
-
-}
 
 // Renders the customer and administrator login form.
-class LoginView extends PublicBaseView {
+    class LoginView extends PublicBaseView {
 
-    public function __construct($info) {
-        $this->top($info);
-        $this->menu($info);
-        //     $this->bloggerList();
+        public function __construct($info) {
+            $this->top($info);
+            $this->menu($info);
+            $this->content();
+            $this->bottom();
+        }
 
+        public function menu($info = false) {
+            echo '<nav id="menu" class="old" aria-label="Main navigation">
+                        <a href="controller.php">Home</a>
+                        <a href="controller.php?cmd=searchFlights">Search flights</a>
+                        <a href="controller.php?cmd=showLogin">Login</a>
+                        <a href="controller.php?cmd=showRegistration">Register</a>
+                        <a href="controller.php?cmd=showLogin">Staff / admin</a>
+                    </nav>';
+        }
 
-        $this->content();
+        public function content() {
+            echo "
+                <div id=\"content\">
+                            <h1> login </h1>
+                            <FORM METHOD=\"post\" ACTION=\"controller.php\">                
+                                    <input type=\"hidden\" name=\"cmd\" value=\"authenticateUser\">              
+                                    Username: <input type=\"text\" name=\"username\"> <br>
+                                    Password: <input type=\"password\" name=\"password\"> <br>
+                                    <input type=\"submit\"\ value=\"authenticateUser\">
+                                </FORM>              
+                        </div>
+                        ";
+        }
 
-
-        $this->bottom();
-    }
-    public function menu($info = false) {
-        echo '<nav id="menu" class="old" aria-label="Main navigation">
-            <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=searchFlights">Search flights</a>
-            <a href="controller.php?cmd=showLogin">Login</a>
-            <a href="controller.php?cmd=showRegistration">Register</a>
-            <a href="controller.php?cmd=showLogin">Staff / admin</a>
-        </nav>';
-    }
-
-    
-    public function content() {
-
-        echo "
-
-	<div id=\"content\">
-                  <h1> login </h1>
-                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
-
-                 
-                        <input type=\"hidden\" name=\"cmd\" value=\"authenticateUser\">
-                
-                Username: <input type=\"text\" name=\"username\"> <br>
-                Password: <input type=\"password\" name=\"password\"> <br>
-                <input type=\"submit\"\ value=\"authenticateUser\">
-            </FORM>
-
-                
-            </div>
-            ";
-    }
-    function top($info = false) {
-        parent::top($info);
-    }
+        function top($info = false) {
+            parent::top($info);
+        }
 
     }
 
 // Renders the administrator route-management page.
-class AdminRoutesView extends AuthenticatedBaseView {
+    class AdminRoutesView extends AuthenticatedBaseView {
 
-    public function __construct($info) {
-        $this->top();
-        $this->menu();
-        //    $this->bloggerList();
+        public function __construct($info) {
+            $this->top();
+            $this->menu();
+            $this->content($info);
+            $this->bloggerList();
+            $this->bottom();
+        }
 
-
-        $this->content($info);
-        $this->bloggerList();
-
-        $this->bottom();
-    }
-
-    public function content($info) {
-        echo "<div id=\"content\">
-                  <h1> Administrator  -Edit/Delete Routes</h1>
-                  <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"deleteSelectedRoutes\">
-                   
-                    <input type=\"hidden\" name=\"blogtitle\" value=>";
-        $DBM = new DBManager();
-        $DBM->displayRouteManagementList();
-
-        echo"     <input type=\"submit\" value=\"delete routes\">
+        public function content($info) {
+            echo "<div id=\"content\">
+                    <h1> Administrator  -Edit/Delete Routes</h1>
+                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
+                        <input type=\"hidden\" name=\"cmd\" value=\"deleteSelectedRoutes\">
                     
-            </FORM>
-           ";
+                        <input type=\"hidden\" name=\"blogtitle\" value=>";
+            $DBM = new DBManager();
+            $DBM->displayRouteManagementList();
+            echo"     <input type=\"submit\" value=\"delete routes\">                   
+                        </FORM>
+                    ";
+            echo "</div>";
+        }
 
-        echo "</div>";
-    }
+        function top() {
+            echo "
+                <html>
+                <head>
+                    <link rel=\"stylesheet\" href=\"insidestyles.css\">
+                </head>
+                <body>
+                    <div id=\"main\">
+                        <div id=\"header\">
+                            <h1>Aireline.com</h1>
+                        </div>
 
-    function top() {
+                        <a href=\"controller.php\">Public home</a> &nbsp;
+                        <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
+                        <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
+                        <a href=\"controller.php?cmd=logout\">logout</a><br>
+                    </div>
+                </body>
+                </html>
+            ";
+        }
 
-
-        echo "
+        public function bloggerList() {
             
-            <html>
+        }
 
-            <head>
+        function bottom() {
+            echo "
+                </div>
+                </body>
+                </html>        
+                ";
+        }
 
-	<link rel=\"stylesheet\" href=\"insidestyles.css\">
-            </head>
-
-            <body>
-
-	<div id=\"main\">
-		<div id=\"header\">
-			<h1>Aireline.com</h1>
-		</div>
-            
-            ";
     }
-
-    public function menu() {
-        echo "
-                 <div id=\"menu\">
-                <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
-                       <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
-                   
-                       <a href=\"controller.php?cmd=logout\">logout</a><br>
-                       
-            </div>
-
-
-            ";
-    }
-
-    /*     <a href=\"controller.php?cmd=viewFlightDetails\">View<br> Flight<br> Details</a><br> */
-
-    public function bloggerList() {
-        
-    }
-
-    function bottom() {
-        echo "
-            </div>
-
-            </body>
-            </html>        
-            ";
-    }
-
-}
 
 // Renders the administrator route-editing page.
-class EditRouteView extends AuthenticatedBaseView {
+    class EditRouteView extends AuthenticatedBaseView {
 
-    public function __construct($info) {
-        $this->top();
-        $this->menu();
-        //    $this->bloggerList();
+        public function __construct($info) {
+            $this->top();
+            $this->menu();
+            $this->content($info);
+            $this->bloggerList();
+            $this->bottom();
+        }
 
+        public function content($info) {
+            echo "<div id=\"content\">
+                    <h1> Administrator  -Edit Route# {$info} </h1>
+                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
+                        <input type=\"hidden\" name=\"cmd\" value=\"amendroute\">                   
+                        <input type=\"hidden\" name=\"index\" value=$info>";
+            $DBM = new DBManager();
+            $DBM->displayRouteForEditing($info);
+            echo"     <input type=\"submit\" value=\"editPrice\">                       
+                    </FORM>
+                ";
+            echo "</div>";
+        }
 
-        $this->content($info);
-        $this->bloggerList();
+        function top() {
+            echo "              
+                <html>
+                    <head>
+                        <link rel=\"stylesheet\" href=\"insidestyles.css\">
+                    </head>
+                    <body>
+                        <div id=\"main\">
+                        <div id=\"header\">
+                        <h1>Aireline.com</h1>
+                    </div>
+                
+                ";
+        }
 
-        $this->bottom();
-    }
+        public function menu() {
+            echo "
+                <div id=\"menu\">
+                    <a href=\"controller.php\">Public home</a> &nbsp;             
+                        <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
+                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
+                        <a href=\"controller.php?cmd=logout\">logout</a><br>                       
+                </div>
+                ";
+        }
 
-    public function content($info) {
-        echo "<div id=\"content\">
-                  <h1> Administrator  -Edit Route# {$info} </h1>
-                  <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"amendroute\">
-                   
-                    <input type=\"hidden\" name=\"index\" value=$info>";
-        $DBM = new DBManager();
-        $DBM->displayRouteForEditing($info);
-
-        echo"     <input type=\"submit\" value=\"editPrice\">
-                    
-            </FORM>
-           ";
-
-        echo "</div>";
-    }
-
-    function top() {
-
-
-        echo "
+        public function bloggerList() {
             
-            <html>
+        }
 
-            <head>
+        function bottom() {
+            echo "
+                </div>
+                </body>
+                </html>        
+                ";
+        }
 
-	<link rel=\"stylesheet\" href=\"insidestyles.css\">
-            </head>
-
-            <body>
-
-	<div id=\"main\">
-		<div id=\"header\">
-			<h1>Aireline.com</h1>
-		</div>
-            
-            ";
     }
-
-    public function menu() {
-        echo "
-                 <div id=\"menu\">
-                <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
-                       <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
-                       <a href=\"controller.php?cmd=logout\">logout</a><br>
-                       
-            </div>
-
-
-            ";
-    }
-
-    public function bloggerList() {
-        
-    }
-
-    function bottom() {
-        echo "
-            </div>
-
-            </body>
-            </html>        
-            ";
-    }
-
-}
 
 // Renders the administrator add-route page.
-class AddRouteView extends AuthenticatedBaseView {
+    class AddRouteView extends AuthenticatedBaseView {
 
-    public function __construct($info) {
-        $this->top();
-        $this->menu();
-        //    $this->bloggerList();
+        public function __construct($info) {
+            $this->top();
+            $this->menu();
+            $this->content($info);
+            $this->bloggerList();
+            $this->bottom();
+        }
 
-
-        $this->content($info);
-        $this->bloggerList();
-
-        $this->bottom();
-    }
-
-    public function content($info) {
-        echo "<div id=\"content\">
-                  <h1> Administrator  -Add Route# - max. 8 </h1>
-                  <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"createRoute\">
-                   
-                    <input type=\"hidden\" name=\"index\" value=$info>";
-        $DBM = new DBManager();
-        $DBM->displayRouteDetails($info);
-        echo "<table>
-                    <tr>
-                        <td>Source:</td>
-                        <td><input type=\"text\" name=\"source\"> </td>
-
-                    </tr>
-                    <tr>
-                        <td>Destination:</td>
-                        <td><input type=\"text\" name=\"destination\"></td>
-                    </tr>
-                    <tr>
-                        <td>Operational from:</td>
-                        <td><input type=\"date\" name=\"operationalFrom\"></td>
-                    </tr>
-                   <tr> <td>e.g. 01-Jan-2014</td> </tr>
-                    <tr>
-                        <td>Operational to:</td>
-                        <td><input type=\"date\" name=\"operationalTo\"></td>
-                    </tr>
-                    <tr> <td>  </td> </tr>
-                    <tr> <td>e.g. 01-Feb-2014</td> </tr>
-                    <tr>
-                        <td>Price:</td>
-                        <td><input type=\"number\" name=\"Price\"></td>
-                    </tr>
-                    <tr>
-                        <td><input type=\"submit\" value=\"createRoute\"></td>
-                        <td></td>
-
-                    </tr> 
+        public function content($info) {
+            echo "<div id=\"content\">
+                    <h1> Administrator  -Add Route# - max. 8 </h1>
+                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
+                        <input type=\"hidden\" name=\"cmd\" value=\"createRoute\">
                     
-                
-            </div>
-            </form>
+                        <input type=\"hidden\" name=\"index\" value=$info>";
+            $DBM = new DBManager();
+            $DBM->displayRouteDetails($info);
+            echo "<table>
+                        <tr>
+                            <td>Source:</td>
+                            <td><input type=\"text\" name=\"source\"> </td>
+                        </tr>
+                        <tr>
+                            <td>Destination:</td>
+                            <td><input type=\"text\" name=\"destination\"></td>
+                        </tr>
+                        <tr>
+                            <td>Operational from:</td>
+                            <td><input type=\"date\" name=\"operationalFrom\"></td>
+                        </tr>
+                    <tr> <td>e.g. 01-Jan-2014</td> </tr>
+                        <tr>
+                            <td>Operational to:</td>
+                            <td><input type=\"date\" name=\"operationalTo\"></td>
+                        </tr>
+                        <tr> <td>  </td> </tr>
+                        <tr> <td>e.g. 01-Feb-2014</td> </tr>
+                        <tr>
+                            <td>Price:</td>
+                            <td><input type=\"number\" name=\"Price\"></td>
+                        </tr>
+                        <tr>
+                            <td><input type=\"submit\" value=\"createRoute\"></td>
+                            <td></td>
+
+                        </tr>                    
+                </div>
+                </form>
+                ";
+            echo"  </FORM>
             ";
+            echo "</div>";
+        }
+
+        function top() {
+            echo "               
+                <html>
+                <head>
+                    <link rel=\"stylesheet\" href=\"insidestyles.css\">
+                </head>
+                <body>
+                    <div id=\"main\">
+                        <div id=\"header\">
+                            <h1>Aireline.com</h1>
+                    </div>               
+                ";
+        }
+
+        public function menu() {
+            echo "
+                    <div id=\"menu\">
+                    <a href=\"controller.php\">Public home</a> &nbsp;             
+                        <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
+                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
+                        <a href=\"controller.php?cmd=logout\">logout</a><br>
+                        
+                </div>
 
 
-        echo"  </FORM>
-           ";
+                ";
+        }
 
-        echo "</div>";
-    }
-
-    function top() {
-
-
-        echo "
+        public function bloggerList() {
             
-            <html>
+        }
 
-            <head>
+        function bottom() {
+            echo "
+                </div>
+                </body>
+                </html>        
+                ";
+        }
 
-	<link rel=\"stylesheet\" href=\"insidestyles.css\">
-            </head>
-
-            <body>
-
-	<div id=\"main\">
-		<div id=\"header\">
-			<h1>Aireline.com</h1>
-		</div>
-            
-            ";
     }
-
-    public function menu() {
-        echo "
-                 <div id=\"menu\">
-                <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
-                       <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
-                       <a href=\"controller.php?cmd=logout\">logout</a><br>
-                       
-            </div>
-
-
-            ";
-    }
-
-    public function bloggerList() {
-        
-    }
-
-    function bottom() {
-        echo "
-            </div>
-
-            </body>
-            </html>        
-            ";
-    }
-
-}
-
-/*
-  class adminFlightDetails extends InsideView{
-  public function __construct($info){
-  $this->top();
-  $this->menu();
-  //    $this->bloggerList();
-
-
-  $this->content($info);
-  $this->bloggerList();
-
-  $this->bottom();
-
-
-  }
-
-  public function content($info){
-  echo "<div id=\"content\">
-  <h1> Administrator  -Add Route# - max. 8 </h1>
-  <FORM METHOD=\"post\" ACTION=\"controller.php\">
-  <input type=\"hidden\" name=\"cmd\" value=\"createRoute\">
-
-  <input type=\"hidden\" name=\"index\" value=$info>";
-  $DBM = new DBManager();
-  $DBM->displayRouteDetails($info);
-  echo "<table>
-  <tr>
-  <td>Source:</td>
-  <td><input type=\"text\" name=\"source\"> </td>
-
-  </tr>
-  <tr>
-  <td>Destination:</td>
-  <td><input type=\"text\" name=\"destination\"></td>
-  </tr>
-  <tr>
-  <td>Operational from:</td>
-  <td><input type=\"date\" name=\"operationalFrom\"></td>
-  </tr>
-  <tr> <td>e.g. 01-Jan-2014</td> </tr>
-  <tr>
-  <td>Operational to:</td>
-  <td><input type=\"date\" name=\"operationalTo\"></td>
-  </tr>
-  <tr> <td>  </td> </tr>
-  <tr> <td>e.g. 01-Feb-2014</td> </tr>
-  <tr>
-  <td>Price:</td>
-  <td><input type=\"number\" name=\"Price\"></td>
-  </tr>
-  <tr>
-  <td><input type=\"submit\" value=\"createRoute\"></td>
-  <td></td>
-
-  </tr>
-
-
-  </div>
-  </form>
-  ";
-
-
-  echo"  </FORM>
-  ";
-
-  echo "</div>";
-
-
-
-  }
-
-
-
-  function top(){
-
-
-  echo "
-
-  <html>
-
-  <head>
-
-  <link rel=\"stylesheet\" href=\"insidestyles.css\">
-  </head>
-
-  <body>
-
-  <div id=\"main\">
-  <div id=\"header\">
-  <h1>Aireline.com</h1>
-  </div>
-
-  ";
-
-  }
-
-  public function menu(){
-  echo "
-  <div id=\"menu\">
-  <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
-  <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
-  <a href=\"controller.php?cmd=logout\">logout</a><br>
-
-  </div>
-
-
-  ";
-
-
-  }
-
-  public function bloggerList(){
-
-
-
-
-
-  }
-
-  function bottom(){
-  echo "
-  </div>
-
-  </body>
-  </html>
-  ";
-  }
-  } */
 
 // Renders the administrator flight manifest date list.
-class FlightManifestView extends AuthenticatedBaseView {
+    class FlightManifestView extends AuthenticatedBaseView {
 
-    public function __construct($info) {
-        $this->top();
-        $this->menu();
-        //    $this->bloggerList();
+        public function __construct($info) {
+            $this->top();
+            $this->menu();
+            //    $this->bloggerList();
 
 
-        $this->content($info);
-        $this->bloggerList();
+            $this->content($info);
+            $this->bloggerList();
 
-        $this->bottom();
-    }
+            $this->bottom();
+        }
 
-    public function content($info) {
-        echo "<div id=\"content\">
-                  <h1> Administrator  -Display flights by date # - </h1>
-                  <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"viewFlightdetails\">
-                   
-                    <input type=\"hidden\" name=\"index\" value=$info>";
-        $DBM = new DBManager();
-        $DBM->displayBookedFlights($info);
-        echo "<table>
-                    <tr>
-                        <td> 
-                    <tr>
-                        <td><input type=\"submit\" value=\"createRoute\"></td>
-                        <td></td>
-
-                    </tr> 
+        public function content($info) {
+            echo "<div id=\"content\">
+                    <h1> Administrator  -Display flights by date # - </h1>
+                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
+                        <input type=\"hidden\" name=\"cmd\" value=\"viewFlightdetails\">
                     
+                        <input type=\"hidden\" name=\"index\" value=$info>";
+            $DBM = new DBManager();
+            $DBM->displayBookedFlights($info);
+            echo "<table>
+                        <tr>
+                            <td> 
+                        <tr>
+                            <td><input type=\"submit\" value=\"createRoute\"></td>
+                            <td></td>
+
+                        </tr> 
+                        
+                    
+                </div>
+                </form>
+                ";
+
+
+            echo"  </FORM>
+            ";
+
+            echo "</div>";
+        }
+
+        function top() {
+
+
+            echo "
                 
+                <html>
+
+                <head>
+
+        <link rel=\"stylesheet\" href=\"insidestyles.css\">
+                </head>
+
+                <body>
+
+        <div id=\"main\">
+            <div id=\"header\">
+                <h1>Aireline.com</h1>
             </div>
-            </form>
-            ";
+                
+                ";
+        }
+
+        public function menu() {
+            echo "
+                    <div id=\"menu\">
+                    <a href=\"controller.php\">Public home</a> &nbsp;             
+                        <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
+                        <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
+                        <a href=\"controller.php?cmd=logout\">logout</a><br>
+                        
+                </div>
 
 
-        echo"  </FORM>
-           ";
+                ";
+        }
 
-        echo "</div>";
-    }
-
-    function top() {
-
-
-        echo "
+        public function bloggerList() {
             
-            <html>
+        }
 
-            <head>
+        function bottom() {
+            echo "
+                </div>
 
-	<link rel=\"stylesheet\" href=\"insidestyles.css\">
-            </head>
+                </body>
+                </html>        
+                ";
+        }
 
-            <body>
-
-	<div id=\"main\">
-		<div id=\"header\">
-			<h1>Aireline.com</h1>
-		</div>
-            
-            ";
     }
-
-    public function menu() {
-        echo "
-                 <div id=\"menu\">
-                <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
-                       <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
-                       <a href=\"controller.php?cmd=logout\">logout</a><br>
-                       
-            </div>
-
-
-            ";
-    }
-
-    public function bloggerList() {
-        
-    }
-
-    function bottom() {
-        echo "
-            </div>
-
-            </body>
-            </html>        
-            ";
-    }
-
-}
 
 // Renders the customer registration form.
-class RegistrationView extends PublicBaseView {
+    class RegistrationView extends PublicBaseView {
 
     public function __construct() {
         $info = 0;
@@ -810,184 +568,9 @@ class RegistrationView extends PublicBaseView {
 
     }
 
-// class Cart {
-
-//     private $cartElements = array();
-//     private $cartID = 0;
-
-//     // don't forget to remove from cart if undelete item,from process list
 
 
-//     /**
-//      * Adds a flight selection to the session cart.
-//      *
-//      * @param array $ticketInfo Flight details, including route, date,
-//      *                          requested seat count and seat availability.
-//      *
-//      * Stores the selection under the next numeric cart ID, then
-//      * increments the ID for the next item.
-//      */
-//     function addFlight($ticketInfo) {
-
-//         // adding a numeric key to the cardElements array
-//         $this->cartElements[$this->cartID] = $ticketInfo;
-//         $this->cartID++;
-//     }
-
-//     function removeFlight($cartID) {
-//         unset($this->cartElements[$cartID]);
-//     }
-
-//     /*
-//       function recordBookings($username,$email,$CreditCardNo,$PassportNo){
-//       $DBM = new DBManager();
-
-//       $cartIds = array_keys($this->cartElements);
-
-
-//       for($i=0;$i<sizeof($cartIds);$i++){
-//       $cartID = $cartIds[$i];
-//       // another loop here
-//       $nmrSeats=$this->cartElements[$cartID]['seatCount'];
-//       $seatNumber=$this->cartElements[$cartID]['seatCount'];
-
-//       $DBM->recordPassengerBooking($username,$email,$CreditCardNo,$PassportNo,$this->cartElements[$cartID]['route'],$this->cartElements[$cartID]['date'],$this->cartElements[$cartID]['seatCount']);
-//       unset($this->cartElements[$cartID]);
-//       }
-//       }
-//      */
-
-//     //put in the form here for the loops
-//     // put '2' in for the changes made by user
-//     function recordBookings($username, $email, $CreditCardNo, $PassportNo) {
-//         $DBM = new DBManager();
-
-//         $cartIds = array_keys($this->cartElements);
-
-
-//         for ($i = 0; $i < sizeof($cartIds); $i++) {
-//             $cartID = $cartIds[$i];
-//             $nmrSeats = $this->cartElements[$cartID]['seatCount'];
-//             $seatNumbers = $this->cartElements[$cartID]['seatCount'];
-//             for ($j = 0; $j < 20; $j++) {
-//                 //    echo "<br> checking cart setting".$this->cartElements[$cartID]['seats'][$j];
-//                 if ("{$this->cartElements[$cartID]['seats'][$j]}" == "U") {
-//                     $DBM->recordPassengerBooking($username, $email, $CreditCardNo, $PassportNo, $this->cartElements[$cartID]['route'], $this->cartElements[$cartID]['date'], $j);
-//                     $this->cartElements[$cartID]['seats'][$j] = "Y";
-//                     $seatNumbers--;
-//                 }
-//                 if ($seatNumbers == 0)
-//                     break;
-//             }
-//             for ($i = 0; $i < sizeof($cartIds); $i++) {
-//                 unset($this->cartElements[$cartID]);
-//             }
-//         }
-//     }
-
-//     function displayCart() {
-
-//         $cartIds = array_keys($this->cartElements);
-
-
-//         for ($i = 0; $i < sizeof($cartIds); $i++) {
-
-//             $cartID = $cartIds[$i];
-
-
-//             echo "<p style=\"border:red solid 1px\">";
-
-
-
-//             echo "Route: " . $this->cartElements[$cartID]['route'] . "<br>";
-
-//             echo "date: " . $this->cartElements[$cartID]['date'] . "<br>";
-//             echo "Number of seats: " . $this->cartElements[$cartID]['seatCount'] . "<br>";
-
-
-//             echo "Occupied Seats:  " . $this->cartElements[$cartID]['freeSeats'] . "<br>";
-//             echo "<BR> First {$this->cartElements[$cartID]['seatCount']} seats selected will be chosen <BR>";
-//             $count = 0;
-//             for ($j = 0; $j < 20; $j++) {
-//                 $dummy1 = $i . "b" . $j;
-//                 echo $dummy1;
-//                 $seats1 = $this->cartElements[$cartID]['seats'];
-//                 //          if ($seats1[$j]=="Y")|| ($seats1[$j]=="U"))
-//                 if (($this->cartElements[$cartID]['seats'][$j] == "Y") || ($this->cartElements[$cartID]['seats'][$j] == "U")) {
-
-//                     echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" checked >";
-//                     echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\"disabled>";
-//                     $count++;
-//                 } else {
-
-//                     echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" >";
-//                     echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\" checked>";
-//                 }
-//                 /* if(( $j % 4)==0) */
-//                 echo "<br>";
-//             }
-//             if ($count == 20)
-//                 echo "<br> ---- FLIGHT BOOKED OUT -- ";
-
-
-
-//             echo '<a href="controller.php?cmd=removeCartItem&cartID=' . $cartID . '">delete</a>';
-
-
-//             echo "</p>";
-//         }
-//         echo "<br><a href=\"controller.php\">Back to search</a>";
-//         //      echo "<br><a href=\"controller.php?cmd=showPassengerDetails\">Continue with purchase</a> &nbsp;";
-//         //     echo '<a href="controller.php?cmd=removeCartItem&cartID='.$cartID.'">delete</a>';
-//         //         print_r($this->cartElements); 
-//         echo "</p>";
-//     }
-
-//     /* --------  PUT IN SUBMIT BUTTON HERE ---, LINK TO USER DETAILS */
-//     /**
-//      * Processes changes submitted from the checkout cart.
-//      *
-//      * Examines the submitted seat fields for each cart item.
-//      * Newly selected seats are marked "U" in the session cart,
-//      * and the remaining requested seat count is reduced.
-//      *
-//      * Existing seats marked "Y" are left unchanged.
-//      *
-//      * Note: This method updates the session cart; it does not
-//      * itself confirm a reservation in the database.
-//      */
-
-//     function processSeatSelections() {
-
-//         $cartIds = array_keys($this->cartElements);
-//         //need to compare both clicked and updated    
-//         for ($i = 0; $i < sizeof($cartIds); $i++) {
-//             $cartID = $cartIds[$i];
-//             $nmrSeats = $this->cartElements[$cartID]['seatCount'];
-
-//             for ($j = 0; $j < 20; $j++) {
-//                 $dummy1 = $i . "b" . $j;
-//                 $seats1 = $this->cartElements[$cartID]['seats'];
-//                 if ($this->cartElements[$cartID]['seats'][$j] == "Y") {
-//                     //       echo " <br> not changing -already Y";
-//                 } else {
-//                     if ($_POST[$dummy1] == "Y") {
-//                         // echo the newly set Y, first of the settings
-//                         $this->cartElements[$cartID]['seats'][$j] = "U";
-
-
-//                         $nmrSeats--;
-//                     }
-//                     if ($nmrSeats == 0)
-//                         break;
-//                 }
-//                 //      print_r($this->cartElements);  
-//             }
-//         }
-//     }
-
-// }
-
+    // class Cart {
     class Cart {
 
         // Stores flight selections using their numeric cart IDs.
@@ -1225,157 +808,24 @@ class RegistrationView extends PublicBaseView {
         }
     }
 
-    // class FlightSearchView extends PublicBaseView {
 
-    //     public function __construct($info) {
-
-    //         $this->top($info);
-    //         $this->menu($info);
-    //         //    $this->bloggerList();
-    //         $this->searchDiv();
-
-    //         $this->bottom();
-    //     }
-
-    //     function searchDiv() {
-
-    //         echo "<div id=\"content\">";
-    //         echo "<a style=\"float:right;\" href=\"controller.php?cmd=showCheckout\">Go to checkout</a> &nbsp";
-    //         echo "<div id=\"search\">
-    //                 <form action=\"controller.php\" method=\"post\">
-    //                 <input type=\"hidden\" name=\"cmd\" value=\"searchFlights\">
-                
-    //                 <table>
-    //                 <tr>
-    //                     <td>
-    //                     Route:
-    //                     </td>
-    //                     <td>
-    //                     <select name=\"route\" >
-                    
-    //             ";
-    //         // need to get the route decsriptions and ids out of the database
-    //         $DBM = new DBManager();
-    //         $data = $DBM->getAllRoutes();
-
-    //         for ($i = 0; $i < sizeof($data); $i++) {
-
-    //             /*        echo "<option value=\"{$data[$i]['id']}\"> {$data[$i]['source']} - {$data[$i]['dest']}
-    //             </option> "; */
-    //             if ($data[$i]['id'] == $_SESSION['route'])
-    //                 echo "<option value=\"{$data[$i]['id']}\" selected> {$data[$i]['source']} - {$data[$i]['dest']}
-    //                                     </option> ";
-    //             else
-    //                 echo "<option value=\"{$data[$i]['id']}\"> {$data[$i]['source']} - {$data[$i]['dest']}
-    //                                     </option> ";
-    //         }
-
-    //         echo "
-    //                         </select>
-    //                         </td>
-    //                         </tr>
-    //                         <tr>
-    //                             <td>
-    //                                 Number of tickets:   
-    //                             </td>
-    //                         <td>
-    //                         <input type=\"text\" name=\"seatCount\" value=\"{$_SESSION['seatCount']}\" size=\"3\" >
-    //                         </td
-    //                     </tr>
-    //                 <tr>
-    //                     <td> 
-    //                         Select a date:
-    //                     </td>
-    //                         <td>
-                            
-    //                         <input id=\"startdate\" type=\"date\" name=\"date\" value=\"{$_SESSION['date']}\" >
-    //                         </td>
-    //                 </tr>    
-                    
-    //                 <tr><td>
-    //                         <input type=\"submit\" value=\"searchFlights\">
-    //                 </tr>    
-                    
-                    
-                    
-    //             </table>
-            
-                
-    //         </form>
-    //         </div>
-    //         ";
-    //     }
-    //     function top($hasCookie = false) {
-    //         parent::top($hasCookie);
-    //         $username = $_COOKIE['username'] ?? ($_SESSION['username'] ?? '');
-    //         if ($username !== '') {
-    //             echo '<p class="welcome-message">Welcome ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</p>';
-    //         }
-    //     }
-    //     public function menu($info = false) {
-    //         $loggedIn = !empty($info) || isset($_COOKIE['username']);
-    //         echo '<nav id="menu" class="old" aria-label="Main navigation">
-    //             <a href="controller.php">Home</a>
-    //             <a href="controller.php?cmd=searchFlights">Search flights</a>';
-    //         if ($loggedIn) {
-    //             echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
-    //         } else {
-    //             echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
-    //         }
-    //         echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
-    //     }
-
-    //         function bottom() {
-    //         parent::bottom();
-    //     }
-
-    // }
-
-    /**
-     * FlightSearchView
-     *
-     * Displays the flight-search page for the Airline2014 application.
-     * Extends PublicBaseView to reuse the public page layout.
-     *
-     * Provides a search form allowing users to:
-     * - Select a flight route retrieved from the database.
-     * - Specify the number of tickets required.
-     * - Select a travel date.
-     *
-     * Retains previous search criteria using session variables.
-     * Submits the search request to controller.php for processing.
-     *
-     * Also displays the page navigation and, when a username is
-     * available, a welcome message.
-     */
+    
     // Renders the flight search form.
     class FlightSearchView extends PublicBaseView {
-
         // Build the flight-search page using the shared public-page layout.
         public function __construct($info) {
-
             // Render the page header and navigation.
             $this->top($info);
             $this->menu($info);
-
-            // The blogger list is not currently displayed on this page.
-            // $this->bloggerList();
-
-            // Render the flight-search form.
             $this->searchDiv();
-
-            // Finish the page layout.
             $this->bottom();
         }
 
         // Display the form used to search for flights by route, seat count and date.
         function searchDiv() {
-
             echo "<div id=\"content\">";
-
             // Provide a direct link to the checkout page.
             echo "<a style=\"float:right;\" href=\"controller.php?cmd=showCheckout\">Go to checkout</a> &nbsp";
-
             // Submit the search criteria to controller.php using the POST method.
             echo "<div id=\"search\">
                     <form action=\"controller.php\" method=\"post\">
@@ -1718,55 +1168,55 @@ class RegistrationView extends PublicBaseView {
      */
     class CheckoutView extends FlightSearchView {
 
-    private $route;
-    private $seatCount;
-    private $date;
+        private $route;
+        private $seatCount;
+        private $date;
 
-    public function __construct($info) {
+        public function __construct($info) {
 
-        $this->top($info);
-        $this->menu($info);
-        //     $_SESSION['cart']->displayCart();
-        $this->searchDiv();
-        $this->bottom();
-    }
-    public function menu($info = false) {
-        $loggedIn = !empty($info) || isset($_COOKIE['username']);
-        echo '<nav id="menu" class="old" aria-label="Main navigation">
-            <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=searchFlights">Search flights</a>';
-        if ($loggedIn) {
-            echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
-        } else {
-            echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
+            $this->top($info);
+            $this->menu($info);
+            //     $_SESSION['cart']->displayCart();
+            $this->searchDiv();
+            $this->bottom();
         }
-        echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
-    }
 
-    
-    function searchDiv() {
-
-
-        //      $info1=$info;
-        echo "<div id=\"content\">
-                     <form action=\"controller.php\" method=\"post\">
-            
-                     <input type=\"hidden\" name=\"cmd\" value=\"Update\">
-                       <table>
-                        <tr>
-                        <td> </td>
-
-                       </tr>";
-        $_SESSION['cart']->displayCart();
+        public function menu($info = false) {
+            $loggedIn = !empty($info) || isset($_COOKIE['username']);
+            echo '<nav id="menu" class="old" aria-label="Main navigation">
+                <a href="controller.php">Home</a>
+                <a href="controller.php?cmd=searchFlights">Search flights</a>';
+            if ($loggedIn) {
+                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
+            } else {
+                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
+            }
+            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
+        }
+   
+        function searchDiv() {
 
 
-        echo"   <tr>
-             <td><input type=\"submit\" value=\"Seat Changes\"></td>
-                 </tr>
-              </div>
-            </form>
-            ";
-    }
+            //      $info1=$info;
+            echo "<div id=\"content\">
+                        <form action=\"controller.php\" method=\"post\">
+                
+                        <input type=\"hidden\" name=\"cmd\" value=\"Update\">
+                        <table>
+                            <tr>
+                            <td> </td>
+
+                        </tr>";
+            $_SESSION['cart']->displayCart();
+
+
+            echo"   <tr>
+                <td><input type=\"submit\" value=\"Seat Changes\"></td>
+                    </tr>
+                </div>
+                </form>
+                ";
+        }
 
     }
 
@@ -1904,7 +1354,7 @@ class RegistrationView extends PublicBaseView {
 
         /*
         * Retrieves a specific route from the database by its ID.
-         */
+        */
         function getRouteById($id) {
             $query = "select * from routes where id=$id";
 
@@ -1916,7 +1366,7 @@ class RegistrationView extends PublicBaseView {
 
         /*
         * Inserts the two predefined sample routes into the database.
-         */
+        */
         public function insertSampleRoutes() {
 
             $query = "INSERT INTO routes 
@@ -1970,7 +1420,6 @@ class RegistrationView extends PublicBaseView {
         * Displays route details in text areas. 
         */
         public function displayRouteDetails() {
-
             $query = "select * from routes";
             $resultSet = $this->db->query($query);
             for ($i = 0; $i < $resultSet->rowCount(); $i++) {
