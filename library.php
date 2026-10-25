@@ -24,15 +24,31 @@
                     }
 
         public function menu($info = false) {
+            $this->renderCustomerMenu(false);
+        }
+
+        protected function renderCustomerMenu($loggedIn) {
+            $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
+            echo '<nav id="menu" class="old" aria-label="Customer navigation">
+                <div class="menu-left">
+                    <a href="controller.php">Home</a>
+                </div>
+                <div class="menu-right">';
+            if ($loggedIn) {
+                echo '<a href="controller.php?cmd=logout">Logout</a>';
+            } else {
+                echo '<a href="controller.php?cmd=showLogin">Login</a>
+                    <a href="controller.php?cmd=showRegistration">Register</a>';
+            }
             echo '
-            <nav id="menu" class="old" aria-label="Main navigation">
-                <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=searchFlights">Search flights</a>
-                <a href="controller.php?cmd=showLogin">Login</a>
-                <a href="controller.php?cmd=showRegistration">Register</a>
-                <a href="controller.php?cmd=showLogin">Staff / admin</a>
-            </nav>
-            ';
+                    ';
+            if ($canBook) {
+                echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
+            } else {
+                echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
+            }
+            echo '</div>
+            </nav>';
         }
 
         public function bloggerList() {
@@ -53,12 +69,62 @@
             }
     }
 
-// Shared base view for authenticated and administrator pages.
-    class AuthenticatedBaseView {
+    // Public destination after logout. This deliberately uses the outer shell
+    // rather than the authenticated customer inner view.
+    class PublicHomeView extends PublicBaseView {
+            public function __construct() {
+                $this->top(false);
+                $this->menu(false);
+                $this->content();
+                $this->bottom();
+            }
+
+            public function content() {
+                    echo '<div id="content" class="triple-pane">
+                            <section class="pane" aria-labelledby="public-search-title">
+                                <h1 id="public-search-title">Search flights</h1>
+                                <form action="controller.php" method="post">
+                                    <input type="hidden" name="cmd" value="searchFlights">
+                                    <label for="public-route">Route</label>
+                                    <select id="public-route" name="route">';
+                    $DBM = new DBManager();
+                    $routes = $DBM->getAllRoutes();
+                    foreach ($routes as $route) {
+                        echo '<option value="' . htmlspecialchars($route['id'], ENT_QUOTES, 'UTF-8') . '">'
+                            . htmlspecialchars($route['source'] . ' - ' . $route['dest'], ENT_QUOTES, 'UTF-8')
+                            . '</option>';
+                    }
+                    echo '</select>
+                                    <label for="public-seat-count">Number of tickets</label>
+                                    <input id="public-seat-count" type="number" name="seatCount" min="1" max="20">
+                                    <label for="public-date">Travel date</label>
+                                    <input id="public-date" type="date" name="date">
+                                    <input type="submit" value="Search flights">
+                                </form>
+                            </section>
+                            <section class="pane" aria-labelledby="public-selected-flight-title">
+                                <h2 id="public-selected-flight-title">Selected flight</h2>
+                                <p>Select a flight from the search results to view its details.</p>
+                            </section>
+                            <section class="pane" aria-labelledby="public-cart-title">
+                                <h2 id="public-cart-title">Cart and booking</h2>';
+                    if (isset($_SESSION['cart'])) {
+                        $_SESSION['cart']->displayCart();
+                    } else {
+                        echo '<p>Your cart is empty.</p>';
+                    }
+                    echo '</section>
+                        </div>';
+            }
+    }
+
+// Shared implementation foundation for the separate customer and
+// administrator inner views.
+    abstract class AuthenticatedBaseView extends PublicBaseView {
 
         public function __construct($info) {
-            $this->top();
-            $this->menu();
+            $this->top($info);
+            $this->menu($info);
             $this->content($info);
             $this->bloggerList();
             $this->bottom();
@@ -88,34 +154,6 @@
                         ";
         }
 
-        function top() {
-
-
-            echo "          
-                    <html>
-                        <head>
-                            <link rel=\"stylesheet\" href=\"insidestyles.css\">
-                                </head>
-                                    <body>
-                                        <div id=\"main\">
-                                            <div id=\"header\">
-                                                <h1>Header</h1>
-                                            </div>
-                    
-                ";
-        }
-
-        public function menu() {
-            echo "
-                    <div id=\"menu\">
-                    <a href=\"controller.php\">Public home</a> &nbsp;
-                    <a href=\"controller.php?cmd=showLogin\">Add</a> <br>
-                        <a href=\"controller.php?cmd=showRegistration\">Delete</a><br>
-                        <a href=\"controller.php?cmd=showRegistration\">logout</a><br>                      
-                </div>
-                ";
-        }
-
         public function bloggerList() {
             echo "
                     <div id=\"bloggerlist\">               
@@ -123,12 +161,27 @@
             echo "</div>";
         }
 
-        function bottom() {
-            echo "
-                </div>
-                </body>
-                </html>        
-                ";
+    }
+
+    // Customer-only inner view type. Customer pages retain the public Airline
+    // shell while providing a distinct extension point for booking workflows.
+    class CustomerBaseView extends AuthenticatedBaseView {
+        public function menu($info = false) {
+            $this->renderCustomerMenu(true);
+        }
+    }
+
+    // Administrator-only inner view type. Existing administrator views keep
+    // their legacy rendering methods while sharing this explicit role boundary.
+    class AdminBaseView extends AuthenticatedBaseView {
+        public function menu($info = false) {
+            echo '<nav id="menu" class="old" aria-label="Administrator navigation">
+                <a href="controller.php">Public home</a>
+                <a href="controller.php?cmd=showAdminDashboard">Routes</a>
+                <a href="controller.php?cmd=showAddRoute">Add route</a>
+                <a href="controller.php?cmd=showFlightManifest">View manifest</a>
+                <a href="controller.php?cmd=logout">Logout</a>
+            </nav>';
         }
     }
 
@@ -143,13 +196,7 @@
         }
 
         public function menu($info = false) {
-            echo '<nav id="menu" class="old" aria-label="Main navigation">
-                        <a href="controller.php">Home</a>
-                        <a href="controller.php?cmd=searchFlights">Search flights</a>
-                        <a href="controller.php?cmd=showLogin">Login</a>
-                        <a href="controller.php?cmd=showRegistration">Register</a>
-                        <a href="controller.php?cmd=showLogin">Staff / admin</a>
-                    </nav>';
+            parent::menu($info);
         }
 
         public function content() {
@@ -173,7 +220,7 @@
     }
 
 // Renders the administrator route-management page.
-    class AdminRoutesView extends AuthenticatedBaseView {
+    class AdminRoutesView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -184,8 +231,9 @@
         }
 
         public function content($info) {
-            echo "<div id=\"content\">
-                    <h1> Administrator  -Edit/Delete Routes</h1>
+            echo "<div id=\"content\" class=\"triple-pane\">
+                <section class=\"pane\">
+                    <h1>Routes</h1>
                     <FORM METHOD=\"post\" ACTION=\"controller.php\">
                         <input type=\"hidden\" name=\"cmd\" value=\"deleteSelectedRoutes\">
                     
@@ -194,30 +242,22 @@
             $DBM->displayRouteManagementList();
             echo"     <input type=\"submit\" value=\"delete routes\">                   
                         </FORM>
-                    ";
-            echo "</div>";
+                </section>
+                <section class=\"pane\">
+                    <h2>Route details</h2>
+                    <p>Select a route to edit its price or create a new route.</p>
+                    <a class=\"button\" href=\"controller.php?cmd=showAddRoute\">Add route</a>
+                </section>
+                <section class=\"pane\">
+                    <h2>Bookings and manifest</h2>
+                    <p>Review flights associated with a route.</p>
+                    <a class=\"button\" href=\"controller.php?cmd=showFlightManifest\">View manifest</a>
+                </section>
+            </div>";
         }
 
-        function top() {
-            echo "
-                <html>
-                <head>
-                    <link rel=\"stylesheet\" href=\"insidestyles.css\">
-                </head>
-                <body>
-                    <div id=\"main\">
-                        <div id=\"header\">
-                            <h1>Aireline.com</h1>
-                        </div>
-
-                        <a href=\"controller.php\">Public home</a> &nbsp;
-                        <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
-                        <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
-                        <a href=\"controller.php?cmd=logout\">logout</a><br>
-                    </div>
-                </body>
-                </html>
-            ";
+        function top($info = false) {
+            parent::top($info);
         }
 
         public function bloggerList() {
@@ -225,17 +265,13 @@
         }
 
         function bottom() {
-            echo "
-                </div>
-                </body>
-                </html>        
-                ";
+            parent::bottom();
         }
 
     }
 
 // Renders the administrator route-editing page.
-    class EditRouteView extends AuthenticatedBaseView {
+    class EditRouteView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -249,7 +285,7 @@
             echo "<div id=\"content\">
                     <h1> Administrator  -Edit Route# {$info} </h1>
                     <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                        <input type=\"hidden\" name=\"cmd\" value=\"amendroute\">                   
+                        <input type=\"hidden\" name=\"cmd\" value=\"updateRoute\">
                         <input type=\"hidden\" name=\"index\" value=$info>";
             $DBM = new DBManager();
             $DBM->displayRouteForEditing($info);
@@ -259,30 +295,12 @@
             echo "</div>";
         }
 
-        function top() {
-            echo "              
-                <html>
-                    <head>
-                        <link rel=\"stylesheet\" href=\"insidestyles.css\">
-                    </head>
-                    <body>
-                        <div id=\"main\">
-                        <div id=\"header\">
-                        <h1>Aireline.com</h1>
-                    </div>
-                
-                ";
+        function top($info = false) {
+            parent::top($info);
         }
 
-        public function menu() {
-            echo "
-                <div id=\"menu\">
-                    <a href=\"controller.php\">Public home</a> &nbsp;             
-                        <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
-                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
-                        <a href=\"controller.php?cmd=logout\">logout</a><br>                       
-                </div>
-                ";
+        public function menu($info = false) {
+            parent::menu($info);
         }
 
         public function bloggerList() {
@@ -290,17 +308,13 @@
         }
 
         function bottom() {
-            echo "
-                </div>
-                </body>
-                </html>        
-                ";
+            parent::bottom();
         }
 
     }
 
 // Renders the administrator add-route page.
-    class AddRouteView extends AuthenticatedBaseView {
+    class AddRouteView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -356,32 +370,12 @@
             echo "</div>";
         }
 
-        function top() {
-            echo "               
-                <html>
-                <head>
-                    <link rel=\"stylesheet\" href=\"insidestyles.css\">
-                </head>
-                <body>
-                    <div id=\"main\">
-                        <div id=\"header\">
-                            <h1>Aireline.com</h1>
-                    </div>               
-                ";
+        function top($info = false) {
+            parent::top($info);
         }
 
-        public function menu() {
-            echo "
-                    <div id=\"menu\">
-                    <a href=\"controller.php\">Public home</a> &nbsp;             
-                        <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
-                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
-                        <a href=\"controller.php?cmd=logout\">logout</a><br>
-                        
-                </div>
-
-
-                ";
+        public function menu($info = false) {
+            parent::menu($info);
         }
 
         public function bloggerList() {
@@ -389,17 +383,13 @@
         }
 
         function bottom() {
-            echo "
-                </div>
-                </body>
-                </html>        
-                ";
+            parent::bottom();
         }
 
     }
 
 // Renders the administrator flight manifest date list.
-    class FlightManifestView extends AuthenticatedBaseView {
+    class FlightManifestView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -443,40 +433,12 @@
             echo "</div>";
         }
 
-        function top() {
-
-
-            echo "
-                
-                <html>
-
-                <head>
-
-        <link rel=\"stylesheet\" href=\"insidestyles.css\">
-                </head>
-
-                <body>
-
-        <div id=\"main\">
-            <div id=\"header\">
-                <h1>Aireline.com</h1>
-            </div>
-                
-                ";
+        function top($info = false) {
+            parent::top($info);
         }
 
-        public function menu() {
-            echo "
-                    <div id=\"menu\">
-                    <a href=\"controller.php\">Public home</a> &nbsp;             
-                        <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
-                        <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
-                        <a href=\"controller.php?cmd=logout\">logout</a><br>
-                        
-                </div>
-
-
-                ";
+        public function menu($info = false) {
+            parent::menu($info);
         }
 
         public function bloggerList() {
@@ -484,12 +446,7 @@
         }
 
         function bottom() {
-            echo "
-                </div>
-
-                </body>
-                </html>        
-                ";
+            parent::bottom();
         }
 
     }
@@ -510,13 +467,7 @@
         $this->bottom();
     }
     public function menu($info = false) {
-        echo '<nav id="menu" class="old" aria-label="Main navigation">
-            <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=searchFlights">Search flights</a>
-            <a href="controller.php?cmd=showLogin">Login</a>
-            <a href="controller.php?cmd=showRegistration">Register</a>
-            <a href="controller.php?cmd=showLogin">Staff / admin</a>
-        </nav>';
+        parent::menu($info);
     }
 
     
@@ -811,7 +762,7 @@
 
     
     // Renders the flight search form.
-    class FlightSearchView extends PublicBaseView {
+    class FlightSearchView extends CustomerBaseView {
         // Build the flight-search page using the shared public-page layout.
         public function __construct($info) {
             // Render the page header and navigation.
@@ -823,7 +774,9 @@
 
         // Display the form used to search for flights by route, seat count and date.
         function searchDiv() {
-            echo "<div id=\"content\">";
+            echo "<div id=\"content\" class=\"triple-pane\">
+                    <section class=\"pane\" aria-labelledby=\"search-pane-title\">
+                    <h2 id=\"search-pane-title\">Search flights</h2>";
             // Provide a direct link to the checkout page.
             echo "<a style=\"float:right;\" href=\"controller.php?cmd=showCheckout\">Go to checkout</a> &nbsp";
             // Submit the search criteria to controller.php using the POST method.
@@ -901,8 +854,20 @@
 
 
             </form>
-            </div>
+            </section>
+                <section class=\"pane\" aria-labelledby=\"selected-flight-title\">
+                    <h2 id=\"selected-flight-title\">Selected flight</h2>
+                    <p>Select an available flight date to review it here.</p>
+                </section>
+                <section class=\"pane\" aria-labelledby=\"cart-pane-title\">
+                    <h2 id=\"cart-pane-title\">Cart and booking</h2>
             ";
+            if (isset($_SESSION['cart'])) {
+                $_SESSION['cart']->displayCart();
+            } else {
+                echo "<p>Your cart is empty.</p>";
+            }
+            echo "</section></div>";
         }
 
         // Render the inherited page header, then show a welcome message when a username is available.
@@ -919,29 +884,6 @@
             if ($username !== '') {
                 echo '<p class="welcome-message">Welcome ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</p>';
             }
-        }
-
-        // Render the main navigation, choosing links according to the supplied login information.
-        public function menu($info = false) {
-
-            // This checks for supplied user information or a username cookie.
-            // It controls which links are displayed; it is not, by itself, an authorization check.
-            $loggedIn = !empty($info) || isset($_COOKIE['username']);
-
-            echo '<nav id="menu" class="old" aria-label="Main navigation">
-                <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=searchFlights">Search flights</a>';
-
-            // Logged-in users are offered checkout and logout links.
-            if ($loggedIn) {
-                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
-            } else {
-                // Guests can log in or register.
-                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
-            }
-
-            // Staff/admin users are directed to the login entry point.
-            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
         }
 
         // Delegate page-footer rendering to the parent class.
@@ -990,19 +932,6 @@
             $this->results();
             $this->bottom();
         }
-        public function menu($info = false) {
-            $loggedIn = !empty($info) || isset($_COOKIE['username']);
-            echo '<nav id="menu" class="old" aria-label="Main navigation">
-                <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=searchFlights">Search flights</a>';
-            if ($loggedIn) {
-                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
-            } else {
-                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
-            }
-            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
-        }
-
         
         public function results() {
             $DBM = new DBManager();
@@ -1010,7 +939,9 @@
             $startDate = new DateTime($routeData[0]['start']);
             $endDate = new DateTime($routeData[0]['end']);
 
-            echo "start: " . $startDate->format('d-M-Y') . " end: " . $endDate->format('d-M-Y') . "<br><br>";
+            echo "<section class=\"pane flight-results\" aria-labelledby=\"results-title\">
+                    <h2 id=\"results-title\">Available flights</h2>
+                    <p>Operating from " . $startDate->format('d-M-Y') . " to " . $endDate->format('d-M-Y') . ".</p>";
             $dates = array();
             $searchDate = new DateTime($this->date);
 
@@ -1063,7 +994,7 @@
                 echo "<input type=\"submit\" value=\"Add to Cart\" disabled>";
             else
                 echo "<input type=\"submit\" value=\"Add to Cart\">";
-            echo "</form></div>";
+            echo "</form></section>";
         }
 
     }
@@ -1086,19 +1017,6 @@
 
             $this->bottom();
         }
-        public function menu($info = false) {
-            $loggedIn = !empty($info) || isset($_COOKIE['username']);
-            echo '<nav id="menu" class="old" aria-label="Main navigation">
-                <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=searchFlights">Search flights</a>';
-            if ($loggedIn) {
-                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
-            } else {
-                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
-            }
-            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
-        }
-
         
         public function getUserdetails($hasCookie) {
             $hasCookie = false;
@@ -1181,19 +1099,6 @@
             $this->bottom();
         }
 
-        public function menu($info = false) {
-            $loggedIn = !empty($info) || isset($_COOKIE['username']);
-            echo '<nav id="menu" class="old" aria-label="Main navigation">
-                <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=searchFlights">Search flights</a>';
-            if ($loggedIn) {
-                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
-            } else {
-                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
-            }
-            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
-        }
-   
         function searchDiv() {
 
 
@@ -1201,7 +1106,7 @@
             echo "<div id=\"content\">
                         <form action=\"controller.php\" method=\"post\">
                 
-                        <input type=\"hidden\" name=\"cmd\" value=\"Update\">
+                        <input type=\"hidden\" name=\"cmd\" value=\"updateCartSeats\">
                         <table>
                             <tr>
                             <td> </td>

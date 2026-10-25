@@ -14,8 +14,8 @@
 
         $hasCookie = false;
         //      echo $_COOKIE['username'];
-        if (isset($_COOKIE['username'])) {
-            // only create the cart when the session starts
+        if (isset($_SESSION['username']) && $_SESSION['username'] !== "Guest") {
+            // Authentication is established by the server-side session.
             $hasCookie = true;
         }
 
@@ -34,7 +34,7 @@
         switch ($cmd) {
             case "":
                 if ($hasCookie) {
-                    if (($_COOKIE['username']) == "rmiller")
+                    if (isset($_SESSION['username']) && $_SESSION['username'] == "rmiller")
                         new AdminRoutesView($hasCookie);
                     else
                         new FlightSearchView($hasCookie);
@@ -81,6 +81,7 @@
                 break;
 
             case "submitPassengerDetails":
+                if (!requireCustomer()) break;
                 handlePassengerDetailsSubmission();
                 break;
 
@@ -90,6 +91,7 @@
                 break;
 
             case "showPassengerDetails":
+                if (!requireCustomer()) break;
                 new PassengerDetailsView($hasCookie);
                 break;
 
@@ -100,40 +102,48 @@
                 break;
 
             case "showEditRoute":
+                if (!requireAdministrator()) break;
                 $routeid = $_GET['routeid'];
                 new EditRouteView($routeid);
                 break;
 
             case "updateRoute":
+                if (!requireAdministrator()) break;
                 handleRoutePriceUpdate($_POST['firstname'], $_POST['index']);
                 new AdminRoutesView($hasCookie);
                 break;
 
             case "deleteSelectedRoutes":
+                if (!requireAdministrator()) break;
                 handleRouteDeletion();
                 new AdminRoutesView($hasCookie);
                 break;
 
             case "showAddRoute":
+                if (!requireAdministrator()) break;
                 new AddRouteView($hasCookie);
                 break;
 
             case "createRoute":
+                if (!requireAdministrator()) break;
                 handleRouteCreation($_POST['source'], $_POST['destination'], $_POST['operationalFrom'], $_POST['operationalTo'], $_POST['Price']);
                 new AddRouteView($hasCookie);
                 break;
 
             case "showFlightManifest":
+                if (!requireAdministrator()) break;
                 handleFlightManifestRequest($hasCookie);
                 break;
 
             case "showFlightDetails":
+                if (!requireAdministrator()) break;
                 $date = $_GET['dateid'];
                 $route = $_GET['routeid'];
                 handleFlightDetailsRequest($date, $route);
                 break;
 
             case "showAdminDashboard":
+                if (!requireAdministrator()) break;
                 new AdminRoutesView($hasCookie);
                 break;
 
@@ -148,11 +158,32 @@
                     setcookie('username', false, time() - 60 * 100000, '/'); // empty value and old timestamp
                     unset($_COOKIE['username']);
                 }
+
                 $_SESSION['username'] = "Guest";
+                unset($_SESSION['route'], $_SESSION['seatCount'], $_SESSION['date']);
                 $hasCookie = false;
-                new FlightSearchView($hasCookie);
+                new PublicHomeView();
                 break;
         }
+    }
+
+    // Keep administrator permissions server-side; menu visibility is not authorization.
+    function requireAdministrator() {
+        if (isset($_SESSION['username']) && $_SESSION['username'] === "rmiller") {
+            return true;
+        }
+
+        new LoginView(false);
+        return false;
+    }
+
+    function requireCustomer() {
+        if (isset($_SESSION['username']) && $_SESSION['username'] !== "Guest") {
+            return true;
+        }
+
+        new LoginView(false);
+        return false;
     }
 
     // Checks whether a date matches the specified format.
