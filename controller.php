@@ -5,10 +5,10 @@
     session_start();
 
     // Main controller for handling requests and routing them to views or processing functions.
-    main();
+    dispatchRequest();
 
     // Selects the requested action and displays the appropriate view or processes the request.
-    function main() {
+    function dispatchRequest() {
 
         $cmd = "";
 
@@ -35,106 +35,112 @@
             case "":
                 if ($hasCookie) {
                     if (($_COOKIE['username']) == "rmiller")
-                        new adminView($hasCookie);
+                        new AdminRoutesView($hasCookie);
                     else
-                        new SearchView($hasCookie);
+                        new FlightSearchView($hasCookie);
                 }
                 else {
                     $_SESSION['username'] = "Guest";
-                    new SearchView($hasCookie);
+                    new FlightSearchView($hasCookie);
                 }
                 break;
 
-            case "login":
-                new loginView($hasCookie);
+            case "showLogin":
+                new LoginView($hasCookie);
                 break;
 
-            case "register":
-                new registerView($hasCookie);
+            case "showRegistration":
+                new RegistrationView($hasCookie);
                 break;
 
-            case "loginRequest":
-                handleLogin();
+            case "authenticateUser":
+                handleUserAuthentication();
                 break;
 
-            case "search":
-                handleSearch($hasCookie);
+            case "searchFlights":
+                // The navigation link opens the form with GET; only submitted
+                // search forms should read the POST search fields.
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    handleFlightSearch($hasCookie);
+                } else {
+                    new FlightSearchView($hasCookie);
+                }
                 break;
 
-            case "addToCart":
-                handleAddToCart();
+            case "addFlightToCart":
+                handleAddFlightToCart();
                 break;
 
-            case "Update":
-                $_SESSION['cart']->processFromCart();
-                new purchaseView($hasCookie);
+            case "updateCartSeats":
+                $_SESSION['cart']->processSeatSelections();
+                new PassengerDetailsView($hasCookie);
                 break;
 
-            case "checkoutView":
+            case "showCheckout":
                 new CheckoutView($hasCookie);
                 break;
 
-            case "customerRequest":
-                handleAddtransation();
+            case "submitPassengerDetails":
+                handlePassengerDetailsSubmission();
                 break;
 
-            case "delCheckoutItem":
-                $_SESSION['cart']->deleteFromCart($_GET['cartID']);
+            case "removeCartItem":
+                $_SESSION['cart']->removeFlight($_GET['cartID']);
                 new CheckoutView($hasCookie);
                 break;
 
-            case "purchase":
-                new purchaseView($hasCookie);
+            case "showPassengerDetails":
+                new PassengerDetailsView($hasCookie);
                 break;
 
-            case "registerRequest":
-                handleAddUser($hasCookie);
+            case "registerUser":
+                handleUserRegistration($hasCookie);
                 $hasCookie = 1;
-                new SearchView($hasCookie);
+                new FlightSearchView($hasCookie);
                 break;
 
-            case "editroute":
+            case "showEditRoute":
                 $routeid = $_GET['routeid'];
-                new adminEditView($routeid);
+                new EditRouteView($routeid);
                 break;
 
-            case "amendroute":
-                handleUpdateprice($_POST['firstname'], $_POST['index']);
-                new adminView($hasCookie);
+            case "updateRoute":
+                handleRoutePriceUpdate($_POST['firstname'], $_POST['index']);
+                new AdminRoutesView($hasCookie);
                 break;
 
-            case "deleteRoutes":
-                handleDeleteroutes();
-                new adminView($hasCookie);
+            case "deleteSelectedRoutes":
+                handleRouteDeletion();
+                new AdminRoutesView($hasCookie);
                 break;
 
-            case "addRoutes":
-                new adminAddRoute($hasCookie);
+            case "showAddRoute":
+                new AddRouteView($hasCookie);
                 break;
 
-            case "addRoute":
-                handleAddNewRoute($_POST['source'], $_POST['destination'], $_POST['operationalFrom'], $_POST['operationalTo'], $_POST['Price']);
-                new adminAddRoute($hasCookie);
+            case "createRoute":
+                handleRouteCreation($_POST['source'], $_POST['destination'], $_POST['operationalFrom'], $_POST['operationalTo'], $_POST['Price']);
+                new AddRouteView($hasCookie);
                 break;
 
-            case "manifest":
-                handleViewManifest($hasCookie);
+            case "showFlightManifest":
+                handleFlightManifestRequest($hasCookie);
                 break;
 
-            case "openflight":
+            case "showFlightDetails":
                 $date = $_GET['dateid'];
                 $route = $_GET['routeid'];
-                handledisplayFlightdetails($date, $route);
+                handleFlightDetailsRequest($date, $route);
                 break;
 
-            case "defaultAdmin":
-                new adminView($hasCookie);
+            case "showAdminDashboard":
+                new AdminRoutesView($hasCookie);
                 break;
 
             case "viewdate":
                 $date = $_GET['dateid'];
-                new ResultsView($_SESSION['route'], $_SESSION['seatCount'], $_SESSION['date'], $hasCookie);
-                handleSeating($date);
+                new FlightSearchResultsView($_SESSION['route'], $_SESSION['seatCount'], $_SESSION['date'], $hasCookie);
+                handleSeatOccupancyRequest($date);
                 break;
 
             case "logout":
@@ -144,20 +150,20 @@
                 }
                 $_SESSION['username'] = "Guest";
                 $hasCookie = false;
-                new SearchView($hasCookie);
+                new FlightSearchView($hasCookie);
                 break;
         }
     }
 
     // Checks whether a date matches the specified format.
-    function validateDate($date, $format = 'd-m-Y H:i:s') {
+    function isValidDate($date, $format = 'd-m-Y H:i:s') {
 
         $d = DateTime::createFromFormat($format, $date);
         return $d && $d->format($format) == $date;
     }
 
     // Validates the flight search inputs and displays the search results if valid.
-    function handleSearch($hasCookie) {
+    function handleFlightSearch($hasCookie) {
         $_SESSION['route'] = $_POST['route'];
         $_SESSION['seatCount'] = $_POST['seatCount'];
         $_SESSION['date'] = $_POST['date'];
@@ -173,18 +179,18 @@
             //  print "Valid? ".($is_valid ? 'yes' : 'no');
 
             if (!$is_valid) {
-                new SearchView($hasCookie);
+                new FlightSearchView($hasCookie);
                 echo "<br> Valid Dates e.g.'01-Jan-2014'only";
             } else {
                 if (!is_numeric($_POST['seatCount'])) {
-                    new SearchView($hasCookie);
+                    new FlightSearchView($hasCookie);
                     echo "<br> Not numeric value entered";
                 } else {
                     if (!(($_POST['seatCount'] > 0 ) && ($_POST['seatCount'] < 21))) {
-                        new SearchView($hasCookie);
+                        new FlightSearchView($hasCookie);
                         echo "<br> Value between 1 and 20";
                     } else
-                        new ResultsView($_POST['route'], $_POST['seatCount'], $_POST['date'], $hasCookie);
+                        new FlightSearchResultsView($_POST['route'], $_POST['seatCount'], $_POST['date'], $hasCookie);
                 }
             }
         } catch (Exception $e) {
@@ -193,7 +199,7 @@
     }
 
     // Checks seat availability and adds the selected flight to the session cart if enough seats are available.
-    function handleAddToCart() {
+    function handleAddFlightToCart() {
         $flightInfo = array();
         $flightInfo['route'] = $_SESSION['route'];
         $flightInfo['seatCount'] = $_SESSION['seatCount'];
@@ -208,7 +214,7 @@
 
         $freeSeats = 0;
         $DBM = new DBManager();
-        $DBM->processSeating1($flightInfo['date'], $flightInfo['seatCount'], $seats, $freeSeats);
+        $DBM->calculateAvailableSeats($flightInfo['date'], $flightInfo['seatCount'], $seats, $freeSeats);
         $flightInfo['seats'] = $seats;
         $flightInfo['freeSeats'] = $freeSeats;
 
@@ -217,40 +223,40 @@
             $hasCookie = true;
 
         if ($freeSeats >= $_SESSION['seatCount']) {
-            new SearchView($hasCookie);
+            new FlightSearchView($hasCookie);
             echo "Added to Cart provisional purchases- edit as see fit";
-            $_SESSION['cart']->addToCart($flightInfo);
+            $_SESSION['cart']->addFlight($flightInfo);
         } else {
-            new SearchView($hasCookie);
+            new FlightSearchView($hasCookie);
             echo "Only $freeSeats available -- not added to cart";
         }
     }
 
     // Registers a new user through the database manager.
-    function handleAdduser(&$hasCookie) {
+    function handleUserRegistration(&$hasCookie) {
         $DBM = new DBManager();
-        $data = $DBM->addUser($hasCookie);
+        $data = $DBM->registerUser($hasCookie);
 
         return $data;
     }
 
     // Updates the price of an existing route.
-    function handleUpdateprice($value, $index) {
+    function handleRoutePriceUpdate($value, $index) {
         $DBM = new DBManager();
-        $DBM->updateRoute($value, $index);
+        $DBM->updateRoutePrice($value, $index);
     }
 
     // Deletes the routes selected for removal.
-    function handleDeleteroutes() {
+    function handleRouteDeletion() {
         $DBM = new DBManager();
-        $DBM->deleteRoutes();
+        $DBM->deleteSelectedRoutes();
     }
 
     // Validates the route operating dates and adds a new route if the route limit has not been reached.
-    function handleAddNewRoute($source, $destination, $operationalFrom, $operationalTo, $price) {
+    function handleRouteCreation($source, $destination, $operationalFrom, $operationalTo, $price) {
         $DBM = new DBManager();
 
-        $count = $DBM->checkNmrroutes();
+        $count = $DBM->countRoutes();
 
         if ($count > 4) {
             echo "Max. number of routes entered";
@@ -258,70 +264,70 @@
             try {
                 $fromDate = new DateTime($operationalFrom);
                 $toDate = new DateTime($operationalTo);
-                $DBM->addRoute($source, $destination, $fromDate, $toDate, $price);
+                $DBM->createRoute($source, $destination, $fromDate, $toDate, $price);
             } catch (Exception $e) {
                 echo "Date entered in incorrect format e.g. 01-Jan-2014";
-                new adminAddRoute(1);
+                new AddRouteView(1);
             }
         }
-        //    $DBM->addRoute($source,$destination,$operationalFrom,$operationalTo,$price);
-        //    $DBM->addRoute();
+        //    $DBM->createRoute($source,$destination,$operationalFrom,$operationalTo,$price);
+        //    $DBM->createRoute();
     }
 
     // Updates the cart's transaction details with the submitted customer information.
-    function handleAddtransation() {
+    function handlePassengerDetailsSubmission() {
         //echo "processing anonymous user details /n";
-        $_SESSION['cart']->updateTransactions($_POST['username'], $_POST['email'], $_POST['CreditCardNo'], $_POST['PassportNo']);
+        $_SESSION['cart']->recordBookings($_POST['username'], $_POST['email'], $_POST['CreditCardNo'], $_POST['PassportNo']);
         echo "<br><a href=\"controller.php\">Back to search</a>";
     }
 
     // Displays the administrator's flight manifest.
-    function handleViewManifest($hasCookie) {
+    function handleFlightManifestRequest($hasCookie) {
         echo "<BR> View Manifest";
-        new adminManifest($hasCookie);
+        new FlightManifestView($hasCookie);
     }
 
     // Authenticates the user and displays the appropriate administrator or customer view.
-    function handleLogin() {
+    function handleUserAuthentication() {
 
         $DBM = new DBManager();
 
-        $result = $DBM->processLogin($_POST['username'], $_POST['password']);
+        $result = $DBM->authenticateUser($_POST['username'], $_POST['password']);
 
         if ($result == "rmiller") {
             setCookie('username', $_POST['username'], time() + 3600, '/');
             $hasCookie = 1;           // shimmy
             $_SESSION['username'] = "rmiller";
-            new adminView($hasCookie);
+            new AdminRoutesView($hasCookie);
         } else if ($result == "user") {
             setCookie('username', $_POST['username'], time() + 3600, '/');
             $_SESSION['username'] = $_POST['username'];
             $hasCookie = 1;            //shimmy
-            new SearchView($hasCookie);
+            new FlightSearchView($hasCookie);
         } else {
             echo "<br> invalid login <br>";
             $hasCookie = 0;           // shimmy
             $_SESSION['username'] = "Guest";
-            new SearchView($hasCookie);
+            new FlightSearchView($hasCookie);
         }
     }
 
     // Retrieves and displays seat occupancy information for the specified date.
-    function handleSeating($date) {
+    function handleSeatOccupancyRequest($date) {
         $DBM = new DBManager();
-        $result = $DBM->processSeating($date);
+        $result = $DBM->displaySeatOccupancy($date);
     }
 
     // Requests cart processing through the database manager.
-    function handleprocessCart() {
+    function handleCartProcessing() {
         $DBM = new DBManager();
         $result = $DBM->processCart();
     }
 
     // Retrieves and displays flight and passenger details for the specified date and route.
-    function handledisplayFlightdetails($date, $route) {
+    function handleFlightDetailsRequest($date, $route) {
         $DBM = new DBManager();
-        $result = $DBM->processdisplayFlightdetails($date, $route);
+        $result = $DBM->displayFlightManifestDetails($date, $route);
     }
 
 ?>

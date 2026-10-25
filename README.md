@@ -123,26 +123,26 @@ The original 2014 application was developed under time constraints, and some cla
 
 The principle is to preserve the working application and its original MVC structure. Classes and functions will be renamed incrementally, with their references checked and the affected workflows tested. This is a controlled improvement to the existing code, not a redesign.
 
-The register distinguishes proposed names from changes that have been implemented and verified.
+The register distinguishes proposed names from changes that have been implemented and syntax-checked. Browser workflow testing remains environment-dependent.
 
 ### 1. View classes
 
 | Original name | Clearer name | Status |
 |---|---|---|
-| `OutsideView` | `PublicBaseView` | Proposed |
-| `InsideView` | `AuthenticatedBaseView` | Proposed; confirm actual usage |
-| `loginView` | `LoginView` | Proposed |
-| `registerView` | `RegistrationView` | Proposed |
-| `adminView` | `AdminRoutesView` | Proposed |
-| `adminEditView` | `EditRouteView` | Proposed |
-| `adminAddRoute` | `AddRouteView` | Proposed |
-| `adminManifest` | `FlightManifestView` | Proposed |
-| `SearchView` | `FlightSearchView` | Proposed |
-| `ResultsView` | `FlightSearchResultsView` | Proposed |
-| `purchaseView` | `PassengerDetailsView` | Proposed |
+| `OutsideView` | `PublicBaseView` | Implemented; syntax-checked |
+| `InsideView` | `AuthenticatedBaseView` | Implemented; used by administrator views |
+| `loginView` | `LoginView` | Implemented; syntax-checked |
+| `registerView` | `RegistrationView` | Implemented; syntax-checked |
+| `adminView` | `AdminRoutesView` | Implemented; syntax-checked |
+| `adminEditView` | `EditRouteView` | Implemented; syntax-checked |
+| `adminAddRoute` | `AddRouteView` | Implemented; syntax-checked |
+| `adminManifest` | `FlightManifestView` | Implemented; syntax-checked |
+| `SearchView` | `FlightSearchView` | Implemented; syntax-checked |
+| `ResultsView` | `FlightSearchResultsView` | Implemented; syntax-checked |
+| `purchaseView` | `PassengerDetailsView` | Implemented; syntax-checked |
 | `CheckoutView` | `CheckoutView` | Keep — already clear |
 | `Cart` | `Cart` | Keep — already clear |
-| `DBManager` | `DBManager` | Keep for now |
+| `DBManager` | `DBManager` | Keep — already clear |
 
 The proposed names describe each class's purpose more clearly. Class names will follow the PascalCase convention. Existing class names will remain in the register until any renaming has been implemented and tested.
 
@@ -150,83 +150,83 @@ The proposed names describe each class's purpose more clearly. Class names will 
 
 Controller commands are values submitted through URLs, links, or HTML forms. The `main()` function in `controller.php` reads the `cmd` value and dispatches the request through a `switch` statement.
 
-The following table records the original command values and proposed replacements. These are proposals, not completed changes.
+The following table records the original command values and the replacements implemented in the active controller and its forms/links.
 
 | Original command | Proposed clearer command | Status |
 |---|---|---|
 | Empty command (`""`) | `showHome` or retain the default route | Review |
-| `login` | `showLogin` | Proposed |
-| `register` | `showRegistration` | Proposed |
-| `loginRequest` | `authenticateUser` | Proposed |
-| `registerRequest` | `registerUser` | Proposed |
-| `search` | `searchFlights` | Proposed |
-| `addToCart` | `addFlightToCart` | Proposed |
-| `Update` | `updateCartSeats` | Proposed |
-| `checkoutView` | `showCheckout` | Proposed |
-| `customerRequest` | `submitPassengerDetails` | Proposed |
-| `delCheckoutItem` | `removeCartItem` | Proposed |
-| `purchase` | `showPassengerDetails` | Proposed |
-| `editroute` | `showEditRoute` | Proposed |
-| `amendroute` | `updateRoute` | Proposed |
-| `deleteRoutes` | `deleteSelectedRoutes` | Proposed |
-| `addRoutes` | `showAddRoute` | Proposed |
-| `addRoute` | `createRoute` | Proposed |
-| `manifest` | `showFlightManifest` | Proposed |
-| `openflight` | `showFlightDetails` | Proposed |
-| `defaultAdmin` | `showAdminDashboard` | Proposed |
-| `viewdate` | `showFlightDate` | Review |
-| `logout` | `logout` | Keep |
+| `login` | `showLogin` | Implemented; syntax-checked |
+| `register` | `showRegistration` | Implemented; syntax-checked |
+| `loginRequest` | `authenticateUser` | Implemented; syntax-checked |
+| `registerRequest` | `registerUser` | Implemented; syntax-checked |
+| `search` | `searchFlights` | Implemented; syntax-checked |
+| `addToCart` | `addFlightToCart` | Implemented; syntax-checked |
+| `Update` | `updateCartSeats` | Implemented; syntax-checked |
+| `checkoutView` | `showCheckout` | Implemented; syntax-checked |
+| `customerRequest` | `submitPassengerDetails` | Implemented; syntax-checked |
+| `delCheckoutItem` | `removeCartItem` | Implemented; syntax-checked |
+| `purchase` | `showPassengerDetails` | Implemented; syntax-checked |
+| `editroute` | `showEditRoute` | Implemented; syntax-checked |
+| `amendroute` | `updateRoute` | Implemented; syntax-checked |
+| `deleteRoutes` | `deleteSelectedRoutes` | Implemented; syntax-checked |
+| `addRoutes` | `showAddRoute` | Implemented; syntax-checked |
+| `addRoute` | `createRoute` | Implemented; syntax-checked |
+| `manifest` | `showFlightManifest` | Implemented; syntax-checked |
+| `openflight` | `showFlightDetails` | Implemented; syntax-checked |
+| `defaultAdmin` | `showAdminDashboard` | Implemented; syntax-checked |
+| `viewdate` | `showFlightDate` | Deferred — renders results and processes seating |
+| `logout` | `logout` | Keep — already clear |
 
-The empty command currently selects a default view based on the user's cookie. The `viewdate` command performs more than one action, so its replacement should be confirmed after its behaviour is understood.
+The empty command selects a default view based on the user's cookie and remains unchanged. The `viewdate` command performs more than one action, so its proposed replacement was deferred rather than forcing a narrower name.
 
 ### 3. Controller handler functions
 
 A controller command and the PHP function that processes it are separate elements. Their names should be recorded separately where they differ.
 
-The following table is based on the current `controller.php` source. The replacement names are proposals only.
+The following table records the names implemented after checking the current `controller.php` source.
 
 | Original function | Proposed clearer name | Responsibility |
 |---|---|---|
-| `main()` | `dispatchRequest()` | Read the command and select the appropriate action |
-| `validateDate()` | `isValidDate()` | Validate a date against a specified format |
-| `handleSearch()` | `handleFlightSearch()` | Validate search inputs and display flight results |
-| `handleAddToCart()` | `handleAddFlightToCart()` | Check seat availability and add a provisional flight to the cart |
-| `handleAdduser()` | `handleUserRegistration()` | Register a user through `DBManager` |
-| `handleUpdateprice()` | `handleRoutePriceUpdate()` | Update a route's price |
-| `handleDeleteroutes()` | `handleRouteDeletion()` | Delete selected routes |
-| `handleAddNewRoute()` | `handleRouteCreation()` | Validate operating dates and add a route |
-| `handleAddtransation()` | `handlePassengerDetailsSubmission()` | Save submitted customer details to the cart's transaction data |
-| `handleViewManifest()` | `handleFlightManifestRequest()` | Display the administrator's flight manifest |
-| `handleLogin()` | `handleUserAuthentication()` | Authenticate the user and display the appropriate view |
-| `handleSeating()` | `handleSeatOccupancyRequest()` | Request seat occupancy information |
-| `handleprocessCart()` | `handleCartProcessing()` | Request cart processing through `DBManager` |
-| `handledisplayFlightdetails()` | `handleFlightDetailsRequest()` | Retrieve flight and passenger details |
+| `main()` | `dispatchRequest()` | Implemented; reads the command and selects the appropriate action |
+| `validateDate()` | `isValidDate()` | Implemented; validates a date against a specified format |
+| `handleSearch()` | `handleFlightSearch()` | Implemented; validates search inputs and displays flight results |
+| `handleAddToCart()` | `handleAddFlightToCart()` | Implemented; checks seat availability and adds a provisional flight |
+| `handleAdduser()` | `handleUserRegistration()` | Implemented; registers a user through `DBManager` |
+| `handleUpdateprice()` | `handleRoutePriceUpdate()` | Implemented; updates a route's price |
+| `handleDeleteroutes()` | `handleRouteDeletion()` | Implemented; deletes selected routes |
+| `handleAddNewRoute()` | `handleRouteCreation()` | Implemented; validates operating dates and adds a route |
+| `handleAddtransation()` | `handlePassengerDetailsSubmission()` | Implemented; saves submitted customer details to cart transaction data |
+| `handleViewManifest()` | `handleFlightManifestRequest()` | Implemented; displays the administrator's flight manifest |
+| `handleLogin()` | `handleUserAuthentication()` | Implemented; authenticates the user and displays the appropriate view |
+| `handleSeating()` | `handleSeatOccupancyRequest()` | Implemented; requests seat occupancy information |
+| `handleprocessCart()` | `handleCartProcessing()` | Implemented rename; existing `DBManager::processCart()` call remains unresolved and was not altered |
+| `handledisplayFlightdetails()` | `handleFlightDetailsRequest()` | Implemented; retrieves flight and passenger details |
 
-These names should be checked against the functions' full implementations and callers before adoption. In particular, `validateDate()` appears in the supplied controller but is not called there, and `handleprocessCart()` calls `DBManager::processCart()`, whose existence still needs to be confirmed.
+`isValidDate()` remains unused, as was the original function. `handleCartProcessing()` still calls the pre-existing `DBManager::processCart()` name; no method was invented or changed because that method is absent from the active `DBManager` implementation.
 
 ### 4. `DBManager` methods
 
 | Original method | Proposed clearer name | Status |
 |---|---|---|
-| `processLogin()` | `authenticateUser()` | Proposed |
-| `addUser()` | `registerUser()` | Proposed |
-| `updateRoute()` | `updateRoutePrice()` | Proposed |
-| `checkSeats()` | `hasAvailableSeats()` | Proposed; confirm actual behaviour |
+| `processLogin()` | `authenticateUser()` | Implemented; syntax-checked |
+| `addUser()` | `registerUser()` | Implemented; syntax-checked |
+| `updateRoute()` | `updateRoutePrice()` | Implemented; syntax-checked |
+| `checkSeats()` | `hasAvailableSeats()` | Deferred — implementation returns `true` unconditionally |
 | `getAllRoutes()` | `getAllRoutes()` | Keep |
-| `getRoute()` | `getRouteById()` | Proposed |
-| `loadRoutes()` | `insertSampleRoutes()` | Proposed; confirm purpose |
-| `displayRoutes()` | `displayRouteManagementList()` | Proposed |
-| `displayStaticRoutes()` | `displayRouteDetails()` | Proposed |
-| `displayActiveRoutes()` | `displayBookedFlights()` | Proposed; confirm purpose |
-| `displayEditRoutes()` | `displayRouteForEditing()` | Proposed |
-| `deleteRoutes()` | `deleteSelectedRoutes()` | Proposed |
-| `addRoute()` | `createRoute()` | Proposed |
-| `checkNmrroutes()` | `countRoutes()` | Proposed |
-| `handleretrieveCustomerdetails()` | `displaySavedCustomerDetails()` | Proposed |
-| `processTransaction()` | `recordPassengerBooking()` | Proposed; confirm transaction behaviour |
-| `processSeating()` | `displaySeatOccupancy()` | Proposed |
-| `processSeating1()` | `calculateAvailableSeats()` | Proposed |
-| `processdisplayFlightdetails()` | `displayFlightManifestDetails()` | Proposed |
+| `getRoute()` | `getRouteById()` | Implemented; syntax-checked |
+| `loadRoutes()` | `insertSampleRoutes()` | Implemented; inserts the predefined sample routes |
+| `displayRoutes()` | `displayRouteManagementList()` | Implemented; syntax-checked |
+| `displayStaticRoutes()` | `displayRouteDetails()` | Implemented; syntax-checked |
+| `displayActiveRoutes()` | `displayBookedFlights()` | Implemented; lists booked route/date combinations |
+| `displayEditRoutes()` | `displayRouteForEditing()` | Implemented; syntax-checked |
+| `deleteRoutes()` | `deleteSelectedRoutes()` | Implemented; syntax-checked |
+| `addRoute()` | `createRoute()` | Implemented; syntax-checked |
+| `checkNmrroutes()` | `countRoutes()` | Implemented; syntax-checked |
+| `handleretrieveCustomerdetails()` | `displaySavedCustomerDetails()` | Implemented; syntax-checked |
+| `processTransaction()` | `recordPassengerBooking()` | Implemented; records passenger and seat data |
+| `processSeating()` | `displaySeatOccupancy()` | Implemented; syntax-checked |
+| `processSeating1()` | `calculateAvailableSeats()` | Implemented; syntax-checked |
+| `processdisplayFlightdetails()` | `displayFlightManifestDetails()` | Implemented; syntax-checked |
 
 Some proposed names are deliberately descriptive and may be shortened after their responsibilities and call sites have been checked. The name should reflect what the method actually does, rather than what we assume it does from its original name.
 
@@ -234,11 +234,11 @@ Some proposed names are deliberately descriptive and may be shortened after thei
 
 | Original method | Proposed clearer name | Status |
 |---|---|---|
-| `addToCart()` | `addFlight()` | Proposed |
-| `deleteFromCart()` | `removeFlight()` | Proposed |
-| `updateTransactions()` | `recordBookings()` | Proposed; confirm its exact responsibility |
+| `addToCart()` | `addFlight()` | Implemented; syntax-checked |
+| `deleteFromCart()` | `removeFlight()` | Implemented; syntax-checked |
+| `updateTransactions()` | `recordBookings()` | Implemented; records selected cart seats |
 | `displayCart()` | `displayCart()` | Keep |
-| `processFromCart()` | `processSeatSelections()` | Proposed |
+| `processFromCart()` | `processSeatSelections()` | Implemented; syntax-checked |
 
 ### 6. Naming conventions
 
@@ -248,7 +248,7 @@ The following conventions will guide future changes:
 - **Methods and functions:** camelCase, for example `getRouteById()` and `recordPassengerBooking()`.
 - **Controller commands:** descriptive camelCase values, for example `searchFlights` and `showCheckout`.
 - **Database methods:** names that describe the operation and the object being acted on.
-- **Legacy names:** retain the original names in this register until the corresponding changes have been implemented and tested.
+- **Legacy names:** retain the original names in this register with their final status.
 
 Names belonging to different application layers should remain distinguishable. For example, the controller command `loginRequest`, the controller handler `handleLogin()`, and `DBManager::processLogin()` are related but separate elements of the application. Their replacements should reflect their respective responsibilities.
 
@@ -264,7 +264,9 @@ Changes will be made in small, related groups:
 6. Test the affected workflow.
 7. Mark a change as implemented or tested only after verifying it.
 
-The register provides a record of the original application's design and a controlled path towards clearer naming while preserving its existing functionality and MVC structure.
+The register provides a record of the original application's design and the completed naming refactor while preserving its existing functionality and MVC structure.
+
+Archived files under [`old/`](old/) were not renamed because they are historical snapshots and are not loaded by the active [`controller.php`](controller.php) entry point. The active implementation still contains a commented historical Cart example; it is non-executable reference text only.
 
 ## Legacy status
 

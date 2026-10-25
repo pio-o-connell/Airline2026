@@ -1,6 +1,7 @@
 <?php
 
-abstract class OutsideView {
+// Shared base view for public pages.
+abstract class PublicBaseView {
 
     // Shared public-page shell. Keep the original IDs for legacy markup/CSS.
     function top($info = false) {
@@ -26,10 +27,10 @@ abstract class OutsideView {
         echo '
         <nav id="menu" class="old" aria-label="Main navigation">
             <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=search">Search flights</a>
-            <a href="controller.php?cmd=login">Login</a>
-            <a href="controller.php?cmd=register">Register</a>
-            <a href="controller.php?cmd=login">Staff / admin</a>
+            <a href="controller.php?cmd=searchFlights">Search flights</a>
+            <a href="controller.php?cmd=showLogin">Login</a>
+            <a href="controller.php?cmd=showRegistration">Register</a>
+            <a href="controller.php?cmd=showLogin">Staff / admin</a>
         </nav>
 ';
     }
@@ -52,7 +53,8 @@ abstract class OutsideView {
     }
 }
 
-class InsideView {
+// Shared base view for authenticated and administrator pages.
+class AuthenticatedBaseView {
 
     public function __construct($info) {
         $this->top();
@@ -118,9 +120,9 @@ class InsideView {
         echo "
                  <div id=\"menu\">
                 <a href=\"controller.php\">Public home</a> &nbsp;
-                <a href=\"controller.php?cmd=login\">Add</a> <br>               
-                       <a href=\"controller.php?cmd=register\">Delete</a><br>
-                       <a href=\"controller.php?cmd=register\">logout</a><br>
+                <a href=\"controller.php?cmd=showLogin\">Add</a> <br>
+                       <a href=\"controller.php?cmd=showRegistration\">Delete</a><br>
+                       <a href=\"controller.php?cmd=showRegistration\">logout</a><br>
                        
             </div>
 
@@ -169,7 +171,8 @@ class InsideView {
 
 }
 
-class loginView extends OutsideView {
+// Renders the customer and administrator login form.
+class LoginView extends PublicBaseView {
 
     public function __construct($info) {
         $this->top($info);
@@ -185,10 +188,10 @@ class loginView extends OutsideView {
     public function menu($info = false) {
         echo '<nav id="menu" class="old" aria-label="Main navigation">
             <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=search">Search flights</a>
-            <a href="controller.php?cmd=login">Login</a>
-            <a href="controller.php?cmd=register">Register</a>
-            <a href="controller.php?cmd=login">Staff / admin</a>
+            <a href="controller.php?cmd=searchFlights">Search flights</a>
+            <a href="controller.php?cmd=showLogin">Login</a>
+            <a href="controller.php?cmd=showRegistration">Register</a>
+            <a href="controller.php?cmd=showLogin">Staff / admin</a>
         </nav>';
     }
 
@@ -202,11 +205,11 @@ class loginView extends OutsideView {
                    <FORM METHOD=\"post\" ACTION=\"controller.php\">
 
                  
-                        <input type=\"hidden\" name=\"cmd\" value=\"loginRequest\">
+                        <input type=\"hidden\" name=\"cmd\" value=\"authenticateUser\">
                 
                 Username: <input type=\"text\" name=\"username\"> <br>
                 Password: <input type=\"password\" name=\"password\"> <br>
-                <input type=\"submit\"\ value=\"loginRequest\">
+                <input type=\"submit\"\ value=\"authenticateUser\">
             </FORM>
 
                 
@@ -219,7 +222,8 @@ class loginView extends OutsideView {
 
     }
 
-class adminView extends InsideView {
+// Renders the administrator route-management page.
+class AdminRoutesView extends AuthenticatedBaseView {
 
     public function __construct($info) {
         $this->top();
@@ -237,11 +241,11 @@ class adminView extends InsideView {
         echo "<div id=\"content\">
                   <h1> Administrator  -Edit/Delete Routes</h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"deleteRoutes\">
+                    <input type=\"hidden\" name=\"cmd\" value=\"deleteSelectedRoutes\">
                    
                     <input type=\"hidden\" name=\"blogtitle\" value=>";
         $DBM = new DBManager();
-        $DBM->displayRoutes();
+        $DBM->displayRouteManagementList();
 
         echo"     <input type=\"submit\" value=\"delete routes\">
                     
@@ -277,8 +281,8 @@ class adminView extends InsideView {
         echo "
                  <div id=\"menu\">
                 <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=addRoutes\">Add <br> Route</a><br>
-                       <a href=\"controller.php?cmd=manifest\">View<br> Manifest</a><br>
+                       <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
+                       <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
                    
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
                        
@@ -305,7 +309,8 @@ class adminView extends InsideView {
 
 }
 
-class adminEditView extends InsideView {
+// Renders the administrator route-editing page.
+class EditRouteView extends AuthenticatedBaseView {
 
     public function __construct($info) {
         $this->top();
@@ -327,7 +332,7 @@ class adminEditView extends InsideView {
                    
                     <input type=\"hidden\" name=\"index\" value=$info>";
         $DBM = new DBManager();
-        $DBM->displayEditRoutes($info);
+        $DBM->displayRouteForEditing($info);
 
         echo"     <input type=\"submit\" value=\"editPrice\">
                     
@@ -363,7 +368,7 @@ class adminEditView extends InsideView {
         echo "
                  <div id=\"menu\">
                 <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=addRoutes\">Add <br> Route</a><br>
+                       <a href=\"controller.php?cmd=showAddRoute\">Add <br> Route</a><br>
                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
                        
@@ -388,7 +393,8 @@ class adminEditView extends InsideView {
 
 }
 
-class adminAddRoute extends InsideView {
+// Renders the administrator add-route page.
+class AddRouteView extends AuthenticatedBaseView {
 
     public function __construct($info) {
         $this->top();
@@ -406,11 +412,11 @@ class adminAddRoute extends InsideView {
         echo "<div id=\"content\">
                   <h1> Administrator  -Add Route# - max. 8 </h1>
                   <FORM METHOD=\"post\" ACTION=\"controller.php\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"addRoute\">
+                    <input type=\"hidden\" name=\"cmd\" value=\"createRoute\">
                    
                     <input type=\"hidden\" name=\"index\" value=$info>";
         $DBM = new DBManager();
-        $DBM->displayStaticRoutes($info);
+        $DBM->displayRouteDetails($info);
         echo "<table>
                     <tr>
                         <td>Source:</td>
@@ -437,7 +443,7 @@ class adminAddRoute extends InsideView {
                         <td><input type=\"number\" name=\"Price\"></td>
                     </tr>
                     <tr>
-                        <td><input type=\"submit\" value=\"addRoute\"></td>
+                        <td><input type=\"submit\" value=\"createRoute\"></td>
                         <td></td>
 
                     </tr> 
@@ -480,7 +486,7 @@ class adminAddRoute extends InsideView {
         echo "
                  <div id=\"menu\">
                 <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
+                       <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
                        <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
                        
@@ -525,11 +531,11 @@ class adminAddRoute extends InsideView {
   echo "<div id=\"content\">
   <h1> Administrator  -Add Route# - max. 8 </h1>
   <FORM METHOD=\"post\" ACTION=\"controller.php\">
-  <input type=\"hidden\" name=\"cmd\" value=\"addRoute\">
+  <input type=\"hidden\" name=\"cmd\" value=\"createRoute\">
 
   <input type=\"hidden\" name=\"index\" value=$info>";
   $DBM = new DBManager();
-  $DBM->displayStaticRoutes($info);
+  $DBM->displayRouteDetails($info);
   echo "<table>
   <tr>
   <td>Source:</td>
@@ -556,7 +562,7 @@ class adminAddRoute extends InsideView {
   <td><input type=\"number\" name=\"Price\"></td>
   </tr>
   <tr>
-  <td><input type=\"submit\" value=\"addRoute\"></td>
+  <td><input type=\"submit\" value=\"createRoute\"></td>
   <td></td>
 
   </tr>
@@ -604,7 +610,7 @@ class adminAddRoute extends InsideView {
   public function menu(){
   echo "
   <div id=\"menu\">
-  <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
+  <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
   <a href=\"controller.php?cmd=suspendUsers\">View<br> Manifest</a><br>
   <a href=\"controller.php?cmd=logout\">logout</a><br>
 
@@ -634,7 +640,8 @@ class adminAddRoute extends InsideView {
   }
   } */
 
-class adminManifest extends InsideView {
+// Renders the administrator flight manifest date list.
+class FlightManifestView extends AuthenticatedBaseView {
 
     public function __construct($info) {
         $this->top();
@@ -656,12 +663,12 @@ class adminManifest extends InsideView {
                    
                     <input type=\"hidden\" name=\"index\" value=$info>";
         $DBM = new DBManager();
-        $DBM->displayActiveRoutes($info);
+        $DBM->displayBookedFlights($info);
         echo "<table>
                     <tr>
                         <td> 
                     <tr>
-                        <td><input type=\"submit\" value=\"addRoute\"></td>
+                        <td><input type=\"submit\" value=\"createRoute\"></td>
                         <td></td>
 
                     </tr> 
@@ -704,8 +711,8 @@ class adminManifest extends InsideView {
         echo "
                  <div id=\"menu\">
                 <a href=\"controller.php\">Public home</a> &nbsp;             
-                       <a href=\"controller.php?cmd=defaultAdmin\">Edit <br> Route</a><br>
-                       <a href=\"controller.php?cmd=manifest\">View<br> Manifest</a><br>
+                       <a href=\"controller.php?cmd=showAdminDashboard\">Edit <br> Route</a><br>
+                       <a href=\"controller.php?cmd=showFlightManifest\">View<br> Manifest</a><br>
                        <a href=\"controller.php?cmd=logout\">logout</a><br>
                        
             </div>
@@ -729,7 +736,8 @@ class adminManifest extends InsideView {
 
 }
 
-class registerView extends OutsideView {
+// Renders the customer registration form.
+class RegistrationView extends PublicBaseView {
 
     public function __construct() {
         $info = 0;
@@ -746,10 +754,10 @@ class registerView extends OutsideView {
     public function menu($info = false) {
         echo '<nav id="menu" class="old" aria-label="Main navigation">
             <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=search">Search flights</a>
-            <a href="controller.php?cmd=login">Login</a>
-            <a href="controller.php?cmd=register">Register</a>
-            <a href="controller.php?cmd=login">Staff / admin</a>
+            <a href="controller.php?cmd=searchFlights">Search flights</a>
+            <a href="controller.php?cmd=showLogin">Login</a>
+            <a href="controller.php?cmd=showRegistration">Register</a>
+            <a href="controller.php?cmd=showLogin">Staff / admin</a>
         </nav>';
     }
 
@@ -761,7 +769,7 @@ class registerView extends OutsideView {
 	<div id=\"content\">
                   <h1> Register </h1>
                     <form action=\"controller.php\" method=\"post\">
-                <input type=\"hidden\" name=\"cmd\" value=\"registerRequest\">
+                <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
                 <table>
                     <tr>
                         <td>username:</td>
@@ -819,19 +827,19 @@ class registerView extends OutsideView {
 //      * Stores the selection under the next numeric cart ID, then
 //      * increments the ID for the next item.
 //      */
-//     function addToCart($ticketInfo) {
+//     function addFlight($ticketInfo) {
 
 //         // adding a numeric key to the cardElements array
 //         $this->cartElements[$this->cartID] = $ticketInfo;
 //         $this->cartID++;
 //     }
 
-//     function deleteFromCart($cartID) {
+//     function removeFlight($cartID) {
 //         unset($this->cartElements[$cartID]);
 //     }
 
 //     /*
-//       function updateTransactions($username,$email,$CreditCardNo,$PassportNo){
+//       function recordBookings($username,$email,$CreditCardNo,$PassportNo){
 //       $DBM = new DBManager();
 
 //       $cartIds = array_keys($this->cartElements);
@@ -843,7 +851,7 @@ class registerView extends OutsideView {
 //       $nmrSeats=$this->cartElements[$cartID]['seatCount'];
 //       $seatNumber=$this->cartElements[$cartID]['seatCount'];
 
-//       $DBM->processTransaction($username,$email,$CreditCardNo,$PassportNo,$this->cartElements[$cartID]['route'],$this->cartElements[$cartID]['date'],$this->cartElements[$cartID]['seatCount']);
+//       $DBM->recordPassengerBooking($username,$email,$CreditCardNo,$PassportNo,$this->cartElements[$cartID]['route'],$this->cartElements[$cartID]['date'],$this->cartElements[$cartID]['seatCount']);
 //       unset($this->cartElements[$cartID]);
 //       }
 //       }
@@ -851,7 +859,7 @@ class registerView extends OutsideView {
 
 //     //put in the form here for the loops
 //     // put '2' in for the changes made by user
-//     function updateTransactions($username, $email, $CreditCardNo, $PassportNo) {
+//     function recordBookings($username, $email, $CreditCardNo, $PassportNo) {
 //         $DBM = new DBManager();
 
 //         $cartIds = array_keys($this->cartElements);
@@ -864,7 +872,7 @@ class registerView extends OutsideView {
 //             for ($j = 0; $j < 20; $j++) {
 //                 //    echo "<br> checking cart setting".$this->cartElements[$cartID]['seats'][$j];
 //                 if ("{$this->cartElements[$cartID]['seats'][$j]}" == "U") {
-//                     $DBM->processTransaction($username, $email, $CreditCardNo, $PassportNo, $this->cartElements[$cartID]['route'], $this->cartElements[$cartID]['date'], $j);
+//                     $DBM->recordPassengerBooking($username, $email, $CreditCardNo, $PassportNo, $this->cartElements[$cartID]['route'], $this->cartElements[$cartID]['date'], $j);
 //                     $this->cartElements[$cartID]['seats'][$j] = "Y";
 //                     $seatNumbers--;
 //                 }
@@ -923,14 +931,14 @@ class registerView extends OutsideView {
 
 
 
-//             echo '<a href="controller.php?cmd=delCheckoutItem&cartID=' . $cartID . '">delete</a>';
+//             echo '<a href="controller.php?cmd=removeCartItem&cartID=' . $cartID . '">delete</a>';
 
 
 //             echo "</p>";
 //         }
 //         echo "<br><a href=\"controller.php\">Back to search</a>";
-//         //      echo "<br><a href=\"controller.php?cmd=purchase\">Continue with purchase</a> &nbsp;";
-//         //     echo '<a href="controller.php?cmd=delCheckoutItem&cartID='.$cartID.'">delete</a>';
+//         //      echo "<br><a href=\"controller.php?cmd=showPassengerDetails\">Continue with purchase</a> &nbsp;";
+//         //     echo '<a href="controller.php?cmd=removeCartItem&cartID='.$cartID.'">delete</a>';
 //         //         print_r($this->cartElements); 
 //         echo "</p>";
 //     }
@@ -949,7 +957,7 @@ class registerView extends OutsideView {
 //      * itself confirm a reservation in the database.
 //      */
 
-//     function processFromCart() {
+//     function processSeatSelections() {
 
 //         $cartIds = array_keys($this->cartElements);
 //         //need to compare both clicked and updated    
@@ -997,7 +1005,7 @@ class registerView extends OutsideView {
          * Stores the supplied flight information under the current cart ID,
          * then increments the ID for the next item.
          */
-        function addToCart($ticketInfo) {
+        function addFlight($ticketInfo) {
 
             // Store the flight selection under a numeric key.
             $this->cartElements[$this->cartID] = $ticketInfo;
@@ -1013,7 +1021,7 @@ class registerView extends OutsideView {
          *
          * Removes the item from the in-memory cart array.
          */
-        function deleteFromCart($cartID) {
+        function removeFlight($cartID) {
             unset($this->cartElements[$cartID]);
         }
 
@@ -1021,7 +1029,7 @@ class registerView extends OutsideView {
         //put in the form here for the loops
         // put '2' in for the changes made by user
 
-        function updateTransactions($username,$email,$CreditCardNo,$PassportNo){
+        function recordBookings($username,$email,$CreditCardNo,$PassportNo){
         $DBM = new DBManager();
 
         $cartIds = array_keys($this->cartElements);
@@ -1033,7 +1041,7 @@ class registerView extends OutsideView {
         $nmrSeats=$this->cartElements[$cartID]['seatCount'];
         $seatNumber=$this->cartElements[$cartID]['seatCount'];
 
-        $DBM->processTransaction($username,$email,$CreditCardNo,$PassportNo,$this->cartElements[$cartID]['route'],$this->cartElements[$cartID]['date'],$this->cartElements[$cartID]['seatCount']);
+        $DBM->recordPassengerBooking($username,$email,$CreditCardNo,$PassportNo,$this->cartElements[$cartID]['route'],$this->cartElements[$cartID]['date'],$this->cartElements[$cartID]['seatCount']);
         unset($this->cartElements[$cartID]);
         }
         }
@@ -1050,13 +1058,13 @@ class registerView extends OutsideView {
          * @param string $PassportNo Passport number supplied to the method.
          *
          * For each cart item, examines seats marked "U", records each
-         * selected seat using DBManager::processTransaction(), and changes
+         * selected seat using DBManager::recordPassengerBooking(), and changes
          * the seat marker to "Y".
          *
          * Note: The current implementation contains a nested-loop issue
          * when removing cart items. Review before changing its behaviour.
          */
-        function updateTransactions($username, $email, $CreditCardNo, $PassportNo) {
+        function recordBookings($username, $email, $CreditCardNo, $PassportNo) {
             $DBM = new DBManager();
 
             $cartIds = array_keys($this->cartElements);
@@ -1073,7 +1081,7 @@ class registerView extends OutsideView {
                     if ("{$this->cartElements[$cartID]['seats'][$j]}" == "U") {
 
                         // Record the selected seat in the database.
-                        $DBM->processTransaction(
+                        $DBM->recordPassengerBooking(
                             $username,
                             $email,
                             $CreditCardNo,
@@ -1109,7 +1117,7 @@ class registerView extends OutsideView {
          *
          * Seat controls use "Y" for selected/occupied and "N" for unselected.
          * Newly selected seats are represented internally by "U" after
-         * processFromCart() handles the submitted form.
+         * processSeatSelections() handles the submitted form.
          */
         function displayCart() {
 
@@ -1163,7 +1171,7 @@ class registerView extends OutsideView {
                     echo "<br> ---- FLIGHT BOOKED OUT -- ";
 
                 // Link to remove this flight from the cart.
-                echo '<a href="controller.php?cmd=delCheckoutItem&cartID=' . $cartID . '">delete</a>';
+                echo '<a href="controller.php?cmd=removeCartItem&cartID=' . $cartID . '">delete</a>';
 
                 echo "</p>";
             }
@@ -1183,7 +1191,7 @@ class registerView extends OutsideView {
          * This updates the session cart only; it does not itself write
          * a booking to the database.
          */
-        function processFromCart() {
+        function processSeatSelections() {
 
             $cartIds = array_keys($this->cartElements);
 
@@ -1217,7 +1225,7 @@ class registerView extends OutsideView {
         }
     }
 
-    // class SearchView extends OutsideView {
+    // class FlightSearchView extends PublicBaseView {
 
     //     public function __construct($info) {
 
@@ -1232,10 +1240,10 @@ class registerView extends OutsideView {
     //     function searchDiv() {
 
     //         echo "<div id=\"content\">";
-    //         echo "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
+    //         echo "<a style=\"float:right;\" href=\"controller.php?cmd=showCheckout\">Go to checkout</a> &nbsp";
     //         echo "<div id=\"search\">
     //                 <form action=\"controller.php\" method=\"post\">
-    //                 <input type=\"hidden\" name=\"cmd\" value=\"search\">
+    //                 <input type=\"hidden\" name=\"cmd\" value=\"searchFlights\">
                 
     //                 <table>
     //                 <tr>
@@ -1285,7 +1293,7 @@ class registerView extends OutsideView {
     //                 </tr>    
                     
     //                 <tr><td>
-    //                         <input type=\"submit\" value=\"search\">
+    //                         <input type=\"submit\" value=\"searchFlights\">
     //                 </tr>    
                     
                     
@@ -1308,13 +1316,13 @@ class registerView extends OutsideView {
     //         $loggedIn = !empty($info) || isset($_COOKIE['username']);
     //         echo '<nav id="menu" class="old" aria-label="Main navigation">
     //             <a href="controller.php">Home</a>
-    //             <a href="controller.php?cmd=search">Search flights</a>';
+    //             <a href="controller.php?cmd=searchFlights">Search flights</a>';
     //         if ($loggedIn) {
-    //             echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
+    //             echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
     //         } else {
-    //             echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
+    //             echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
     //         }
-    //         echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
+    //         echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
     //     }
 
     //         function bottom() {
@@ -1324,10 +1332,10 @@ class registerView extends OutsideView {
     // }
 
     /**
-     * SearchView
+     * FlightSearchView
      *
      * Displays the flight-search page for the Airline2014 application.
-     * Extends OutsideView to reuse the public page layout.
+     * Extends PublicBaseView to reuse the public page layout.
      *
      * Provides a search form allowing users to:
      * - Select a flight route retrieved from the database.
@@ -1340,7 +1348,8 @@ class registerView extends OutsideView {
      * Also displays the page navigation and, when a username is
      * available, a welcome message.
      */
-    class SearchView extends OutsideView {
+    // Renders the flight search form.
+    class FlightSearchView extends PublicBaseView {
 
         // Build the flight-search page using the shared public-page layout.
         public function __construct($info) {
@@ -1365,12 +1374,12 @@ class registerView extends OutsideView {
             echo "<div id=\"content\">";
 
             // Provide a direct link to the checkout page.
-            echo "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
+            echo "<a style=\"float:right;\" href=\"controller.php?cmd=showCheckout\">Go to checkout</a> &nbsp";
 
             // Submit the search criteria to controller.php using the POST method.
             echo "<div id=\"search\">
                     <form action=\"controller.php\" method=\"post\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"search\">
+                    <input type=\"hidden\" name=\"cmd\" value=\"searchFlights\">
 
                     <table>
                     <tr>
@@ -1385,6 +1394,9 @@ class registerView extends OutsideView {
             // Retrieve the available routes, including their IDs and descriptions.
             $DBM = new DBManager();
             $data = $DBM->getAllRoutes();
+            $selectedRoute = $_SESSION['route'] ?? '';
+            $selectedSeatCount = $_SESSION['seatCount'] ?? '';
+            $selectedDate = $_SESSION['date'] ?? '';
 
             // Create one option in the route selector for each route returned by the database.
             for ($i = 0; $i < sizeof($data); $i++) {
@@ -1398,7 +1410,7 @@ class registerView extends OutsideView {
                 */
 
                 // Select the route stored in the session so the user's previous choice is retained.
-                if ($data[$i]['id'] == $_SESSION['route'])
+                if ($data[$i]['id'] == $selectedRoute)
                     echo "<option value=\"{$data[$i]['id']}\" selected> {$data[$i]['source']} - {$data[$i]['dest']}
                                         </option> ";
                 else
@@ -1416,7 +1428,7 @@ class registerView extends OutsideView {
                                     Number of tickets:
                                 </td>
                             <td>
-                            <input type=\"text\" name=\"seatCount\" value=\"{$_SESSION['seatCount']}\" size=\"3\" >
+                            <input type=\"text\" name=\"seatCount\" value=\"$selectedSeatCount\" size=\"3\" >
                             </td
                         </tr>
                     <tr>
@@ -1425,12 +1437,12 @@ class registerView extends OutsideView {
                         </td>
                             <td>
 
-                            <input id=\"startdate\" type=\"date\" name=\"date\" value=\"{$_SESSION['date']}\" >
+                            <input id=\"startdate\" type=\"date\" name=\"date\" value=\"$selectedDate\" >
                             </td>
                     </tr>
 
                     <tr><td>
-                            <input type=\"submit\" value=\"search\">
+                            <input type=\"submit\" value=\"searchFlights\">
                     </tr>
 
 
@@ -1446,7 +1458,7 @@ class registerView extends OutsideView {
         // Render the inherited page header, then show a welcome message when a username is available.
         function top($hasCookie = false) {
 
-            // Reuse the header implementation supplied by OutsideView.
+            // Reuse the header implementation supplied by PublicBaseView.
             parent::top($hasCookie);
 
             // Prefer the username cookie; fall back to the session username.
@@ -1468,18 +1480,18 @@ class registerView extends OutsideView {
 
             echo '<nav id="menu" class="old" aria-label="Main navigation">
                 <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=search">Search flights</a>';
+                <a href="controller.php?cmd=searchFlights">Search flights</a>';
 
             // Logged-in users are offered checkout and logout links.
             if ($loggedIn) {
-                echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
+                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
             } else {
                 // Guests can log in or register.
-                echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
+                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
             }
 
             // Staff/admin users are directed to the login entry point.
-            echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
+            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
         }
 
         // Delegate page-footer rendering to the parent class.
@@ -1492,12 +1504,12 @@ class registerView extends OutsideView {
 
 
     /**
-     * ResultsView
+     * FlightSearchResultsView
      *
      * Displays flight-search results for a selected route, ticket quantity
      * and travel date.
      *
-     * Extends SearchView to reuse the existing public-page layout,
+     * Extends FlightSearchView to reuse the existing public-page layout,
      * navigation and flight-search form.
      *
      * Checks a five-day date window around the requested travel date.
@@ -1507,7 +1519,8 @@ class registerView extends OutsideView {
      * Displays the calculated total price and allows the user to select
      * an available flight date and add the selection to the cart.
      */
-    class ResultsView extends SearchView {
+    // Renders available dates and seats for a flight search.
+    class FlightSearchResultsView extends FlightSearchView {
 
         private $route;
         private $seatCount;
@@ -1531,19 +1544,19 @@ class registerView extends OutsideView {
             $loggedIn = !empty($info) || isset($_COOKIE['username']);
             echo '<nav id="menu" class="old" aria-label="Main navigation">
                 <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=search">Search flights</a>';
+                <a href="controller.php?cmd=searchFlights">Search flights</a>';
             if ($loggedIn) {
-                echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
+                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
             } else {
-                echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
+                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
             }
-            echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
+            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
         }
 
         
         public function results() {
             $DBM = new DBManager();
-            $routeData = $DBM->getRoute($this->route);
+            $routeData = $DBM->getRouteById($this->route);
             $startDate = new DateTime($routeData[0]['start']);
             $endDate = new DateTime($routeData[0]['end']);
 
@@ -1553,7 +1566,7 @@ class registerView extends OutsideView {
 
             echo "<div>";
             echo "<form action=\"controller.php\" method=\"post\">";
-            echo "<input type=\"hidden\" name=\"cmd\" value=\"addToCart\">";
+            echo "<input type=\"hidden\" name=\"cmd\" value=\"addFlightToCart\">";
             echo "<input type=\"hidden\" name=\"route\" value=\"{$this->route}\">";
             echo "<input type=\"hidden\" name=\"seatCount\" value=\"{$this->seatCount}\">";
             echo "<input type=\"hidden\" name=\"date\" value=\"{$this->date}\">";
@@ -1610,7 +1623,8 @@ class registerView extends OutsideView {
      * Displays the passenger purchasing-details page, allowing guests to enter
      * their details or logged-in customers to retrieve their existing details.
      */
-    class purchaseView extends SearchView {
+    // Renders passenger and payment details for a purchase.
+    class PassengerDetailsView extends FlightSearchView {
 
         public function __construct($hasCookie) {
 
@@ -1626,13 +1640,13 @@ class registerView extends OutsideView {
             $loggedIn = !empty($info) || isset($_COOKIE['username']);
             echo '<nav id="menu" class="old" aria-label="Main navigation">
                 <a href="controller.php">Home</a>
-                <a href="controller.php?cmd=search">Search flights</a>';
+                <a href="controller.php?cmd=searchFlights">Search flights</a>';
             if ($loggedIn) {
-                echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
+                echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
             } else {
-                echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
+                echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
             }
-            echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
+            echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
         }
 
         
@@ -1646,13 +1660,13 @@ class registerView extends OutsideView {
 
             //      $info1=$info;
             echo "<div id=\"content\">";
-            //      echo   "<a style=\"float:right;\" href=\"controller.php?cmd=checkoutView\">Go to checkout</a> &nbsp";
-            //      echo "<a href=\"controller.php?cmd=login\">Login</a> &nbsp;";<a href
+            //      echo   "<a style=\"float:right;\" href=\"controller.php?cmd=showCheckout\">Go to checkout</a> &nbsp";
+            //      echo "<a href=\"controller.php?cmd=showLogin\">Login</a> &nbsp;";<a href
             if (!$hasCookie) {
 
                 echo" <h1> Ticket/Purchasing Details </h1>
                         <form action=\"controller.php\" method=\"post\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"customerRequest\">
+                    <input type=\"hidden\" name=\"cmd\" value=\"submitPassengerDetails\">
                     <table>
                         <tr>
                             <td>Name to be printed on ticket:</td>
@@ -1687,7 +1701,7 @@ class registerView extends OutsideView {
                 echo "we need to reteive data from db,display for editing";
                 $DBM = new DBManager();
 
-                $customerDetails = $DBM->handleretrieveCustomerdetails();
+                $customerDetails = $DBM->displaySavedCustomerDetails();
             }
 
 
@@ -1702,7 +1716,7 @@ class registerView extends OutsideView {
      * Displays the checkout page, including the shopping cart and controls
      * for submitting changes to the selected seats.
      */
-    class CheckoutView extends SearchView {
+    class CheckoutView extends FlightSearchView {
 
     private $route;
     private $seatCount;
@@ -1720,13 +1734,13 @@ class registerView extends OutsideView {
         $loggedIn = !empty($info) || isset($_COOKIE['username']);
         echo '<nav id="menu" class="old" aria-label="Main navigation">
             <a href="controller.php">Home</a>
-            <a href="controller.php?cmd=search">Search flights</a>';
+            <a href="controller.php?cmd=searchFlights">Search flights</a>';
         if ($loggedIn) {
-            echo '<a href="controller.php?cmd=checkoutView">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
+            echo '<a href="controller.php?cmd=showCheckout">Checkout</a><a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo '<a href="controller.php?cmd=login">Login</a><a href="controller.php?cmd=register">Register</a>';
+            echo '<a href="controller.php?cmd=showLogin">Login</a><a href="controller.php?cmd=showRegistration">Register</a>';
         }
-        echo '<a href="controller.php?cmd=login">Staff / admin</a></nav>';
+        echo '<a href="controller.php?cmd=showLogin">Staff / admin</a></nav>';
     }
 
     
@@ -1790,7 +1804,7 @@ class registerView extends OutsideView {
     /**
      * Authenticates a user and returns their role or "invalid".
      */
-        public function processLogin($username, $password) {
+        public function authenticateUser($username, $password) {
 
             $query = "select * from user";
             $resultSet = $this->db->query($query);
@@ -1808,7 +1822,7 @@ class registerView extends OutsideView {
         }
     
     /** Registers a new user, sets their session and cookie, and returns their details. */
-        public function addUser(&$hasCookie) {
+        public function registerUser(&$hasCookie) {
 
             $username = $_POST['username'];
             $password = $_POST['password'];
@@ -1863,7 +1877,7 @@ class registerView extends OutsideView {
     /**
      * Updates the price of a route in the database.
      */
-        public function updateRoute($value, $index) {
+        public function updateRoutePrice($value, $index) {
 
             $query = "update routes set price={$value} where id={$index}";
             $resultSet = $this->db->query($query);
@@ -1891,7 +1905,7 @@ class registerView extends OutsideView {
         /*
         * Retrieves a specific route from the database by its ID.
          */
-        function getRoute($id) {
+        function getRouteById($id) {
             $query = "select * from routes where id=$id";
 
             //db is a PDO object
@@ -1903,7 +1917,7 @@ class registerView extends OutsideView {
         /*
         * Inserts the two predefined sample routes into the database.
          */
-        public function loadRoutes() {
+        public function insertSampleRoutes() {
 
             $query = "INSERT INTO routes 
                                     (source, dest, start, end, price) 
@@ -1925,7 +1939,7 @@ class registerView extends OutsideView {
         /*
         * Displays all routes with controls for deletion and links to edit them.
         */
-        public function displayRoutes() {
+        public function displayRouteManagementList() {
 
             $query = "select DISTINCT * from routes";
             $resultSet = $this->db->query($query);
@@ -1946,7 +1960,7 @@ class registerView extends OutsideView {
                 $dummy1 = "r" . $i;
                 echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" >";
                 echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\" checked>";
-                echo "<a href=\"controller.php?cmd=editroute&amp;routeid={$route['id']}\"> $dummy       </a><br>";
+                echo "<a href=\"controller.php?cmd=showEditRoute&amp;routeid={$route['id']}\"> $dummy       </a><br>";
                 //  echo $dummy."<br> ";    
             }
             return $resultSet;
@@ -1955,7 +1969,7 @@ class registerView extends OutsideView {
         /*
         * Displays route details in text areas. 
         */
-        public function displayStaticRoutes() {
+        public function displayRouteDetails() {
 
             $query = "select * from routes";
             $resultSet = $this->db->query($query);
@@ -1974,7 +1988,7 @@ class registerView extends OutsideView {
         /*
         * Displays the distinct route and date combinations with passenger bookings. 
         */
-        public function displayActiveRoutes($info) {
+        public function displayBookedFlights($info) {
 
             $query = "select DISTINCT route,date from passangers order by date";
             $resultSet = $this->db->query($query);
@@ -1982,7 +1996,7 @@ class registerView extends OutsideView {
             for ($i = 0; $i < $resultSet->rowCount(); $i++) {
                 $passangers = $resultSet->fetch();
                 $dummy = "{$passangers['route']} {$passangers['date']}";
-                echo "<a href=\"controller.php?cmd=openflight&amp;routeid={$passangers['route']}&amp;dateid={$passangers['date']}\"> $dummy</a><br>";
+                echo "<a href=\"controller.php?cmd=showFlightDetails&amp;routeid={$passangers['route']}&amp;dateid={$passangers['date']}\"> $dummy</a><br>";
 
                 /*   echo " <textarea name=\"textarea\" ROWS=6 COLS=50>";                 
                 echo "Source:      {$route['source']} \nDestination: {$route['dest']}&nbsp;\nStart:       {$route['start']} &nbsp\nEnd:         {$route['end']}&nbsp;\nPrice:       {$route['price']}";
@@ -1995,7 +2009,7 @@ class registerView extends OutsideView {
         /*
         * /** Displays the details and price of the specified route for editing.
         */
-        public function displayEditRoutes($info) {
+        public function displayRouteForEditing($info) {
 
             $query = "select DISTINCT * from routes";
             $resultSet = $this->db->query($query);
@@ -2015,7 +2029,7 @@ class registerView extends OutsideView {
         /*
         * Deletes routes selected through the submitted form. 
         */
-        function deleteRoutes() {
+        function deleteSelectedRoutes() {
 
 
             $query = "select * from routes";
@@ -2036,7 +2050,7 @@ class registerView extends OutsideView {
         /*
         * Adds a new route with its source, destination, operating dates and price.
         */
-        public function addRoute($source, $destination, $fromDate, $toDate, $price) {
+        public function createRoute($source, $destination, $fromDate, $toDate, $price) {
             //  echo "/n".$fromDate;
             $from1 = $fromDate->format('Y-M-D');
 
@@ -2063,7 +2077,7 @@ class registerView extends OutsideView {
         /*
         * Returns the number of routes in the database. 
         */
-        public function checkNmrroutes() {
+        public function countRoutes() {
 
             $query = "select * from routes";
             $resultSet = $this->db->query($query);
@@ -2073,7 +2087,7 @@ class registerView extends OutsideView {
         /*
         * Retrieves a customer's saved details and displays them in the purchasing form.
         */
-        public function handleretrieveCustomerdetails() {
+        public function displaySavedCustomerDetails() {
 
             $query = "select * from user";
             $resultSet = $this->db->query($query);
@@ -2087,7 +2101,7 @@ class registerView extends OutsideView {
                     //        echo $customer['username'];  
                     echo" <h1> Ticket/Purchasing Details </h1>
                             <form action=\"controller.php\" method=\"post\">
-                            <input type=\"hidden\" name=\"cmd\" value=\"customerRequest\">
+                            <input type=\"hidden\" name=\"cmd\" value=\"submitPassengerDetails\">
                             <table>
                             <tr>
                     '      <td>Name as per records:</td>
@@ -2125,7 +2139,7 @@ class registerView extends OutsideView {
         /*
         * Records a passenger booking, including route, date, seat and customer details.
         */
-        public function processTransaction($username, $email, $CreditCardNo, $PassportNo, $route, $date, $seatNo) {
+        public function recordPassengerBooking($username, $email, $CreditCardNo, $PassportNo, $route, $date, $seatNo) {
 
 
 
@@ -2165,7 +2179,7 @@ class registerView extends OutsideView {
         /*
         * Displays passenger and seat-occupancy information for a specified date and the session route. 
         */
-        public function processSeating($date) {
+        public function displaySeatOccupancy($date) {
             $seats = array(
                 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0,
@@ -2217,7 +2231,7 @@ class registerView extends OutsideView {
         /*
         * Marks occupied seats and calculates the number of free seats for a specified date and route. 
         */
-        public function processSeating1($date, $nmrSeats, &$seats, &$freeSeats) {
+        public function calculateAvailableSeats($date, $nmrSeats, &$seats, &$freeSeats) {
 
             $Total = 0;
             $query1 = "select * from passangers ";
@@ -2242,7 +2256,7 @@ class registerView extends OutsideView {
         /*
         * Displays flight details, passenger information, ticket price and calculated revenue.
          */
-        public function processdisplayFlightdetails($date, $route) {
+        public function displayFlightManifestDetails($date, $route) {
             echo "<br> Route: " . $route;
             echo "<br> Date:  " . $date;
             $query = "select * from routes where id={$route} ";
@@ -2267,4 +2281,3 @@ class registerView extends OutsideView {
 
     }
 ?>
-
