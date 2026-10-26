@@ -1,222 +1,62 @@
 # Airline2026
 
-Airline2026 is a restoration and development project based on an original 2014 PHP airline booking application. It provides customer booking and administrator route-management workflows backed by a MySQL database.
+Airline2026 restores and develops an original 2014 PHP airline booking application. It preserves the historical server-rendered MVC style while providing customer booking, passenger and seat handling, and administrator route and manifest workflows.
 
-The goal is to preserve the original PHP architecture, MVC structure, and interface while restoring functionality, improving code clarity, and introducing carefully scoped enhancements. The application is being extended incrementally rather than rewritten.
+The original application was developed as part of the **Higher Diploma in Cloud and Mobile with Data Science**. This project is a local restoration and development reference, not a replacement rewrite. Its interface and naming retain many conventions from the 2014 application.
 
-Originally developed as part of the **Higher Diploma in Cloud and Mobile with Data Science**, the project reflects the web development practices and conventions of its time.
+![Home screen](assets/Images/newHome.jpg)
 
-| Screen | Description |
-|---|---|
-| ![Home screen](assets/Images/newHome.jpg) | Guest home screen with route, ticket, and date search |
+## Technology
 
-## Technologies
+- PHP with PDO
+- MySQL 5.7 for the current local database
+- Server-rendered HTML forms and PHP views
+- JavaScript where present in the legacy interface
+- CSS in [`mystyles.css`](mystyles.css) and [`insidestyles.css`](insidestyles.css)
+- PHP sessions and cookies for login and cart state
 
-- PHP, using server-rendered HTML views
-- MySQL
-- PDO for database access
-- HTML forms
-- CSS (`mystyles.css` and `insidestyles.css`)
-- PHP sessions and cookies for cart and login state
-- JavaScript for interactive features where appropriate
+The original SQL dump was produced in the PHP 5.4.19, MySQL 5.5.32, and phpMyAdmin 4.0.4.1 era. The current standalone database script targets MySQL 5.7. The application remains primarily server-rendered; there is no separate JavaScript application in this repository.
 
-The application retains its legacy PHP/MVC structure. The current local development environment uses PHP 8.4.26 and MySQL on `127.0.0.1:3307`. The local database is named `airline2026`.
+## Functionality
 
-## Current Database
+### Customer booking workflow
 
-The database has been extended beyond the original route-and-passenger model. The current setup script is `airline2026_with_aircraft_and_test_data.sql`, which has been imported successfully into the local `airline2026` database.
+The existing PHP source implements the following customer workflow:
 
-The database contains nine tables:
+- Search routes by origin, destination, travel date, and number of tickets
+- Display matching route and travel-date results
+- Check availability using the legacy 20-seat flight model
+- Add a provisional flight to the session-backed cart
+- Select seats, review cart items, update seats, and remove cart items
+- Register a customer account or continue as a guest
+- Log in and log out
+- Enter passenger name, passport, email, and payment details
+- Record passenger and seat information in the database
 
-| Table | Purpose |
-|---|---|
-| `login` | Legacy login-related records |
-| `user` | Customer account records |
-| `routes` | Route definitions, operating dates, origin, destination and price |
-| `flights` | Individual scheduled flights, including flight code, date, aircraft, capacity and timing fields |
-| `aircraft` | Aircraft configurations and seating capacities |
-| `aircraft_seats` | Individual seat numbers, labels and premium-seat designations |
-| `passangers` | Legacy passenger and seat-booking records; the original spelling is retained |
-| `booking` | Booking-level records and status |
-| `booking_flights` | Links bookings to flights and records itinerary order |
+### Administrator workflow
 
-The imported test data currently contains:
+The existing PHP application provides administrator workflows to:
 
-- 12 routes
-- 14 user records
-- 3 login records
-- 2 aircraft configurations
-- 400 configured aircraft seats
-- 2,788 flight records
-- 34 passenger records
-- 15 bookings
-- 15 booking-to-flight links
+- Log in to the administration area
+- View active routes
+- Add routes with operating dates and prices
+- Edit route prices
+- Delete routes
+- View the flight manifest
+- Open flight details, including passenger and seat information
+- View route and passenger data used to calculate flight revenue
 
-These figures describe the current local test database and are not intended as production data.
-
-### Aircraft and Seat Configuration
-
-Two aircraft configurations are included:
-
-| Aircraft code | Configured capacity | Premium seats |
-|---|---:|---:|
-| `AC180` | 180 | 18 |
-| `AC220` | 220 | 18 |
-
-The `aircraft_seats` table defines the seat layout for each aircraft, including seat numbers, labels and premium-seat markers.
-
-Seat availability is flight-specific. A seat may be available on one flight and occupied on another, even when both flights use the same aircraft configuration. Availability must therefore be checked against the selected flight and its passenger bookings.
-
-The intended seat-selection interface will use individual clickable HTML/CSS elements rather than hotspots over a static aircraft image. JavaScript will manage the selection interaction, while PHP and MySQL will validate availability and persist bookings.
-
-The legacy `passangers` table and its existing constraints have been retained for compatibility while the PHP dependencies are reviewed. Its current route/date/seat uniqueness constraint must be reviewed before implementing flight-specific duplicate-seat prevention.
-
-### Flight Information
-
-The extended `flights` table introduces individual scheduled departures associated with a route and travel date.
-
-The new schema includes fields for:
-
-- Flight code
-- Route and flight date
-- Aircraft assignment
-- Seat capacity
-- Scheduled departure and arrival times
-- Expected departure and arrival times
-- Flight price and status
-
-The demonstration data includes generated flight records. The current timings and flight codes are test data and must be checked before being treated as real schedules.
-
-The new schema has been imported successfully. The existing web page still loads, but this confirms only basic application/database connectivity. Flight searches, booking operations, administration workflows and seat availability still need to be tested against the extended database.
-
-## Existing Application Features
-
-The original application includes the following customer and administrator workflows. Their individual behaviour remains subject to testing against the updated schema.
-
-### Customer Workflow
-
-- Register a customer account or log in.
-- Search routes by origin, destination, travel date and number of tickets.
-- Display matching route and travel-date results.
-- Work with the original 20-seat flight model in the legacy implementation.
-- Select seats and add provisional flights to the session-backed cart.
-- Review, update or remove cart items.
-- Enter passenger, passport, email and payment details.
-- Record passenger and seat information in the database.
-- Log out.
-
-The original 20-seat model is part of the legacy implementation. The extended database now contains aircraft configurations with capacities of 180 and 220 seats. The PHP booking workflow must be adapted and tested to use the new configuration correctly.
-
-### Administration Workflow
-
-The original application includes administration functions for:
-
-- Viewing active routes.
-- Adding routes with operating dates and prices.
-- Editing route prices.
-- Deleting routes.
-- Viewing flight manifests.
-- Opening flight details, including passenger and seat information.
-- Viewing route and passenger information used to calculate flight revenue.
-
-Aircraft configuration and seat administration will be considered as part of the next development stages.
-
-## Development Plan
-
-The application will be extended incrementally, starting with the existing home page.
-
-### 1. Home Page
-
-The first task is to inspect the existing home-page view, controller routing, database calls and CSS dependencies.
-
-The aim is to understand the current implementation before making changes. The existing header, menu, footer, fixed-width layout and general Airline2014 character should be preserved wherever practical.
-
-The home page will provide the starting point for integrating the new flight information.
-
-### 2. Flight Information
-
-The next step is to check how the application retrieves and displays routes and scheduled flights.
-
-Where appropriate, the interface will be extended to display flight codes, dates, departure and arrival times, and prices using the new database fields.
-
-Existing controller, view and database methods will be reviewed before they are changed.
-
-### 3. Three-Pane Booking Interface
-
-The proposed booking interface will build on the existing views and CSS rather than replace them.
-
-The central transactional area will contain three panes:
-
-1. **Search criteria:** origin, destination, travel date, passenger count and journey type.
-2. **Available flights:** matching departures for the current search or itinerary leg.
-3. **Selected itinerary:** selected flights in order, with dates, seat selections and a running total.
-
-The layout should support single-flight bookings, return journeys and multi-city itineraries as the booking workflow is extended.
-
-The original public and authenticated view structures will be retained wherever practical. New styles will be scoped to the relevant booking layout to minimise unintended effects on legacy pages.
-
-### 4. Interactive Seat Map
-
-The seat-selection interface will represent the aircraft from an overhead perspective, using individual clickable HTML/CSS seat elements.
-
-Seat states will distinguish between:
-
-- Available seats
-- The currently selected seat
-- Unavailable or occupied seats
-- Premium seats
-
-JavaScript will handle the interactive selection and update the booking pane. PHP and MySQL will validate the selected flight and seat before confirming a booking.
-
-The server must prevent duplicate seat bookings, regardless of what the browser displays.
-
-### 5. Booking and Itinerary Improvements
-
-Once the existing single-flight workflow has been reviewed and tested, the booking model can be extended to support complete itineraries.
-
-Planned enhancements include:
-
-- Grouping multiple flights into one booking.
-- Supporting separate outbound and return dates.
-- Supporting multi-city itineraries with flights in a defined order.
-- Maintaining consistent seat availability between search results, the cart and booking completion.
-- Recording booking status and passenger relationships accurately.
-
-These are planned enhancements, not claims that the full functionality is already implemented.
-
-## Database Design and Migration
-
-The original SQL setup file, `airline2013.sql`, contains the historical schema and sample data. The current extended setup is `airline2026_with_aircraft_and_test_data.sql`.
-
-The extended setup script is intended for a fresh test setup. It drops and recreates tables before inserting the schema and demonstration data.
-
-**Do not rerun the extended setup script against a database containing data you need to keep unless you have taken and checked a backup.**
-
-The current development database is named `airline2026`, hosted locally at `127.0.0.1:3307`.
-
-The database structure will be refined only after the existing PHP implementation and its dependencies have been reviewed. Existing table names, columns and methods should be retained wherever practical. Changes to keys, constraints and relationships must be checked against the code that reads and writes the affected tables.
-
-The development process will be:
-
-1. Inspect the home-page view, controller and database calls.
-2. Review the existing `DBManager`, `Cart` and seat-processing methods.
-3. Identify the minimum changes required to use the new flight and aircraft data.
-4. Adapt the existing PHP code in small, testable steps.
-5. Test the current customer and administrator workflows.
-6. Implement and test flight-specific seat availability.
-7. Extend the booking workflow only when the existing single-flight path is understood.
-
-The existing database connection remains the same when the tables are recreated; the schema and data inside the database are what have changed.
+The administrator account is `rmiller` / `rmiller`. The PHP controller authorizes this account by username. The database also retains the historical `login` table for compatibility.
 
 ## Screenshots
 
-The following screenshots document the existing application. They do not imply that the planned multi-flight booking and interactive seat-map enhancements have been completed.
+These existing captures document the original customer and administration workflows.
 
-### Customer Workflow
+### Customer workflow
 
 | Screen | Description |
 |---|---|
-| ![Home screen](assets/Images/homescreen.jpg) | Guest home screen with route, ticket and date search |
+| ![Home screen](assets/Images/homescreen.jpg) | Guest home screen with route, ticket, and date search |
 | ![Login](assets/Images/login.jpg) | Customer login form |
 | ![Registration](assets/Images/register.jpg) | Customer registration form |
 | ![Logged in](assets/Images/logged-in.jpg) | Search screen for a logged-in customer |
@@ -227,7 +67,7 @@ The following screenshots document the existing application. They do not imply t
 | ![Booked seats PNG](assets/Images/seats-booked.png) | Additional seat-allocation capture |
 | ![Purchase complete](assets/Images/purchased.jpg) | Completed purchase screen |
 
-### Administration Workflow
+### Administration workflow
 
 | Screen | Description |
 |---|---|
@@ -236,188 +76,168 @@ The following screenshots document the existing application. They do not imply t
 | ![Add route](admi-add-route.jpg) | Additional add-route capture |
 | ![Flight manifest](assets/Images/admi-view-mainfest.jpg) | Flight manifest and administration view |
 
-## Running Locally
+## Database installation
 
-The application uses `controller.php` as its entry point.
+[`airline2026.sql`](airline2026.sql) is the **single, self-contained database installation script**.
 
-1. Install PHP with the PDO MySQL extension and a local MySQL server.
-2. Create or select the local database `airline2026`.
-3. Check the database host, port, username, password and database name configured in `DBManager` in `library.php`.
-4. From PowerShell in the project directory, start the PHP development server:
+It creates the `airline2026` database from scratch, creates its tables, relationships, indexes, trigger and constraints, and inserts the initial fictional test data. The database is not installed through an initial import followed by a separate update script.
+
+The script is destructive: it drops and recreates the existing `airline2026` database. Any existing data in that database will be lost. It does not need the historical backup to run. The separate `airline2013` database is not the target of this setup.
+
+### Running the script locally
+
+From the project root, use the following command in the VS Code PowerShell terminal:
+
+```powershell
+Get-Content ".\airline2026.sql" | & "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql.exe" -u root -p -h 127.0.0.1 -P 3307
+```
+
+Enter the MySQL root password when prompted.
+
+This PowerShell command streams the local SQL file to the MySQL client. The script itself is responsible for creating the database, tables, constraints and initial data.
+
+### Flight-code generation and duplicate prevention
+
+The flight seed data generates flight codes using route identity and flight date. This addresses the earlier duplicate-entry error involving `PA101` on `2026-10-24`, which violated the unique `uq_flights_code_date` constraint.
+
+The corrected seed query also uses `SELECT DISTINCT` to eliminate duplicate rows from its selected results. The unique constraint on flight code and flight date remains in place as a database-level safeguard.
+
+`SELECT DISTINCT` does not replace the unique constraint: the generated values must still satisfy the database's uniqueness rules.
+
+### Verified local import results
+
+The corrected script completed successfully in the local MySQL 5.7 environment. Its verification output reported the following table counts:
+
+| Table | Reported rows |
+|---|---:|
+| `aircraft` | 2 |
+| `aircraft_seats` | 400 |
+| `booking` | 3 |
+| `booking_flights` | 3 |
+| `flights` | 2,788 |
+| `login` | 3 |
+| `passangers` | 6 |
+| `routes` | 12 |
+| `user` | 14 |
+
+These are the counts reported by the local import verification query. MySQL table statistics can be approximate where InnoDB statistics are used.
+
+The aircraft verification output reported:
+
+| Aircraft code | Capacity | Seat total | Premium seats |
+|---|---:|---:|---:|
+| `AC180` | 180 | 180 | 18 |
+| `AC220` | 220 | 220 | 18 |
+
+The SQL script also emits verification output for table counts, aircraft seat totals and duplicate passenger-seat groups.
+
+### Verifying the database
+
+After a successful import, connect to MySQL and run:
+
+```sql
+USE airline2026;
+SHOW TABLES;
+
+SELECT flight_code, flight_date, COUNT(*) AS duplicates
+FROM flights
+GROUP BY flight_code, flight_date
+HAVING COUNT(*) > 1;
+```
+
+The final query should return an empty result set if no duplicate flight-code/date combinations exist.
+
+To verify aircraft seat totals:
+
+```sql
+SELECT
+    aircraft_code,
+    capacity,
+    COUNT(aircraft_seats.aircraft_id) AS seat_total,
+    SUM(is_premium) AS premium_total
+FROM aircraft
+LEFT JOIN aircraft_seats USING (aircraft_id)
+GROUP BY aircraft_id, aircraft_code, capacity;
+```
+
+The expected configurations are 180 seats for `AC180` and 220 seats for `AC220`, with 18 premium seats per aircraft.
+
+## Tables and relationships
+
+| Table | Purpose and important columns |
+|---|---|
+| `login` | Historical login-compatible username/password rows |
+| `user` | Customer accounts: `id`, `username`, `password`, `email`, `CreditCardNo`, `passport`, `suspend` |
+| `routes` | Route definitions: `id`, `source`, `dest`, `start`, `end`, `price` |
+| `aircraft` | Aircraft configurations: `aircraft_id`, `aircraft_code`, `model`, `configuration_name`, `capacity` |
+| `aircraft_seats` | Individual seats: `aircraft_id`, `seat_no`, `seat_label`, `seat_row`, `seat_position`, `is_premium` |
+| `flights` | Dated departures: `flight_id`, `route_id`, `flight_date`, `flight_code`, `aircraft_id`, scheduled and expected times, `capacity`, `price`, `status` |
+| `booking` | Booking header and optional customer link: `booking_id`, `booking_reference`, `user_id`, `booking_status`, `created_at` |
+| `booking_flights` | Ordered booking-to-flight links: `booking_flight_id`, `booking_id`, `flight_id`, `sequence_no` |
+| `passangers` | Legacy-spelled passenger records: `id`, `name`, `passport`, `route`, `date`, `registered`, `registeredName`, `creditCardno`, `email`, `seatNo`, `flight_id`, `booking_flight_id` |
+
+Routes own flights. Flights reference routes and aircraft. Aircraft own their seat definitions. Bookings reference users where applicable and link to flights through `booking_flights`. Passenger records can reference routes, flights and optional booking-flight rows.
+
+The unique `passangers(flight_id, seatNo)` key prevents the same seat from being recorded twice on a flight. A trigger fills `flight_id` for compatible legacy PHP inserts that provide only route and date information.
+
+The database includes fictional 180-seat `AC180` and 220-seat `AC220` configurations. Individual seats have visual labels such as `1A`; seats 1 through 18 are marked premium. Flight capacity is intended to match the assigned aircraft.
+
+## Run locally
+
+The traditional PHP entry point is `controller.php`.
+
+1. Install PHP with the PDO MySQL extension and a local MySQL 5.7 server.
+2. Run [`airline2026.sql`](airline2026.sql) using the installation command above.
+3. From the project root, start the PHP development server:
 
    ```powershell
    & "C:\php-8.4.26\php.exe" -S localhost:8000
    ```
 
-5. Open [http://localhost:8000/controller.php](http://localhost:8000/controller.php).
+4. Open [http://localhost:8000/controller.php](http://localhost:8000/controller.php).
+5. Test guest route search, registration/login, cart seat selection, passenger submission, and the administrator route/manifest pages.
 
-The current local MySQL environment uses host `127.0.0.1` and port `3307`. Use the credentials configured for the local development environment.
+Use the fictional accounts in the SQL data for testing. The suspended sample user is `eoinnolan`; the current PHP authentication method does not enforce the `suspend` flag, so suspension is stored data rather than a complete application feature.
 
-The historical SQL file is named `airline2013.sql`, even though the restored project is called Airline2026. The SQL filename and the local database name are separate things.
+The local PHP configuration in [`library.php`](library.php) uses host `127.0.0.1`, port `3307`, database `airline2026`, user `root`, and the configured local password. Check the local configuration on your own machine; development credentials must not be used in production.
 
-The original table spelling `passangers` is retained from the legacy source. It should not be renamed until all relevant PHP references and database dependencies have been checked.
+## Project structure
 
-## Project Structure
+- [`controller.php`](controller.php) — central GET/POST command router and request handlers
+- [`library.php`](library.php) — view classes, cart behavior, seat processing, and `DBManager`
+- [`airline2026.sql`](airline2026.sql) — standalone MySQL 5.7 database schema and test data
+- [`mystyles.css`](mystyles.css) — customer-facing styles
+- [`insidestyles.css`](insidestyles.css) — internal and administration styles
+- [`assets/Images/`](assets/Images/) — existing application screenshots
+- [`old/airline2026_backup.sql`](old/airline2026_backup.sql) — historical backup/reference only
 
-- [`controller.php`](controller.php) — central GET/POST command router and request handlers.
-- [`library.php`](library.php) — view classes, cart behaviour, seat processing and `DBManager`.
-- [`airline2013.sql`](airline2013.sql) — historical MySQL schema and sample data.
-- [`airline2026_with_aircraft_and_test_data.sql`](airline2026_with_aircraft_and_test_data.sql) — extended schema and seeded test data for aircraft, seats, flights and bookings.
-- [`mystyles.css`](mystyles.css) — customer-facing styles.
-- [`insidestyles.css`](insidestyles.css) — internal and administration styles.
-- [`assets/Images/`](assets/Images/) — existing application screenshots.
+The original interface uses a fixed-width layout of approximately 800 pixels and traditional CSS floats rather than a modern responsive framework. `controller.php` dispatches requests to the views and handlers in `library.php`; supporting classes handle page presentation, cart operations, seat processing, and database access.
 
-The original interface uses a fixed-width layout of approximately 800 pixels and traditional CSS floats rather than a modern responsive framework. The source also contains historical naming and implementation patterns from the 2014 project.
+## Planned booking enhancements
 
-The central controller dispatches requests to the relevant application logic and views. Supporting classes handle page presentation, cart operations, seat processing and database access. This original structure is retained as part of the restoration.
+The database now provides `booking`, `booking_flights`, and dated `flights` structures that can support future itinerary work. Potential future enhancements include:
 
-## Naming Register
+- Return journeys with separate outbound and return flights
+- Multi-city itineraries with ordered flight legs
+- Grouping several selected flights into one booking
+- Consistent flight search, availability, cart, and booking-completion logic
+- A three-pane search, available-flights, and selected-itinerary interface
+- More robust validation and parameterized database access
 
-The original 2014 application was developed under time constraints, and some class, method and controller command names reflect the conventions and experience of the time. The restoration documents these names alongside clearer alternatives.
+These are planned enhancements, not claims about functionality currently implemented by the PHP source. The current PHP code still searches routes, uses the session cart, displays 20 seat positions, and writes legacy `passangers` records.
 
-The principle is to preserve the working application and its original MVC structure. Classes and functions are renamed incrementally, with references checked and affected workflows tested. This is a controlled improvement to the existing code, not a redesign.
+## Backup and limitations
 
-The register distinguishes proposed names from changes that have been implemented and syntax-checked. Browser workflow testing remains environment-dependent.
+[`old/airline2026_backup.sql`](old/airline2026_backup.sql) is a retained historical backup/reference dump. It is not required for installation and must not be run in sequence with the standalone script.
 
-### 1. View Classes
+Known limitations include:
 
-| Original name | Clearer name | Status |
-|---|---|---|
-| `OutsideView` | `PublicBaseView` | Implemented; syntax-checked |
-| `InsideView` | `AuthenticatedBaseView` | Implemented; used by administrator views |
-| `loginView` | `LoginView` | Implemented; syntax-checked |
-| `registerView` | `RegistrationView` | Implemented; syntax-checked |
-| `adminView` | `AdminRoutesView` | Implemented; syntax-checked |
-| `adminEditView` | `EditRouteView` | Implemented; syntax-checked |
-| `adminAddRoute` | `AddRouteView` | Implemented; syntax-checked |
-| `adminManifest` | `FlightManifestView` | Implemented; syntax-checked |
-| `SearchView` | `FlightSearchView` | Implemented; syntax-checked |
-| `ResultsView` | `FlightSearchResultsView` | Implemented; syntax-checked |
-| `purchaseView` | `PassengerDetailsView` | Implemented; syntax-checked |
-| `CheckoutView` | `CheckoutView` | Keep — already clear |
-| `Cart` | `Cart` | Keep — already clear |
-| `DBManager` | `DBManager` | Keep — already clear |
+- The active cart UI displays only 20 zero-based seat positions.
+- PHP does not yet render the full 180/220-seat aircraft map or query the `flights` table during search.
+- Passwords are stored and compared in plain text for legacy compatibility.
+- Several PHP queries use string interpolation rather than prepared statements.
+- The `suspend` field is stored but not enforced by the current authentication method.
+- Payment details are fictional test data; there is no production payment processing.
+- The project is not a production-ready airline operations or booking system.
 
-### 2. Controller Commands
-
-Controller commands are values submitted through URLs, links or HTML forms. The `dispatchRequest()` function in `controller.php` reads the `cmd` value and dispatches the request through a `switch` statement.
-
-| Original command | Clearer command | Status |
-|---|---|---|
-| Empty command (`""`) | `showHome` or retain the default route | Review |
-| `login` | `showLogin` | Implemented; syntax-checked |
-| `register` | `showRegistration` | Implemented; syntax-checked |
-| `loginRequest` | `authenticateUser` | Implemented; syntax-checked |
-| `registerRequest` | `registerUser` | Implemented; syntax-checked |
-| `search` | `searchFlights` | Implemented; syntax-checked |
-| `addToCart` | `addFlightToCart` | Implemented; syntax-checked |
-| `Update` | `updateCartSeats` | Implemented; syntax-checked |
-| `checkoutView` | `showCheckout` | Implemented; syntax-checked |
-| `customerRequest` | `submitPassengerDetails` | Implemented; syntax-checked |
-| `delCheckoutItem` | `removeCartItem` | Implemented; syntax-checked |
-| `purchase` | `showPassengerDetails` | Implemented; syntax-checked |
-| `editroute` | `showEditRoute` | Implemented; syntax-checked |
-| `amendroute` | `updateRoute` | Implemented; syntax-checked |
-| `deleteRoutes` | `deleteSelectedRoutes` | Implemented; syntax-checked |
-| `addRoutes` | `showAddRoute` | Implemented; syntax-checked |
-| `addRoute` | `createRoute` | Implemented; syntax-checked |
-| `manifest` | `showFlightManifest` | Implemented; syntax-checked |
-| `openflight` | `showFlightDetails` | Implemented; syntax-checked |
-| `defaultAdmin` | `showAdminDashboard` | Implemented; syntax-checked |
-| `viewdate` | `showFlightDate` | Deferred — renders results and processes seating |
-| `logout` | `logout` | Keep — already clear |
-
-The empty command selects a default view based on the user's cookie and remains unchanged. The `viewdate` command performs more than one action, so its proposed replacement was deferred rather than forcing a narrower name.
-
-### 3. Controller Handler Functions
-
-A controller command and the PHP function that processes it are separate elements. Their names are recorded separately where they differ.
-
-| Original function | Clearer name | Responsibility |
-|---|---|---|
-| `main()` | `dispatchRequest()` | Implemented; reads the command and selects the appropriate action |
-| `validateDate()` | `isValidDate()` | Implemented; validates a date against a specified format |
-| `handleSearch()` | `handleFlightSearch()` | Implemented; validates search inputs and displays flight results |
-| `handleAddToCart()` | `handleAddFlightToCart()` | Implemented; checks seat availability and adds a provisional flight |
-| `handleAdduser()` | `handleUserRegistration()` | Implemented; registers a user through `DBManager` |
-| `handleUpdateprice()` | `handleRoutePriceUpdate()` | Implemented; updates a route's price |
-| `handleDeleteroutes()` | `handleRouteDeletion()` | Implemented; deletes selected routes |
-| `handleAddNewRoute()` | `handleRouteCreation()` | Implemented; validates operating dates and adds a route |
-| `handleAddtransation()` | `handlePassengerDetailsSubmission()` | Implemented; saves submitted customer details to cart transaction data |
-| `handleViewManifest()` | `handleFlightManifestRequest()` | Implemented; displays the administrator's flight manifest |
-| `handleLogin()` | `handleUserAuthentication()` | Implemented; authenticates the user and displays the appropriate view |
-| `handleSeating()` | `handleSeatOccupancyRequest()` | Implemented; requests seat occupancy information |
-| `handleprocessCart()` | `handleCartProcessing()` | Implemented rename; existing `DBManager::processCart()` call remains unresolved |
-| `handledisplayFlightdetails()` | `handleFlightDetailsRequest()` | Implemented; retrieves flight and passenger details |
-
-`isValidDate()` remains unused, as was the original function. `handleCartProcessing()` still calls the pre-existing `DBManager::processCart()` name; no method was invented or changed because that method is absent from the active `DBManager` implementation.
-
-### 4. `DBManager` Methods
-
-| Original method | Clearer name | Status |
-|---|---|---|
-| `processLogin()` | `authenticateUser()` | Implemented; syntax-checked |
-| `addUser()` | `registerUser()` | Implemented; syntax-checked |
-| `updateRoute()` | `updateRoutePrice()` | Implemented; syntax-checked |
-| `checkSeats()` | `hasAvailableSeats()` | Deferred — implementation returns `true` unconditionally |
-| `getAllRoutes()` | `getAllRoutes()` | Keep |
-| `getRoute()` | `getRouteById()` | Implemented; syntax-checked |
-| `loadRoutes()` | `insertSampleRoutes()` | Implemented; inserts predefined sample routes |
-| `displayRoutes()` | `displayRouteManagementList()` | Implemented; syntax-checked |
-| `displayStaticRoutes()` | `displayRouteDetails()` | Implemented; syntax-checked |
-| `displayActiveRoutes()` | `displayBookedFlights()` | Implemented; lists booked route/date combinations |
-| `displayEditRoutes()` | `displayRouteForEditing()` | Implemented; syntax-checked |
-| `deleteRoutes()` | `deleteSelectedRoutes()` | Implemented; syntax-checked |
-| `addRoute()` | `createRoute()` | Implemented; syntax-checked |
-| `checkNmrroutes()` | `countRoutes()` | Implemented; syntax-checked |
-| `handleretrieveCustomerdetails()` | `displaySavedCustomerDetails()` | Implemented; syntax-checked |
-| `processTransaction()` | `recordPassengerBooking()` | Implemented; records passenger and seat data |
-| `processSeating()` | `displaySeatOccupancy()` | Implemented; syntax-checked |
-| `processSeating1()` | `calculateAvailableSeats()` | Implemented; syntax-checked |
-| `processdisplayFlightdetails()` | `displayFlightManifestDetails()` | Implemented; syntax-checked |
-
-Some proposed names are deliberately descriptive and may be shortened after their responsibilities and call sites have been checked. Names should reflect what methods actually do.
-
-### 5. `Cart` Methods
-
-| Original method | Clearer name | Status |
-|---|---|---|
-| `addToCart()` | `addFlight()` | Implemented; syntax-checked |
-| `deleteFromCart()` | `removeFlight()` | Implemented; syntax-checked |
-| `updateTransactions()` | `recordBookings()` | Implemented; records selected cart seats |
-| `displayCart()` | `displayCart()` | Keep |
-| `processFromCart()` | `processSeatSelections()` | Implemented; syntax-checked |
-
-### 6. Naming Conventions
-
-- **Classes:** PascalCase, for example `FlightSearchView` and `RegistrationView`.
-- **Methods and functions:** camelCase, for example `getRouteById()` and `recordPassengerBooking()`.
-- **Controller commands:** descriptive camelCase values, for example `searchFlights` and `showCheckout`.
-- **Database methods:** names that describe the operation and the object being acted on.
-- **Legacy names:** retain original names in this register with their final status.
-
-Names belonging to different application layers should remain distinguishable. A controller command, controller handler and `DBManager` method are related but separate elements.
-
-### 7. Renaming Process
-
-Changes will be made in small, related groups:
-
-1. Document existing classes, methods, controller commands and handlers.
-2. Check each proposed name against the actual implementation and its callers.
-3. Confirm that the replacement accurately describes the code's behaviour.
-4. Rename one related group at a time.
-5. Search for references to original names and update relevant links, forms, dispatch conditions and method calls.
-6. Test the affected workflow.
-7. Mark a change as implemented or tested only after verifying it.
-
-Archived files under [`old/`](old/) were not renamed because they are historical snapshots and are not loaded by the active `controller.php` entry point. The active implementation also contains a commented historical `Cart` example; it is non-executable reference text.
-
-## Legacy Status and Future Work
-
-Airline2026 is a historical and educational application, not a production-ready booking system.
-
-The immediate objective is to preserve the original application, document its functionality, and establish a working local reference. The next stage begins with the home page and its existing controller, view, CSS and database dependencies.
-
-Before real-world use, the application would require a security and reliability review, including replacing plain-text credential handling, parameterising database queries, protecting sensitive customer and payment data, and updating legacy PHP/database conventions.
-
-Future changes should be deliberate, testable stages rather than a replacement for the original project. The guiding principle is to **preserve what works, document what changes, and extend the system without unnecessarily disturbing its original architecture**.
+Before real-world use, the application would require a security and reliability review, secure credential handling, parameterized queries, protection of customer/payment data, and modernization of legacy PHP/database conventions.
