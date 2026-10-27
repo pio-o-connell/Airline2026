@@ -1,4 +1,3 @@
-```css
 /* Airline2026 public pages — Blogger-inspired clarity, retaining the 2014 IDs. */
 
 * {
@@ -139,6 +138,18 @@ body {
     color: var(--muted-grey);
     cursor: not-allowed;
     pointer-events: none;
+}
+
+/* Identity label — directly below the menu */
+#identity {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 12px;
+    background-color: #f5f4ef;
+    color: #386747;
+    border-bottom: 1px solid #e5e4dc;
+    text-align: left;
+    font-weight: 600;
 }
 
 /* --------------------------------------------------
@@ -341,13 +352,6 @@ input[type="submit"]:disabled {
    Original route/blog list area
    -------------------------------------------------- */
 
-#bloggerlist.old {
-    float: left;
-    width: 100%;
-    padding: 0 32px 20px;
-    border: 0;
-}
-
 /* --------------------------------------------------
    Public footer
    -------------------------------------------------- */
@@ -372,13 +376,6 @@ input[type="submit"]:disabled {
 #footer a:hover {
     color: var(--deep-teal-green);
     text-decoration: underline;
-}
-
-.welcome-message {
-    margin: 0;
-    padding: 10px 24px 0;
-    color: var(--muted-grey);
-    text-align: center;
 }
 
 /* --------------------------------------------------
@@ -428,10 +425,6 @@ input[type="submit"]:disabled {
         padding: 14px 16px;
     }
 
-    #bloggerlist.old {
-        padding-right: 16px;
-        padding-left: 16px;
-    }
 }
 
 /* --------------------------------------------------
@@ -449,4 +442,3 @@ input[type="submit"]:disabled {
         transition: none;
     }
 }
-```

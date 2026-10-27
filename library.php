@@ -1,18 +1,17 @@
 <?php
 
 // Shared base view for public pages.
-    abstract class PublicBaseView {
-
-        // Shared public-page shell. Keep the original IDs for legacy markup/CSS.
-        function top($info = false) {
-            echo '
+abstract class PublicBaseView {
+    // Shared public-page shell. Concrete views call inherited methods themselves.
+    protected function top($info = false, $stylesheet = 'mystyles.css') {
+        echo '
                 <!DOCTYPE html>
                 <html lang="en">
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>PHP Airlines</title>
-                    <link rel="stylesheet" href="mystyles.css">
+                    <link rel="stylesheet" href="' . htmlspecialchars($stylesheet, ENT_QUOTES, 'UTF-8') . '">
                 </head>
                 <body class="public-page">
                     <div id="main" class="old">
@@ -21,53 +20,54 @@
                             <p class="tagline">Your journey starts here</p>
                         </header>
                 ';
-                    }
+    }
 
-        public function menu($info = false) {
-            $this->renderCustomerMenu(false);
+    public function menu($info = false) {
+        $this->renderCustomerMenu(false);
+    }
+
+    protected function renderCustomerMenu($loggedIn) {
+        $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
+        echo '<nav id="menu" class="old" aria-label="Customer navigation">
+            <div class="menu-left">
+                <a href="controller.php">Home</a>
+            </div>
+            <div class="menu-right">';
+        if ($loggedIn) {
+            // echo '<a href="controller.php?cmd=searchFlights">Search flights</a>
+            //       <a href="controller.php?cmd=logout">Logout</a>';
+            echo '<a href="controller.php?cmd=logout">Logout</a>';
+        } else {
+            echo '<a href="controller.php?cmd=showLogin">Login</a>
+                  <a href="controller.php?cmd=showRegistration">Register</a>';
         }
-
-        protected function renderCustomerMenu($loggedIn) {
-            $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
-            echo '<nav id="menu" class="old" aria-label="Customer navigation">
-                <div class="menu-left">
-                    <a href="controller.php">Home</a>
-                </div>
-                <div class="menu-right">';
-            if ($loggedIn) {
-                echo '<a href="controller.php?cmd=logout">Logout</a>';
-            } else {
-                echo '<a href="controller.php?cmd=showLogin">Login</a>
-                    <a href="controller.php?cmd=showRegistration">Register</a>';
-            }
-            echo '
-                    ';
-            if ($canBook) {
-                echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
-            } else {
-                echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
-            }
-            echo '</div>
-            </nav>';
+        if ($canBook) {
+            echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
+        } else {
+            echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
         }
+        echo '</div></nav>';
+    }
 
-        public function bloggerList() {
-            // Retained for compatibility with older views that call this method.
-            echo '\n        <aside id="bloggerlist" class="old"></aside>\n';
+    protected function renderIdentity() {
+        $username = $_SESSION['username'] ?? 'Guest';
+        if ($username !== 'Guest') {
+            echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
         }
+    }
 
-        function bottom() {
-            echo '
+    protected function bottom() {
+        echo '
                     <footer id="footer" class="old">
                         <span>PHP Airlines.com</span>
-                        <a href=\"controller.php\">Public home</a>
+                        <a href="controller.php">Public home</a>
                     </footer>
                 </div>
             </body>
             </html>
             ';
-            }
     }
+}
 
     // Public destination after logout. This deliberately uses the outer shell
     // rather than the authenticated customer inner view.
@@ -120,70 +120,32 @@
 
 // Shared implementation foundation for the separate customer and
 // administrator inner views.
-    abstract class AuthenticatedBaseView extends PublicBaseView {
-
-        public function __construct($info) {
-            $this->top($info);
-            $this->menu($info);
-            $this->content($info);
-            $this->bloggerList();
-            $this->bottom();
-        }
-
-        public function content($info) {
-
-            echo " 
-                <div id=\"content\">
-                            <h1> Add a post!!</h1>
-                            <FORM METHOD=\"post\" ACTION=\"controller.php\">
-
-                            
-                                    <input type=\"hidden\" name=\"cmd\" value=\"addPost\">
-                                // <textarea>
-                                <textarea name=\"textarea\" ROWS=6 COLS=50>
-                                    Add post here!
-                                    </textarea>
-
-                                        
-                    
-                            <input type=\"submit\" value=\"addPost\">
-                        </FORM>
-                        
-                            
-                        </div>
-                        ";
-        }
-
-        public function bloggerList() {
-            echo "
-                    <div id=\"bloggerlist\">               
-                        <h3> blogger list </h3>";
-            echo "</div>";
-        }
-
+abstract class AuthenticatedBaseView extends PublicBaseView {
+    // Inherit the public shell methods, using the authenticated stylesheet.
+    protected function top($info = false, $stylesheet = 'insidestyles.css') {
+        parent::top($info, $stylesheet);
     }
+}
 
-    // Customer-only inner view type. Customer pages retain the public Airline
-    // shell while providing a distinct extension point for booking workflows.
-    class CustomerBaseView extends AuthenticatedBaseView {
-        public function menu($info = false) {
-            $this->renderCustomerMenu(true);
-        }
+abstract class CustomerBaseView extends AuthenticatedBaseView {
+    public function menu($info = false) {
+        $this->renderCustomerMenu(true);
+        $this->renderIdentity();
     }
+}
 
-    // Administrator-only inner view type. Existing administrator views keep
-    // their legacy rendering methods while sharing this explicit role boundary.
-    class AdminBaseView extends AuthenticatedBaseView {
-        public function menu($info = false) {
-            echo '<nav id="menu" class="old" aria-label="Administrator navigation">
-                <a href="controller.php">Public home</a>
-                <a href="controller.php?cmd=showAdminDashboard">Routes</a>
-                <a href="controller.php?cmd=showAddRoute">Add route</a>
-                <a href="controller.php?cmd=showFlightManifest">View manifest</a>
-                <a href="controller.php?cmd=logout">Logout</a>
-            </nav>';
-        }
+abstract class AdminBaseView extends AuthenticatedBaseView {
+    public function menu($info = false) {
+        echo '<nav id="menu" class="old" aria-label="Administrator navigation">
+            <a href="controller.php">Public home</a>
+            <a href="controller.php?cmd=showAdminDashboard">Routes</a>
+            <a href="controller.php?cmd=showAddRoute">Add route</a>
+            <a href="controller.php?cmd=showFlightManifest">View manifest</a>
+            <a href="controller.php?cmd=logout">Logout</a>
+        </nav>';
+        $this->renderIdentity();
     }
+}
 
 // Renders the customer and administrator login form.
     class LoginView extends PublicBaseView {
@@ -213,20 +175,15 @@
                         ";
         }
 
-        function top($info = false) {
-            parent::top($info);
-        }
-
     }
 
 // Renders the administrator route-management page.
     class AdminRoutesView extends AdminBaseView {
 
-        public function __construct($info) {
+        public function __construct($info = false) {
             $this->top();
             $this->menu();
             $this->content($info);
-            $this->bloggerList();
             $this->bottom();
         }
 
@@ -256,19 +213,16 @@
             </div>";
         }
 
-        function top($info = false) {
-            parent::top($info);
-        }
-
-        public function bloggerList() {
-            
-        }
-
         function bottom() {
             parent::bottom();
         }
 
     }
+
+
+// Current name for the administrator route-management page.
+class InnerAdminView extends AdminRoutesView {
+}
 
 // Renders the administrator route-editing page.
     class EditRouteView extends AdminBaseView {
@@ -277,7 +231,6 @@
             $this->top();
             $this->menu();
             $this->content($info);
-            $this->bloggerList();
             $this->bottom();
         }
 
@@ -295,16 +248,8 @@
             echo "</div>";
         }
 
-        function top($info = false) {
-            parent::top($info);
-        }
-
         public function menu($info = false) {
             parent::menu($info);
-        }
-
-        public function bloggerList() {
-            
         }
 
         function bottom() {
@@ -320,7 +265,6 @@
             $this->top();
             $this->menu();
             $this->content($info);
-            $this->bloggerList();
             $this->bottom();
         }
 
@@ -370,16 +314,8 @@
             echo "</div>";
         }
 
-        function top($info = false) {
-            parent::top($info);
-        }
-
         public function menu($info = false) {
             parent::menu($info);
-        }
-
-        public function bloggerList() {
-            
         }
 
         function bottom() {
@@ -394,11 +330,9 @@
         public function __construct($info) {
             $this->top();
             $this->menu();
-            //    $this->bloggerList();
 
 
             $this->content($info);
-            $this->bloggerList();
 
             $this->bottom();
         }
@@ -433,16 +367,8 @@
             echo "</div>";
         }
 
-        function top($info = false) {
-            parent::top($info);
-        }
-
         public function menu($info = false) {
             parent::menu($info);
-        }
-
-        public function bloggerList() {
-            
         }
 
         function bottom() {
@@ -454,66 +380,64 @@
 // Renders the customer registration form.
     class RegistrationView extends PublicBaseView {
 
-        public function __construct() {
-            $info = 0;
-            $this->top($info);
-            $this->menu($info);
-            //       $this->bloggerList();
+    public function __construct() {
+        $info = 0;
+        $this->top($info);
+        $this->menu($info);
 
 
-            $this->content();
+        $this->content();
 
 
-            $this->bottom();
-        }
-        public function menu($info = false) {
-            parent::menu($info);
-        }
-
-    
-        public function content() {
-
-            echo "
-                    <div id=\"content\">
-                                <h1> Register </h1>
-                                    <form action=\"controller.php\" method=\"post\">
-                                <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
-                                <table>
-                                    <tr>
-                                        <td>username:</td>
-                                        <td><input type=\"text\" name=\"username\"> </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>password:</td>
-                                        <td><input type=\"password\" name=\"password\"></td>
-                                    </tr>
-                                    <tr>
-                                        <td>e-mail address:</td>
-                                        <td><input type=\"email\" name=\"email\"></td>
-                                    </tr>                               
-                                    <tr>
-                                        <td>Credit Card No:</td>
-                                        <td><input type=\"text\" name=\"CreditCardNo\"></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Passport No:</td>
-                                        <td><input type=\"text\" name=\"PassportNo\"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type=\"submit\" value=\"Submit\"></td>
-                                        <td></td>
-                                    </tr>                                                                   
-                            </div>
-                            </form>
-                            ";
-                    }
+        $this->bottom();
+    }
+    public function menu($info = false) {
+        parent::menu($info);
+    }
 
     
-            
-        function top($info = false) {
-                parent::top($info);
-            }
+    public function content() {
+
+        echo "
+
+	<div id=\"content\">
+                  <h1> Register </h1>
+                    <form action=\"controller.php\" method=\"post\">
+                <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
+                <table>
+                    <tr>
+                        <td>username:</td>
+                        <td><input type=\"text\" name=\"username\"> </td>
+
+                    </tr>
+                    <tr>
+                        <td>password:</td>
+                        <td><input type=\"password\" name=\"password\"></td>
+                    </tr>
+                    <tr>
+                        <td>e-mail address:</td>
+                        <td><input type=\"email\" name=\"email\"></td>
+                    </tr>
+                   
+                    <tr>
+                        <td>Credit Card No:</td>
+                        <td><input type=\"text\" name=\"CreditCardNo\"></td>
+                    </tr>
+                    <tr>
+                        <td>Passport No:</td>
+                        <td><input type=\"text\" name=\"PassportNo\"></td>
+                    </tr>
+                    <tr>
+                        <td><input type=\"submit\" value=\"Submit\"></td>
+                        <td></td>
+
+                    </tr> 
+                    
+                
+            </div>
+            </form>
+            ";
+    }
 
     }
 
@@ -869,10 +793,10 @@
         }
 
         // Render the inherited page header, then show a welcome message when a username is available.
-        function top($hasCookie = false) {
+        function top($hasCookie = false, $stylesheet = 'insidestyles.css') {
 
-            // Reuse the header implementation supplied by PublicBaseView.
-            parent::top($hasCookie);
+            // Reuse the inherited header implementation.
+            parent::top($hasCookie, $stylesheet);
 
             // Prefer the username cookie; fall back to the session username.
             // Use an empty string if neither value is available.
@@ -926,7 +850,6 @@
             $this->top($info);
             $this->menu($info);
             $this->searchDiv();
-            //     $this->bloggerList();
             $this->results();
             $this->bottom();
         }
@@ -1125,9 +1048,7 @@
 
 //$_SESSION['cart']->displayCart();
 
-
-
-    /**
+/**
      * Manages the database connection and provides methods for user authentication,
      * route management, customer bookings, seat availability and flight manifests.
      */
