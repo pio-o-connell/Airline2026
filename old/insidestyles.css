@@ -1,0 +1,163 @@
+/* #main {
+    width:800px;
+    margin:auto;
+    border:black solid 1px;
+    overflow:auto;
+}
+
+#header{
+    /*@import "mystyles.css";*/
+ /*   text-align:center;
+    border:black solid 1px; 
+} 
+/*
+#menu{
+    height:40px;
+    border:black solid 1px;
+    text-align:right;
+    float:left;
+    /*                width:100px;*/
+/*
+}
+
+#bloggerlist{
+    float:left;
+    width:100px;
+    border:white solid 1px;
+}
+
+
+#content{
+    float:left;
+    width:576px;
+    border:white solid 1px;
+    padding:10px
+
+} */
+
+
+/* Inside / authenticated views — legacy layout */
+
+#main.old {
+    width: 800px;
+    margin: auto;
+    border: black solid 1px;
+    overflow: auto;
+}
+
+#header.old {
+    text-align: center;
+    border: black solid 1px;
+}
+
+#menu.old {
+    height: 40px;
+    border: black solid 1px;
+    text-align: right;
+    float: left;
+}
+
+#bloggerlist.old {
+    float: left;
+    width: 100px;
+    border: white solid 1px;
+}
+
+#content.old {
+    float: left;
+    width: 576px;
+    border: white solid 1px;
+    padding: 10px;
+}
+
+/* Shared workspace primitives for customer and administrator inner views. */
+.single-pane,
+.double-pane,
+.triple-pane {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    gap: 18px;
+}
+
+.single-pane { grid-template-columns: minmax(0, 1fr); }
+.double-pane { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.triple-pane { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.pane {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: 16px;
+    border: 1px solid #e5e4dc;
+    border-radius: 6px;
+    background: #fff;
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.pane:hover,
+.pane:focus-within {
+    border-color: #b8cdbd;
+    box-shadow: 0 2px 8px rgba(30, 40, 30, 0.06);
+}
+
+.selectable-row {
+    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.selectable-row:hover,
+.selectable-row.is-selected {
+    border-color: #8eb29a;
+    background: #f1f7f2;
+}
+
+input[type="submit"],
+button,
+.button,
+#menu.old a {
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+#menu.old .book-flight-cta {
+    margin-left: auto;
+    border: 1px solid #285c43;
+    background: #285c43;
+    color: #fff;
+}
+
+#menu.old .menu-left,
+#menu.old .menu-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#menu.old .menu-right {
+    margin-left: auto;
+}
+
+#menu.old .book-flight-cta.is-disabled {
+    border-color: #cfd5ce;
+    background: #e8ebe7;
+    color: #7a827b;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+@media (max-width: 800px) {
+    .double-pane,
+    .triple-pane {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pane,
+    .selectable-row,
+    input[type="submit"],
+    button,
+    .button,
+    #menu.old a {
+        transition: none;
+    }
+}

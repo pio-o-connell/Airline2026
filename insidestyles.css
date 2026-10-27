@@ -1,76 +1,96 @@
-/* #main {
-    width:800px;
-    margin:auto;
-    border:black solid 1px;
-    overflow:auto;
-}
-
-#header{
-    /*@import "mystyles.css";*/
- /*   text-align:center;
-    border:black solid 1px; 
-} 
+```css
 /*
-#menu{
-    height:40px;
-    border:black solid 1px;
-    text-align:right;
-    float:left;
-    /*                width:100px;*/
-/*
+ * Airline2026 authenticated pages.
+ * Separate styling for customer and administrator inner views.
+ * Retains the original 2014 IDs and legacy layout selectors.
+ */
+
+/* Inner-view colour palette */
+:root {
+    --forest-green: #3b4d32;
+    --deep-green: #2a5b44;
+    --off-white: #f5f5f0;
+    --charcoal-blue-grey: #303b41;
+    --muted-grey: #878679;
+    --dark-olive: #444235;
+    --sage-grey: #b3b8ab;
+    --muted-blue-grey: #738b8f;
+    --deep-teal-green: #33524e;
+
+    --font-primary: "Roboto", "Segoe UI", Arial, sans-serif;
+    --font-secondary: "Montserrat", "Roboto", "Segoe UI", Arial, sans-serif;
+
+    --inner-border: var(--sage-grey);
+    --inner-pane-background: #ffffff;
+    --inner-selected-background: #edf2eb;
 }
 
-#bloggerlist{
-    float:left;
-    width:100px;
-    border:white solid 1px;
+/* Authenticated page foundation */
+body {
+    margin: 0;
+    background: var(--off-white);
+    color: var(--charcoal-blue-grey);
+    font-family: var(--font-primary);
+    line-height: 1.5;
 }
 
+h1,
+h2,
+h3,
+h4 {
+    color: var(--forest-green);
+    font-family: var(--font-secondary);
+}
 
-#content{
-    float:left;
-    width:576px;
-    border:white solid 1px;
-    padding:10px
+a {
+    color: var(--deep-green);
+}
 
-} */
-
+a:hover,
+a:focus {
+    color: var(--deep-teal-green);
+}
 
 /* Inside / authenticated views — legacy layout */
 
 #main.old {
     width: 800px;
+    max-width: 100%;
     margin: auto;
-    border: black solid 1px;
+    border: 1px solid var(--inner-border);
     overflow: auto;
+    box-sizing: border-box;
 }
 
 #header.old {
     text-align: center;
-    border: black solid 1px;
+    border: 1px solid var(--inner-border);
+    box-sizing: border-box;
 }
 
 #menu.old {
-    height: 40px;
-    border: black solid 1px;
+    min-height: 40px;
+    border: 1px solid var(--inner-border);
     text-align: right;
-    float: left;
+    box-sizing: border-box;
 }
 
 #bloggerlist.old {
     float: left;
     width: 100px;
-    border: white solid 1px;
+    border: 1px solid var(--inner-border);
+    box-sizing: border-box;
 }
 
 #content.old {
     float: left;
     width: 576px;
-    border: white solid 1px;
     padding: 10px;
+    box-sizing: border-box;
 }
 
-/* Shared workspace primitives for customer and administrator inner views. */
+/* Shared workspace primitives for customer and administrator inner views */
+
 .single-pane,
 .double-pane,
 .triple-pane {
@@ -80,49 +100,115 @@
     gap: 18px;
 }
 
-.single-pane { grid-template-columns: minmax(0, 1fr); }
-.double-pane { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.triple-pane { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.single-pane {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.double-pane {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.triple-pane {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Individual workspace panes */
 
 .pane {
     min-width: 0;
     min-height: 0;
     overflow: auto;
     padding: 16px;
-    border: 1px solid #e5e4dc;
+    border: 1px solid var(--inner-border);
     border-radius: 6px;
-    background: #fff;
-    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+    background: var(--inner-pane-background);
+    box-sizing: border-box;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background-color 180ms ease;
 }
 
 .pane:hover,
 .pane:focus-within {
-    border-color: #b8cdbd;
+    border-color: var(--muted-blue-grey);
     box-shadow: 0 2px 8px rgba(30, 40, 30, 0.06);
 }
 
+/* Selectable rows */
+
 .selectable-row {
-    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
 }
 
 .selectable-row:hover,
 .selectable-row.is-selected {
-    border-color: #8eb29a;
-    background: #f1f7f2;
+    border-color: var(--deep-green);
+    background: var(--inner-selected-background);
+}
+
+/* Form controls */
+
+input,
+select,
+textarea,
+button {
+    font-family: var(--font-primary);
 }
 
 input[type="submit"],
 button,
-.button,
-#menu.old a {
-    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+.button {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--deep-green);
+    border-radius: 4px;
+    background: var(--deep-green);
+    color: #ffffff;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
 }
 
-#menu.old .book-flight-cta {
-    margin-left: auto;
-    border: 1px solid #285c43;
-    background: #285c43;
-    color: #fff;
+input[type="submit"]:hover,
+button:hover,
+.button:hover {
+    border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--muted-blue-grey);
+    outline-offset: 2px;
+}
+
+/* Authenticated navigation */
+
+#menu.old {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--off-white);
+}
+
+#menu.old a {
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
 }
 
 #menu.old .menu-left,
@@ -136,20 +222,56 @@ button,
     margin-left: auto;
 }
 
+#menu.old .book-flight-cta {
+    margin-left: auto;
+    border: 1px solid var(--deep-green);
+    border-radius: 4px;
+    background: var(--deep-green);
+    color: #ffffff;
+    padding: 8px 14px;
+    text-decoration: none;
+}
+
+#menu.old .book-flight-cta:hover {
+    border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
+}
+
 #menu.old .book-flight-cta.is-disabled {
-    border-color: #cfd5ce;
+    border-color: var(--sage-grey);
     background: #e8ebe7;
-    color: #7a827b;
+    color: var(--muted-grey);
     cursor: not-allowed;
     pointer-events: none;
 }
 
+/* Responsive workspace layout */
+
 @media (max-width: 800px) {
+    #main.old {
+        width: 100%;
+    }
+
     .double-pane,
     .triple-pane {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    #content.old {
+        float: none;
+        width: 100%;
+    }
+
+    #menu.old {
+        flex-wrap: wrap;
+    }
+
+    #menu.old .menu-right {
+        flex-wrap: wrap;
+    }
 }
+
+/* Respect reduced-motion preferences */
 
 @media (prefers-reduced-motion: reduce) {
     .pane,

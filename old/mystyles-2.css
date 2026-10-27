@@ -1,0 +1,259 @@
+/* Airline2026 public pages — Blogger-inspired clarity, retaining the 2014 IDs. */
+* { box-sizing: border-box; }
+
+html { min-height: 100%; }
+
+body {
+    margin: 0;
+    padding: 28px 16px;
+    background: #f5f4ef;
+    color: #292d2b;
+    font-family: Roboto, "Segoe UI", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+#main.old {
+    width: min(100%, 1000px);
+    margin: 0 auto;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e5e4dc;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(30, 40, 30, 0.06);
+}
+
+#header.old {
+    margin: 0;
+    padding: 28px 30px 22px;
+    border-bottom: 1px solid #e8e8e1;
+    text-align: center;
+    background: #fff;
+}
+
+#header h1 {
+    margin: 0;
+    color: #244f3b;
+    font-family: Montserrat, Roboto, "Segoe UI", Arial, sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+}
+
+#header .tagline {
+    margin: 5px 0 0;
+    color: #6b746d;
+    font-size: 0.95rem;
+}
+
+#menu.old {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 48px;
+    padding: 7px 16px;
+    border-bottom: 1px solid #e8e8e1;
+    background: #fafaf7;
+    text-align: center;
+}
+
+#menu .menu-left,
+#menu .menu-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#menu .menu-right {
+    margin-left: auto;
+}
+
+#menu a {
+    display: inline-block;
+    padding: 8px 13px;
+    border-radius: 5px;
+    color: #285c43;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+#menu a:hover, #menu a:focus-visible {
+    background: #e8f0e9;
+    color: #163b29;
+    outline: none;
+}
+
+#menu .book-flight-cta {
+    margin-left: auto;
+    border: 1px solid #285c43;
+    background: #285c43;
+    color: #fff;
+}
+
+#menu .book-flight-cta:hover,
+#menu .book-flight-cta:focus-visible {
+    background: #1d4632;
+    color: #fff;
+}
+
+#menu .book-flight-cta.is-disabled {
+    border-color: #cfd5ce;
+    background: #e8ebe7;
+    color: #7a827b;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#content {
+    float: none;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 28px 32px 34px;
+    border: 0;
+}
+
+#content h1, #content h2, #content h3 {
+    color: #293f32;
+    font-family: Montserrat, Roboto, "Segoe UI", Arial, sans-serif;
+    line-height: 1.25;
+}
+
+#content h1 { margin-top: 0; font-size: 1.65rem; }
+#content h2 { font-size: 1.3rem; }
+
+#content form { max-width: 100%; }
+#content table { border-collapse: collapse; max-width: 100%; }
+#content td { padding: 6px 9px 6px 0; vertical-align: top; }
+
+input, select, textarea, button {
+    max-width: 100%;
+    font: inherit;
+}
+
+input[type="text"], input[type="password"], input[type="email"],
+input[type="date"], input[type="number"], select, textarea {
+    padding: 8px 10px;
+    border: 1px solid #cfd5ce;
+    border-radius: 4px;
+    background: #fff;
+    color: #292d2b;
+}
+
+input[type="submit"], button, .button {
+    padding: 9px 16px;
+    border: 1px solid #285c43;
+    border-radius: 5px;
+    background: #285c43;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+input[type="submit"]:hover, button:hover, .button:hover {
+    background: #1d4632;
+    border-color: #1d4632;
+}
+
+#content a { color: #285c43; }
+#content a {
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+#content a:hover { color: #163b29; }
+
+/* Shared workspace primitives for customer and administrator inner views. */
+.single-pane,
+.double-pane,
+.triple-pane {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    gap: 18px;
+}
+
+.single-pane { grid-template-columns: minmax(0, 1fr); }
+.double-pane { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.triple-pane { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.pane {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: 16px;
+    border: 1px solid #e5e4dc;
+    border-radius: 6px;
+    background: #fff;
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.pane:hover,
+.pane:focus-within {
+    border-color: #b8cdbd;
+    box-shadow: 0 2px 8px rgba(30, 40, 30, 0.06);
+}
+
+.selectable-row {
+    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.selectable-row:hover,
+.selectable-row.is-selected {
+    border-color: #8eb29a;
+    background: #f1f7f2;
+}
+
+@media (max-width: 800px) {
+    .double-pane,
+    .triple-pane {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    input[type="submit"], button, .button, #content a, .pane, .selectable-row {
+        transition: none;
+    }
+}
+
+#bloggerlist.old {
+    float: left;
+    width: 100%;
+    padding: 0 32px 20px;
+    border: 0;
+}
+
+#footer.old {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px 24px;
+    border-top: 1px solid #e8e8e1;
+    background: #fafaf7;
+    color: #69736b;
+    font-size: 0.9rem;
+}
+
+#footer a { color: #285c43; text-decoration: none; }
+#footer a:hover { text-decoration: underline; }
+
+.welcome-message {
+    margin: 0;
+    padding: 10px 24px 0;
+    color: #59685d;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    #header.old { padding: 22px 16px 18px; }
+    #menu.old { justify-content: flex-start; padding: 8px; }
+    #menu a { padding: 7px 9px; }
+    #content { padding: 22px 16px 26px; }
+    #content td { display: block; padding-right: 0; }
+    #footer.old { padding: 14px 16px; }
+}

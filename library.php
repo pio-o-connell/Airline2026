@@ -454,68 +454,66 @@
 // Renders the customer registration form.
     class RegistrationView extends PublicBaseView {
 
-    public function __construct() {
-        $info = 0;
-        $this->top($info);
-        $this->menu($info);
-        //       $this->bloggerList();
+        public function __construct() {
+            $info = 0;
+            $this->top($info);
+            $this->menu($info);
+            //       $this->bloggerList();
 
 
-        $this->content();
+            $this->content();
 
 
-        $this->bottom();
-    }
-    public function menu($info = false) {
-        parent::menu($info);
-    }
+            $this->bottom();
+        }
+        public function menu($info = false) {
+            parent::menu($info);
+        }
 
     
-    public function content() {
+        public function content() {
 
-        echo "
+            echo "
+                    <div id=\"content\">
+                                <h1> Register </h1>
+                                    <form action=\"controller.php\" method=\"post\">
+                                <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
+                                <table>
+                                    <tr>
+                                        <td>username:</td>
+                                        <td><input type=\"text\" name=\"username\"> </td>
 
-	<div id=\"content\">
-                  <h1> Register </h1>
-                    <form action=\"controller.php\" method=\"post\">
-                <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
-                <table>
-                    <tr>
-                        <td>username:</td>
-                        <td><input type=\"text\" name=\"username\"> </td>
+                                    </tr>
+                                    <tr>
+                                        <td>password:</td>
+                                        <td><input type=\"password\" name=\"password\"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>e-mail address:</td>
+                                        <td><input type=\"email\" name=\"email\"></td>
+                                    </tr>                               
+                                    <tr>
+                                        <td>Credit Card No:</td>
+                                        <td><input type=\"text\" name=\"CreditCardNo\"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Passport No:</td>
+                                        <td><input type=\"text\" name=\"PassportNo\"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type=\"submit\" value=\"Submit\"></td>
+                                        <td></td>
+                                    </tr>                                                                   
+                            </div>
+                            </form>
+                            ";
+                    }
 
-                    </tr>
-                    <tr>
-                        <td>password:</td>
-                        <td><input type=\"password\" name=\"password\"></td>
-                    </tr>
-                    <tr>
-                        <td>e-mail address:</td>
-                        <td><input type=\"email\" name=\"email\"></td>
-                    </tr>
-                   
-                    <tr>
-                        <td>Credit Card No:</td>
-                        <td><input type=\"text\" name=\"CreditCardNo\"></td>
-                    </tr>
-                    <tr>
-                        <td>Passport No:</td>
-                        <td><input type=\"text\" name=\"PassportNo\"></td>
-                    </tr>
-                    <tr>
-                        <td><input type=\"submit\" value=\"Submit\"></td>
-                        <td></td>
-
-                    </tr> 
-                    
-                
-            </div>
-            </form>
-            ";
-    }
-    function top($info = false) {
-        parent::top($info);
-    }
+    
+            
+        function top($info = false) {
+                parent::top($info);
+            }
 
     }
 

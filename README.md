@@ -48,6 +48,76 @@ The existing PHP application provides administrator workflows to:
 
 The administrator account is `rmiller` / `rmiller`. The PHP controller authorizes this account by username. The database also retains the historical `login` table for compatibility.
 
+
+### Colour Scheme
+
+There are already many colours in a garden, so I chose a restrained colour scheme using one **PRIMARY** colour for all text, a **SECONDARY** colour for calls to action (CTAs), and whitespace where appropriate.
+
+The main page uses the **rule of thirds** to create a balanced and visually interesting composition.
+
+I used [Image Color Picker](https://imagecolorpicker.com/) to help select the colour palette.
+
+The original image is:
+
+<details>
+<summary>Click to view the original image</summary>
+
+<img src="assets\Images\newHome.jpg" alt="Original home page " style="width:60%;">
+
+</details>
+
+The resulting colour palette is shown below.
+
+<div style="margin-left: 40px;">
+  <img src=".\Palette.png" alt="Colour palette swatch" style="width:60%;">
+</div>
+
+<details>
+<summary>Colour palette details</summary>
+
+| Colour | Hex | Usage |
+|---|---|---|
+| Dark Forest Green | `#3B4D32` | Primary green / headings |
+| Deep Green | `#2A5B44` | CTA / secondary colour |
+| Off-White | `#F5F5F0` | Main background |
+| Charcoal Blue-Grey | `#303B41` | Primary text |
+| Muted Grey | `#878679` | Secondary text / subtle details |
+| Dark Olive | `#444235` | Dark accents |
+| Sage Grey | `#B3B8AB` | Borders and background areas |
+| Muted Blue-Grey | `#738B8F` | Highlight links and hover effects |
+| Deep Teal Green | `#33524E` | Supporting accents |
+
+</details>
+
+One small technical correction: CSS custom properties need names such as --forest-green, rather than hexadecimal values as variable names. Your palette would be valid CSS like this:
+:root {
+    --forest-green: #3b4d32;
+    --deep-green: #2a5b44;
+    --off-white: #f5f5f0;
+    --charcoal-blue-grey: #303b41;
+    --muted-grey: #878679;
+    --dark-olive: #444235;
+    --sage-grey: #b3b8ab;
+    --muted-blue-grey: #738b8f;
+    --deep-teal-green: #33524e;
+}
+
+## Typography
+
+Airline2026 uses two sans-serif font families to provide a clear visual hierarchy and consistent presentation across public pages, passenger booking workflows and administrator views.
+
+PRIMARY — Roboto: Used for body text, forms, flight results, passenger details, seat labels and booking information. Its legibility makes it suitable for information-dense interfaces.
+
+SECONDARY — Montserrat: Used for page headings, section titles and selected navigation headings. Its geometric style gives headings a distinctive appearance while complementing the primary font.
+
+Both fonts use sensible fallback fonts to maintain readability if the preferred fonts are unavailable.
+
+:root {
+    --font-primary: "Roboto", "Segoe UI", Arial, sans-serif;
+    --font-secondary: "Montserrat", "Roboto", "Segoe UI", Arial, sans-serif;
+}
+
+The colour palette and typography are intended to work together to create a clear, accessible and consistent interface without unnecessarily changing the original application's layout and structure.
 ## Screenshots
 
 These existing captures document the original customer and administration workflows.
