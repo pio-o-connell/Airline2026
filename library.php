@@ -120,10 +120,43 @@ abstract class PublicBaseView {
 
 // Shared implementation foundation for the separate customer and
 // administrator inner views.
-abstract class PrivateBaseView extends PublicBaseView {
-    // Inherit the public shell methods, using the authenticated stylesheet.
+abstract class PrivateBaseView {
     protected function top($info = false, $stylesheet = 'insidestyles.css') {
-        parent::top($info, $stylesheet);
+        echo '
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>PHP Airlines</title>
+                    <link rel="stylesheet" href="' . htmlspecialchars($stylesheet, ENT_QUOTES, 'UTF-8') . '">
+                </head>
+                <body class="public-page">
+                    <div id="main" class="old">
+                        <header id="header" class="old">
+                            <h1>PHP Airlines.com</h1>
+                            <p class="tagline">Your journey starts here</p>
+                        </header>
+                ';
+    }
+
+    protected function renderIdentity() {
+        $username = $_SESSION['username'] ?? 'Guest';
+        if ($username !== 'Guest') {
+            echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
+        }
+    }
+
+    protected function bottom() {
+        echo '
+                    <footer id="footer" class="old">
+                        <span>PHP Airlines.com</span>
+                        <a href="controller.php">Public home</a>
+                    </footer>
+                </div>
+            </body>
+            </html>
+            ';
     }
 }
 
@@ -131,6 +164,29 @@ abstract class CustomerBaseView extends PrivateBaseView {
     public function menu($info = false) {
         $this->renderCustomerMenu(true);
         $this->renderIdentity();
+    }
+
+    protected function renderCustomerMenu($loggedIn) {
+        $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
+        echo '<nav id="menu" class="old" aria-label="Customer navigation">
+            <div class="menu-left">
+                <a href="controller.php">Home</a>
+            </div>
+            <div class="menu-right">';
+        if ($loggedIn) {
+            // echo '<a href="controller.php?cmd=searchFlights">Search flights</a>
+            //       <a href="controller.php?cmd=logout">Logout</a>';
+            echo '<a href="controller.php?cmd=logout">Logout</a>';
+        } else {
+            echo '<a href="controller.php?cmd=showLogin">Login</a>
+                  <a href="controller.php?cmd=showRegistration">Register</a>';
+        }
+        if ($canBook) {
+            echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
+        } else {
+            echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
+        }
+        echo '</div></nav>';
     }
 }
 
