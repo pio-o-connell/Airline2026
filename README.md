@@ -274,7 +274,7 @@ The local PHP configuration in [`library.php`](library.php) uses host `127.0.0.1
 ## Project structure
 
 - [`controller.php`](controller.php) — central GET/POST command router and request handlers
-- [`library.php`](library.php) — view classes, cart behavior, seat processing, and `DBManager`
+- [`library.php`](library.php) — view classes, cart behavior, seat processing, and `DBManager`. View classes use a `Public*` / `Customer*` / `Admin*` naming scheme. See *View class hierarchy* below.
 - [`airline2026.sql`](airline2026.sql) — standalone MySQL 5.7 database schema and test data
 - [`mystyles.css`](mystyles.css) — customer-facing styles
 - [`insidestyles.css`](insidestyles.css) — internal and administration styles
@@ -282,6 +282,30 @@ The local PHP configuration in [`library.php`](library.php) uses host `127.0.0.1
 - [`old/airline2026_backup.sql`](old/airline2026_backup.sql) — historical backup/reference only
 
 The original interface uses a fixed-width layout of approximately 800 pixels and traditional CSS floats rather than a modern responsive framework. `controller.php` dispatches requests to the views and handlers in `library.php`; supporting classes handle page presentation, cart operations, seat processing, and database access.
+
+## View class hierarchy
+
+Public and private views are separate hierarchies with their own base class and stylesheet (`mystyles.css` and `insidestyles.css`).
+
+```text
+PublicBaseView (abstract)
+├── PublicHomeView
+├── LoginView
+└── RegistrationView
+
+PrivateBaseView (abstract, standalone, was AuthenticatedBaseView)
+├── CustomerBaseView (abstract)
+│   └── CustomerView (was FlightSearchView)
+│       ├── CustomerFlightResultsView (was FlightSearchResultsView)
+│       ├── CustomerPassengerDetailsView (was PassengerDetailsView)
+│       └── CustomerCheckoutView (was CheckoutView)
+└── AdminBaseView (abstract)
+    ├── AdminRoutesView
+    │   └── AdminView (was InnerAdminView)
+    ├── AdminEditRouteView (was EditRouteView)
+    ├── AdminAddRouteView (was AddRouteView)
+    └── AdminFlightManifestView (was FlightManifestView)
+```
 
 ## Planned booking enhancements
 
@@ -311,3 +335,30 @@ Known limitations include:
 - The project is not a production-ready airline operations or booking system.
 
 Before real-world use, the application would require a security and reliability review, secure credential handling, parameterized queries, protection of customer/payment data, and modernization of legacy PHP/database conventions.
+
+## Refactor history
+
+In 2026 the view classes were renamed for clarity and the private view tree was made independent of the public one, with no change in behaviour. The original 2014 names are retained here for reference.
+
+| 2014 class name | Current class name |
+|---|---|
+| `AuthenticatedBaseView` | `PrivateBaseView` |
+| `FlightSearchView` | `CustomerView` |
+| `FlightSearchResultsView` | `CustomerFlightResultsView` |
+| `PassengerDetailsView` | `CustomerPassengerDetailsView` |
+| `CheckoutView` | `CustomerCheckoutView` |
+| `InnerAdminView` | `AdminView` |
+| `EditRouteView` | `AdminEditRouteView` |
+| `AddRouteView` | `AdminAddRouteView` |
+| `FlightManifestView` | `AdminFlightManifestView` |
+| `PublicBaseView` | `PublicBaseView` (unchanged) |
+| `PublicHomeView` | `PublicHomeView` (unchanged) |
+| `LoginView` | `LoginView` (unchanged) |
+| `RegistrationView` | `RegistrationView` (unchanged) |
+| `CustomerBaseView` | `CustomerBaseView` (unchanged) |
+| `AdminBaseView` | `AdminBaseView` (unchanged) |
+| `AdminRoutesView` | `AdminRoutesView` (unchanged) |
+| `Cart` | `Cart` (unchanged) |
+| `DBManager` | `DBManager` (unchanged) |
+
+`AdminView` is a thin subclass of `AdminRoutesView`, retained from the original `InnerAdminView` / `AdminRoutesView` arrangement.
