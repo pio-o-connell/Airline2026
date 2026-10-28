@@ -31,9 +31,9 @@ function dispatchRequest()
             if ($_SESSION['username'] === "Guest") {
                 new PublicHomeView();
             } elseif ($_SESSION['username'] === "rmiller") {
-                new InnerAdminView();
+                new AdminView();
             } else {
-                new FlightSearchView($hasCookie);
+                new CustomerView($hasCookie);
             }
             break;
 
@@ -53,7 +53,7 @@ function dispatchRequest()
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 handleFlightSearch($hasCookie);
             } else {
-                new FlightSearchView($hasCookie);
+                new CustomerView($hasCookie);
             }
             break;
 
@@ -63,11 +63,11 @@ function dispatchRequest()
 
         case "updateCartSeats":
             $_SESSION['cart']->processSeatSelections();
-            new PassengerDetailsView($hasCookie);
+            new CustomerPassengerDetailsView($hasCookie);
             break;
 
         case "showCheckout":
-            new CheckoutView($hasCookie);
+            new CustomerCheckoutView($hasCookie);
             break;
 
         case "submitPassengerDetails":
@@ -79,19 +79,19 @@ function dispatchRequest()
 
         case "removeCartItem":
             $_SESSION['cart']->removeFlight($_GET['cartID']);
-            new CheckoutView($hasCookie);
+            new CustomerCheckoutView($hasCookie);
             break;
 
         case "showPassengerDetails":
             if (!requireCustomer()) {
                 break;
             }
-            new PassengerDetailsView($hasCookie);
+            new CustomerPassengerDetailsView($hasCookie);
             break;
 
         case "registerUser":
             handleUserRegistration($hasCookie);
-            new FlightSearchView($hasCookie);
+            new CustomerView($hasCookie);
             break;
 
         case "showEditRoute":
@@ -100,7 +100,7 @@ function dispatchRequest()
             }
 
             $routeid = $_GET['routeid'];
-            new EditRouteView($routeid);
+            new AdminEditRouteView($routeid);
             break;
 
         case "updateRoute":
@@ -113,7 +113,7 @@ function dispatchRequest()
                 $_POST['index']
             );
 
-            new InnerAdminView();
+            new AdminView();
             break;
 
         case "deleteSelectedRoutes":
@@ -122,7 +122,7 @@ function dispatchRequest()
             }
 
             handleRouteDeletion();
-            new InnerAdminView();
+            new AdminView();
             break;
 
         case "showAddRoute":
@@ -130,7 +130,7 @@ function dispatchRequest()
                 break;
             }
 
-            new AddRouteView($hasCookie);
+            new AdminAddRouteView($hasCookie);
             break;
 
         case "createRoute":
@@ -146,7 +146,7 @@ function dispatchRequest()
                 $_POST['Price']
             );
 
-            new AddRouteView($hasCookie);
+            new AdminAddRouteView($hasCookie);
             break;
 
         case "showFlightManifest":
@@ -173,13 +173,13 @@ function dispatchRequest()
                 break;
             }
 
-            new InnerAdminView();
+            new AdminView();
             break;
 
         case "viewdate":
             $date = $_GET['dateid'];
 
-            new FlightSearchResultsView(
+            new CustomerFlightResultsView(
                 $_SESSION['route'],
                 $_SESSION['seatCount'],
                 $_SESSION['date'],
@@ -262,19 +262,19 @@ function handleFlightSearch($hasCookie)
         $is_valid = date($date_format, $time) == $input;
 
         if (!$is_valid) {
-            new FlightSearchView($hasCookie);
+            new CustomerView($hasCookie);
             echo "<br> Valid Dates e.g.'01-Jan-2014'only";
         } elseif (!is_numeric($_POST['seatCount'])) {
-            new FlightSearchView($hasCookie);
+            new CustomerView($hasCookie);
             echo "<br> Not numeric value entered";
         } elseif (
             !(($_POST['seatCount'] > 0)
             && ($_POST['seatCount'] < 21))
         ) {
-            new FlightSearchView($hasCookie);
+            new CustomerView($hasCookie);
             echo "<br> Value between 1 and 20";
         } else {
-            new FlightSearchResultsView(
+            new CustomerFlightResultsView(
                 $_POST['route'],
                 $_POST['seatCount'],
                 $_POST['date'],
@@ -282,7 +282,7 @@ function handleFlightSearch($hasCookie)
             );
         }
     } catch (Exception $e) {
-        new FlightSearchView($hasCookie);
+        new CustomerView($hasCookie);
         echo "<br> Valid Dates e.g.'01-Jan-2014'only";
     }
 }
@@ -315,11 +315,11 @@ function handleAddFlightToCart()
     if ($freeSeats >= $_SESSION['seatCount']) {
         $_SESSION['cart']->addFlight($flightInfo);
 
-        new FlightSearchView($hasCookie);
+        new CustomerView($hasCookie);
 
         echo "Added to Cart provisional purchases- edit as see fit";
     } else {
-        new FlightSearchView($hasCookie);
+        new CustomerView($hasCookie);
 
         echo "Only $freeSeats available -- not added to cart";
     }
@@ -375,7 +375,7 @@ function handleRouteCreation(
     } catch (Exception $e) {
         echo "Date entered in incorrect format e.g. 01-Jan-2014";
 
-        new AddRouteView(1);
+        new AdminAddRouteView(1);
     }
 }
 
@@ -395,7 +395,7 @@ function handleFlightManifestRequest($hasCookie)
 {
     echo "<br> View Manifest";
 
-    new FlightManifestView($hasCookie);
+    new AdminFlightManifestView($hasCookie);
 }
 
 function handleUserAuthentication()
@@ -417,7 +417,7 @@ function handleUserAuthentication()
 
         $_SESSION['username'] = "rmiller";
 
-        new InnerAdminView();
+        new AdminView();
 
     } elseif ($result == "user") {
         setcookie(
@@ -429,7 +429,7 @@ function handleUserAuthentication()
 
         $_SESSION['username'] = $_POST['username'];
 
-        new FlightSearchView(true);
+        new CustomerView(true);
 
     } else {
         echo "<br> invalid login <br>";

@@ -120,21 +120,21 @@ abstract class PublicBaseView {
 
 // Shared implementation foundation for the separate customer and
 // administrator inner views.
-abstract class AuthenticatedBaseView extends PublicBaseView {
+abstract class PrivateBaseView extends PublicBaseView {
     // Inherit the public shell methods, using the authenticated stylesheet.
     protected function top($info = false, $stylesheet = 'insidestyles.css') {
         parent::top($info, $stylesheet);
     }
 }
 
-abstract class CustomerBaseView extends AuthenticatedBaseView {
+abstract class CustomerBaseView extends PrivateBaseView {
     public function menu($info = false) {
         $this->renderCustomerMenu(true);
         $this->renderIdentity();
     }
 }
 
-abstract class AdminBaseView extends AuthenticatedBaseView {
+abstract class AdminBaseView extends PrivateBaseView {
     public function menu($info = false) {
         echo '<nav id="menu" class="old" aria-label="Administrator navigation">
             <a href="controller.php">Public home</a>
@@ -221,11 +221,11 @@ abstract class AdminBaseView extends AuthenticatedBaseView {
 
 
 // Current name for the administrator route-management page.
-class InnerAdminView extends AdminRoutesView {
+class AdminView extends AdminRoutesView {
 }
 
 // Renders the administrator route-editing page.
-    class EditRouteView extends AdminBaseView {
+    class AdminEditRouteView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -259,7 +259,7 @@ class InnerAdminView extends AdminRoutesView {
     }
 
 // Renders the administrator add-route page.
-    class AddRouteView extends AdminBaseView {
+    class AdminAddRouteView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -325,7 +325,7 @@ class InnerAdminView extends AdminRoutesView {
     }
 
 // Renders the administrator flight manifest date list.
-    class FlightManifestView extends AdminBaseView {
+    class AdminFlightManifestView extends AdminBaseView {
 
         public function __construct($info) {
             $this->top();
@@ -684,7 +684,7 @@ class InnerAdminView extends AdminRoutesView {
 
     
     // Renders the flight search form.
-    class FlightSearchView extends CustomerBaseView {
+    class CustomerView extends CustomerBaseView {
         // Build the flight-search page using the shared public-page layout.
         public function __construct($info) {
             // Render the page header and navigation.
@@ -818,12 +818,12 @@ class InnerAdminView extends AdminRoutesView {
 
 
     /**
-     * FlightSearchResultsView
+     * CustomerFlightResultsView
      *
      * Displays flight-search results for a selected route, ticket quantity
      * and travel date.
      *
-     * Extends FlightSearchView to reuse the existing public-page layout,
+     * Extends CustomerView to reuse the existing public-page layout,
      * navigation and flight-search form.
      *
      * Checks a five-day date window around the requested travel date.
@@ -834,7 +834,7 @@ class InnerAdminView extends AdminRoutesView {
      * an available flight date and add the selection to the cart.
      */
     // Renders available dates and seats for a flight search.
-    class FlightSearchResultsView extends FlightSearchView {
+    class CustomerFlightResultsView extends CustomerView {
 
         private $route;
         private $seatCount;
@@ -926,7 +926,7 @@ class InnerAdminView extends AdminRoutesView {
      * their details or logged-in customers to retrieve their existing details.
      */
     // Renders passenger and payment details for a purchase.
-    class PassengerDetailsView extends FlightSearchView {
+    class CustomerPassengerDetailsView extends CustomerView {
 
         public function __construct($hasCookie) {
 
@@ -1005,7 +1005,7 @@ class InnerAdminView extends AdminRoutesView {
      * Displays the checkout page, including the shopping cart and controls
      * for submitting changes to the selected seats.
      */
-    class CheckoutView extends FlightSearchView {
+    class CustomerCheckoutView extends CustomerView {
 
         private $route;
         private $seatCount;
