@@ -51,9 +51,10 @@ abstract class PublicBaseView {
 
     protected function renderIdentity() {
         $username = $_SESSION['username'] ?? 'Guest';
-        if ($username !== 'Guest') {
-            echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
-        }
+        // if ($username !== 'Guest') {
+        //     echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
+        // }
+        echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
     }
 
     protected function bottom() {
@@ -75,6 +76,7 @@ abstract class PublicBaseView {
             public function __construct() {
                 $this->top(false);
                 $this->menu(false);
+                $this->renderIdentity();
                 $this->content();
                 $this->bottom();
             }
@@ -859,9 +861,9 @@ class AdminView extends AdminRoutesView {
             $username = $_COOKIE['username'] ?? ($_SESSION['username'] ?? '');
 
             // Escape the username before inserting it into HTML.
-            if ($username !== '') {
-                echo '<p class="welcome-message">Welcome ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</p>';
-            }
+            // if ($username !== '') {
+            //     echo '<p class="welcome-message">Welcome ' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</p>';
+            // }
         }
 
         // Delegate page-footer rendering to the parent class.

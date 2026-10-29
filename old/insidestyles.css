@@ -1,128 +1,108 @@
-/* #main {
-    width:800px;
-    margin:auto;
-    border:black solid 1px;
-    overflow:auto;
-}
-
-#header{
-    /*@import "mystyles.css";*/
- /*   text-align:center;
-    border:black solid 1px; 
-} 
 /*
-#menu{
-    height:40px;
-    border:black solid 1px;
-    text-align:right;
-    float:left;
-    /*                width:100px;*/
-/*
+ * Airline2026 authenticated pages.
+ * Shared outer appearance aligned with mystyles.css.
+ * Retains authenticated navigation and inner workspace styling.
+ */
+
+/* Shared colour palette and typography */
+:root {
+    --forest-green: #3b4d32;
+    --deep-green: #386747;
+    --off-white: #f5f5f0;
+    --charcoal-blue-grey: #303b41;
+    --muted-grey: #878679;
+    --dark-olive: #444235;
+    --sage-grey: #b3b8ab;
+    --muted-blue-grey: #738b8f;
+    --deep-teal-green: #294d35;
+
+    --font-primary: "Roboto", "Segoe UI", Arial, sans-serif;
+    --font-secondary: "Montserrat", "Roboto", "Segoe UI", Arial, sans-serif;
+
+    /* Shared outer-page styling */
+    --outer-border: #e5e4dc;
+    --outer-background: #ffffff;
+
+    /* Authenticated workspace styling */
+    --inner-border: var(--sage-grey);
+    --inner-pane-background: #ffffff;
+    --inner-selected-background: #edf2eb;
 }
 
-#bloggerlist{
-    float:left;
-    width:100px;
-    border:white solid 1px;
+/* Consistent box sizing across the entire page */
+* {
+    box-sizing: border-box;
 }
 
+/* Shared page foundation */
+body {
+    margin: 0;
+    padding: 28px 16px;
+    background: var(--off-white);
+    color: var(--charcoal-blue-grey);
+    font-family: var(--font-primary);
+    font-size: 16px;
+    line-height: 1.55;
+}
 
-#content{
-    float:left;
-    width:576px;
-    border:white solid 1px;
-    padding:10px
+h1,
+h2,
+h3,
+h4 {
+    color: var(--forest-green);
+    font-family: var(--font-secondary);
+}
 
-} */
+a {
+    color: var(--deep-green);
+}
 
+a:hover,
+a:focus {
+    color: var(--deep-teal-green);
+}
 
-/* Inside / authenticated views — legacy layout */
-
+/* Shared outer container */
 #main.old {
-    width: 800px;
-    margin: auto;
-    border: black solid 1px;
-    overflow: auto;
+    width: min(100%, 1000px);
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--outer-border);
+    border-radius: 8px;
+    background: var(--outer-background);
+    box-shadow: 0 3px 12px rgba(30, 40, 30, 0.06);
 }
 
+/* Shared header appearance */
 #header.old {
+    margin: 0;
+    padding: 28px 30px 22px;
+    border: 0;
+    border-bottom: 1px solid var(--outer-border);
+    background: var(--outer-background);
     text-align: center;
-    border: black solid 1px;
 }
 
+/* Authenticated navigation */
 #menu.old {
-    height: 40px;
-    border: black solid 1px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-height: 48px;
+    padding: 7px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--outer-border);
+    background: var(--off-white);
     text-align: right;
-    float: left;
 }
 
-#bloggerlist.old {
-    float: left;
-    width: 100px;
-    border: white solid 1px;
-}
-
-#content.old {
-    float: left;
-    width: 576px;
-    border: white solid 1px;
-    padding: 10px;
-}
-
-/* Shared workspace primitives for customer and administrator inner views. */
-.single-pane,
-.double-pane,
-.triple-pane {
-    display: grid;
-    min-width: 0;
-    min-height: 0;
-    gap: 18px;
-}
-
-.single-pane { grid-template-columns: minmax(0, 1fr); }
-.double-pane { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.triple-pane { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
-.pane {
-    min-width: 0;
-    min-height: 0;
-    overflow: auto;
-    padding: 16px;
-    border: 1px solid #e5e4dc;
-    border-radius: 6px;
-    background: #fff;
-    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-}
-
-.pane:hover,
-.pane:focus-within {
-    border-color: #b8cdbd;
-    box-shadow: 0 2px 8px rgba(30, 40, 30, 0.06);
-}
-
-.selectable-row {
-    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-}
-
-.selectable-row:hover,
-.selectable-row.is-selected {
-    border-color: #8eb29a;
-    background: #f1f7f2;
-}
-
-input[type="submit"],
-button,
-.button,
 #menu.old a {
-    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
-}
-
-#menu.old .book-flight-cta {
-    margin-left: auto;
-    border: 1px solid #285c43;
-    background: #285c43;
-    color: #fff;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
 }
 
 #menu.old .menu-left,
@@ -136,21 +116,196 @@ button,
     margin-left: auto;
 }
 
+#menu.old .book-flight-cta {
+    margin-left: auto;
+    padding: 8px 14px;
+    border: 1px solid var(--deep-green);
+    border-radius: 4px;
+    background: var(--deep-green);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+#menu.old .book-flight-cta:hover {
+    border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
+}
+
 #menu.old .book-flight-cta.is-disabled {
-    border-color: #cfd5ce;
+    border-color: var(--sage-grey);
     background: #e8ebe7;
-    color: #7a827b;
+    color: var(--muted-grey);
     cursor: not-allowed;
     pointer-events: none;
 }
 
+/* Identity strip directly beneath the menu */
+#identity {
+    width: 100%;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--outer-border);
+    background: #f5f4ef;
+    color: #386747;
+    text-align: left;
+    font-weight: 600;
+}
+
+/* Shared content frame.
+   Content can still use its own single-, double- or triple-pane grid. */
+#content {
+    float: none;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 28px 32px 34px;
+    border: 0;
+}
+
+/* Inner workspace layout primitives */
+.single-pane,
+.double-pane,
+.triple-pane {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+    gap: 18px;
+}
+
+.single-pane {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.double-pane {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.triple-pane {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Individual inner workspace panes */
+.pane {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: 16px;
+    border: 1px solid var(--inner-border);
+    border-radius: 6px;
+    background: var(--inner-pane-background);
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background-color 180ms ease;
+}
+
+.pane:hover,
+.pane:focus-within {
+    border-color: var(--muted-blue-grey);
+    box-shadow: 0 2px 8px rgba(30, 40, 30, 0.06);
+}
+
+/* Selectable rows */
+.selectable-row {
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.selectable-row:hover,
+.selectable-row.is-selected {
+    border-color: var(--deep-green);
+    background: var(--inner-selected-background);
+}
+
+/* Form controls */
+input,
+select,
+textarea,
+button {
+    font-family: var(--font-primary);
+}
+
+input[type="submit"],
+button,
+.button {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--deep-green);
+    border-radius: 4px;
+    background: var(--deep-green);
+    color: #ffffff;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+input[type="submit"]:hover,
+button:hover,
+.button:hover {
+    border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--muted-blue-grey);
+    outline-offset: 2px;
+}
+
+/* Shared footer appearance */
+#footer.old {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px 24px;
+    border: 0;
+    border-top: 1px solid var(--outer-border);
+    background: var(--off-white);
+    color: var(--muted-grey);
+    font-size: 0.9rem;
+}
+
+/* Responsive page and workspace layout */
 @media (max-width: 800px) {
+    body {
+        padding: 10px;
+    }
+
+    #main.old {
+        width: 100%;
+    }
+
     .double-pane,
     .triple-pane {
         grid-template-columns: minmax(0, 1fr);
     }
+
+    #content {
+        width: auto;
+        padding: 22px 20px 26px;
+    }
+
+    #menu.old {
+        flex-wrap: wrap;
+    }
+
+    #menu.old .menu-left,
+    #menu.old .menu-right {
+        flex-wrap: wrap;
+    }
 }
 
+/* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
     .pane,
     .selectable-row,

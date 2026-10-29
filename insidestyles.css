@@ -1,87 +1,209 @@
+
 /*
  * Airline2026 authenticated pages.
- * Separate styling for customer and administrator inner views.
- * Retains the original 2014 IDs and legacy layout selectors.
+ * Shared outer styling follows mystyles.css.
+ * Authenticated panes and navigation remain separately styled.
  */
 
-/* Inner-view colour palette */
+/* Authenticated colour palette */
 :root {
     --forest-green: #3b4d32;
-    --deep-green: #2a5b44;
-    --off-white: #f5f5f0;
-    --charcoal-blue-grey: #303b41;
-    --muted-grey: #878679;
-    --dark-olive: #444235;
+    --deep-green: #285c43;
+    --deep-teal-green: #1d4632;
+    --off-white: #f5f4ef;
+    --charcoal-blue-grey: #292d2b;
+    --muted-grey: #69736b;
     --sage-grey: #b3b8ab;
     --muted-blue-grey: #738b8f;
-    --deep-teal-green: #33524e;
-
-    --font-primary: "Roboto", "Segoe UI", Arial, sans-serif;
-    --font-secondary: "Montserrat", "Roboto", "Segoe UI", Arial, sans-serif;
 
     --inner-border: var(--sage-grey);
     --inner-pane-background: #ffffff;
     --inner-selected-background: #edf2eb;
 }
 
-/* Authenticated page foundation */
+/* --------------------------------------------------
+   Shared page foundation — aligned with mystyles.css
+   -------------------------------------------------- */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
 body {
     margin: 0;
-    background: var(--off-white);
-    color: var(--charcoal-blue-grey);
-    font-family: var(--font-primary);
-    line-height: 1.5;
+    padding: 28px 16px;
+    background: #f5f4ef;
+    color: #292d2b;
+    font-family: Roboto, "Segoe UI", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
 }
 
-h1,
-h2,
-h3,
-h4 {
-    color: var(--forest-green);
-    font-family: var(--font-secondary);
-}
-
-a {
-    color: var(--deep-green);
-}
-
-a:hover,
-a:focus {
-    color: var(--deep-teal-green);
-}
-
-/* Inside / authenticated views — legacy layout */
-
+/* Outer page frame */
 #main.old {
-    width: 800px;
-    max-width: 100%;
-    margin: auto;
-    border: 1px solid var(--inner-border);
-    overflow: auto;
-    box-sizing: border-box;
+    width: min(100%, 1000px);
+    margin: 0 auto;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e5e4dc;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(30, 40, 30, 0.06);
 }
 
+/* Page header */
 #header.old {
+    margin: 0;
+    padding: 28px 30px 22px;
+    border-bottom: 1px solid #e8e8e1;
     text-align: center;
-    border: 1px solid var(--inner-border);
-    box-sizing: border-box;
+    background: #fff;
 }
 
+/* Match the public "PHP Airlines.com" heading */
+#header h1 {
+    margin: 0;
+    color: #244f3b;
+    font-family: Montserrat, Roboto, "Segoe UI", Arial, sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+}
+
+#header .tagline {
+    margin: 5px 0 0;
+    color: #6b746d;
+    font-size: 0.95rem;
+}
+
+/* Navigation band — same outer appearance as mystyles.css */
 #menu.old {
-    min-height: 40px;
-    border: 1px solid var(--inner-border);
-    text-align: right;
-    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 48px;
+    padding: 7px 16px;
+    border-bottom: 1px solid #e8e8e1;
+    background: #fafaf7;
+    text-align: center;
 }
 
-#content.old {
-    float: left;
-    width: 576px;
-    padding: 10px;
-    box-sizing: border-box;
+/* Shared navigation-link appearance */
+#menu a {
+    display: inline-block;
+    padding: 8px 13px;
+    border-radius: 5px;
+    color: #285c43;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 120ms ease, color 120ms ease;
 }
 
-/* Shared workspace primitives for customer and administrator inner views */
+#menu a:hover,
+#menu a:focus-visible {
+    background: #e8f0e9;
+    color: #163b29;
+    outline: none;
+}
+
+/* Authenticated navigation arrangement */
+#menu.old .menu-left,
+#menu.old .menu-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#menu.old .menu-right {
+    margin-left: auto;
+}
+
+/* Book Flight action */
+#menu.old .book-flight-cta {
+    margin-left: auto;
+    border: 1px solid var(--deep-green);
+    border-radius: 5px;
+    background: var(--deep-green);
+    color: #fff;
+    padding: 8px 13px;
+    text-decoration: none;
+}
+
+#menu.old .book-flight-cta:hover {
+    border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
+}
+
+#menu.old .book-flight-cta.is-disabled {
+    border-color: var(--sage-grey);
+    background: #e8ebe7;
+    color: var(--muted-grey);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Identity strip beneath authenticated navigation */
+#identity {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 12px;
+    background: #f5f4ef;
+    color: #386747;
+    border-bottom: 1px solid #e5e4dc;
+    text-align: left;
+    font-weight: 600;
+}
+
+/* Main content frame — match mystyles.css */
+#content {
+    float: none;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 28px 32px 34px;
+    border: 0;
+}
+
+/* Content headings — match mystyles.css */
+#content h1,
+#content h2,
+#content h3 {
+    color: #293f32;
+    font-family: Montserrat, Roboto, "Segoe UI", Arial, sans-serif;
+    line-height: 1.25;
+}
+
+#content h1 {
+    margin-top: 0;
+    font-size: 1.65rem;
+}
+
+#content h2 {
+    font-size: 1.3rem;
+}
+
+#content form {
+    max-width: 100%;
+}
+
+#content table {
+    border-collapse: collapse;
+    max-width: 100%;
+}
+
+#content td {
+    padding: 6px 9px 6px 0;
+    vertical-align: top;
+}
+
+/* --------------------------------------------------
+   Authenticated workspace layouts — preserve
+   -------------------------------------------------- */
 
 .single-pane,
 .double-pane,
@@ -105,7 +227,6 @@ a:focus {
 }
 
 /* Individual workspace panes */
-
 .pane {
     min-width: 0;
     min-height: 0;
@@ -128,7 +249,6 @@ a:focus {
 }
 
 /* Selectable rows */
-
 .selectable-row {
     transition:
         background-color 180ms ease,
@@ -142,13 +262,13 @@ a:focus {
     background: var(--inner-selected-background);
 }
 
-/* Form controls */
-
+/* Authenticated form controls — retain their styling */
 input,
 select,
 textarea,
 button {
-    font-family: var(--font-primary);
+    max-width: 100%;
+    font-family: Roboto, "Segoe UI", Arial, sans-serif;
 }
 
 input[type="submit"],
@@ -159,7 +279,7 @@ button,
     border: 1px solid var(--deep-green);
     border-radius: 4px;
     background: var(--deep-green);
-    color: #ffffff;
+    color: #fff;
     cursor: pointer;
     text-decoration: none;
     transition:
@@ -185,85 +305,37 @@ a:focus-visible {
     outline-offset: 2px;
 }
 
-/* Authenticated navigation */
-
-#menu.old {
+/* Footer — match mystyles.css */
+#footer.old {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    background: var(--off-white);
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 15px 24px;
+    border-top: 1px solid #e8e8e1;
+    background: #fafaf7;
+    color: #69736b;
+    font-size: 0.9rem;
 }
 
-#menu.old a {
-    transition:
-        background-color 180ms ease,
-        border-color 180ms ease,
-        color 180ms ease,
-        box-shadow 180ms ease;
-}
-
-#menu.old .menu-left,
-#menu.old .menu-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-#menu.old .menu-right {
-    margin-left: auto;
-}
-
-#menu.old .book-flight-cta {
-    margin-left: auto;
-    border: 1px solid var(--deep-green);
-    border-radius: 4px;
-    background: var(--deep-green);
-    color: #ffffff;
-    padding: 8px 14px;
+#footer a {
+    color: #285c43;
     text-decoration: none;
 }
 
-#menu.old .book-flight-cta:hover {
-    border-color: var(--deep-teal-green);
-    background: var(--deep-teal-green);
+#footer a:hover {
+    text-decoration: underline;
 }
 
-#menu.old .book-flight-cta.is-disabled {
-    border-color: var(--sage-grey);
-    background: #e8ebe7;
-    color: var(--muted-grey);
-    cursor: not-allowed;
-    pointer-events: none;
-}
+/* --------------------------------------------------
+   Responsive behaviour
+   -------------------------------------------------- */
 
-/* Identity label — directly below the menu */
-#identity {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 8px 12px;
-    background-color: #f5f4ef;
-    color: #386747;
-    border-bottom: 1px solid #e5e4dc;
-    text-align: left;
-    font-weight: 600;
-}
-
-/* Responsive workspace layout */
-
+/* Preserve the authenticated panes' tablet layout */
 @media (max-width: 800px) {
-    #main.old {
-        width: 100%;
-    }
-
     .double-pane,
     .triple-pane {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    #content.old {
-        float: none;
-        width: 100%;
     }
 
     #menu.old {
@@ -275,8 +347,40 @@ a:focus-visible {
     }
 }
 
-/* Respect reduced-motion preferences */
+/* Match the public stylesheet's mobile breakpoint and spacing */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
 
+    #header.old {
+        padding: 22px 16px 18px;
+    }
+
+    #menu.old {
+        justify-content: flex-start;
+        padding: 8px;
+    }
+
+    #menu a {
+        padding: 7px 9px;
+    }
+
+    #content {
+        padding: 22px 16px 26px;
+    }
+
+    #content td {
+        display: block;
+        padding-right: 0;
+    }
+
+    #footer.old {
+        padding: 14px 16px;
+    }
+}
+
+/* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
     .pane,
     .selectable-row,
