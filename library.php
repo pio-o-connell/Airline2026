@@ -112,8 +112,10 @@ trait FlightWorkspace {
     //     echo '</div>';
     //     echo '</div>';
     // }
+   
     protected function renderWorkspace($showCheckout = false, $flights = null, $selectedId = null) {
         $selected = null;
+
         if (is_array($flights)) {
             foreach ($flights as $f) {
                 if ($f['flight_id'] === $selectedId) {
@@ -124,9 +126,19 @@ trait FlightWorkspace {
         }
 
         echo '<div id="content" class="flight-workspace triple-pane">';
-        $this->searchPane($showCheckout);   // Pane 1 – left
-        $this->detailsPane($selected);      // Pane 2 – middle
-        $this->resultsPane($flights, $selectedId); // Pane 3 – right
+
+        // Pane 1 – Search form and results summary
+        echo '<div class="workspace-search-column">';
+        $this->searchPane($showCheckout);
+        $this->resultsSummaryPane($flights);
+        echo '</div>';
+
+        // Pane 2 – Available flight cards
+        $this->resultsPane($flights, $selectedId);
+
+        // Pane 3 – Selected flight details and Add to Cart
+        $this->detailsPane($selected);
+
         echo '</div>';
     }
 
@@ -197,17 +209,18 @@ trait FlightWorkspace {
     }
 
     protected function resultsPane($flights = null, $selectedId = null) {
-        $n = is_array($flights) ? count($flights) : 0;
-        $msg = ($flights === null)
-            ? 'Search for a route and date to see flights.'
-            : ($n ? $n . ' flight' . ($n === 1 ? '' : 's') . ' found for your search'
-                 : 'No flights found for those dates.');
+        // $n = is_array($flights) ? count($flights) : 0;
+        // $msg = ($flights === null)
+        //     ? 'Search for a route and date to see flights.'
+        //     : ($n ? $n . ' flight' . ($n === 1 ? '' : 's') . ' found for your search'
+        //          : 'No flights found for those dates.');
 
-        echo '<section aria-labelledby="results-title">';
-        echo '<div class="results-header">';
-        echo '<h2 id="results-title">Available flights</h2>';
-        echo '<p>' . $msg . '</p>';
-        echo '</div>';
+        // echo '<section aria-labelledby="results-title">';
+        // echo '<div class="results-header">';
+        // echo '<h2 id="results-title">Available flights</h2>';
+        // echo '<p>' . $msg . '</p>';
+        // echo '</div>';
+        echo '<section class="flight-results" aria-label="Available flight results">';
 
         if (is_array($flights)) {
             foreach ($flights as $f) {
@@ -237,6 +250,23 @@ trait FlightWorkspace {
                 echo '</article>';
             }
         }
+        echo '</section>';
+    }
+
+    protected function resultsSummaryPane($flights = null) {
+        $n = is_array($flights) ? count($flights) : 0;
+
+        $msg = ($flights === null)
+            ? 'Search for a route and date to see flights.'
+            : ($n
+                ? $n . ' flight' . ($n === 1 ? '' : 's') . ' found for your search'
+                : 'No flights found for those dates.');
+
+        echo '<section class="search-card results-summary" aria-labelledby="results-title">';
+        echo '<div class="results-header">';
+        echo '<h2 id="results-title">Available flights</h2>';
+        echo '<p>' . esc($msg) . '</p>';
+        echo '</div>';
         echo '</section>';
     }
 

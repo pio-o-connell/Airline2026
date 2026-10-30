@@ -412,6 +412,29 @@ a:focus-visible {
     align-items: start;
 }
 
+/* Search pane and results summary grouped in Pane 1 */
+.workspace-search-column {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    min-width: 0;
+}
+
+/* Available flights summary below search form */
+.results-summary {
+    min-width: 0;
+}
+
+.results-summary .results-header h2 {
+    margin-top: 0;
+}
+
+.results-summary .results-header p {
+    margin-bottom: 0;
+}
+
+
+
 /* Remove the old .col rules – they are no longer needed */
 
 .search-card,
