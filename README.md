@@ -11,7 +11,7 @@ The original application was developed as part of the **Higher Diploma in Cloud 
 - PHP with PDO
 - MySQL 5.7 for the current local database
 - Server-rendered HTML forms and PHP views
-- JavaScript where present in the legacy interface
+- Light vanilla JavaScript for the trip-type tabs
 - CSS in [`mystyles.css`](mystyles.css) and [`insidestyles.css`](insidestyles.css)
 - PHP sessions and cookies for login and cart state
 
@@ -23,14 +23,16 @@ The original SQL dump was produced in the PHP 5.4.19, MySQL 5.5.32, and phpMyAdm
 
 The existing PHP source implements the following customer workflow:
 
-- Search routes by origin, destination, travel date, and number of tickets
-- Display matching route and travel-date results
-- Check availability using the legacy 20-seat flight model
-- Add a provisional flight to the session-backed cart
-- Select seats, review cart items, update seats, and remove cart items
+- Three-pane search interface (Search | Flight details | Available flights)
+- Trip-type tabs: **One Way** (active), Round Trip and Multi-City (placeholders marked “coming soon”)
+- Search routes by origin, destination, travel date and number of tickets
+- Display matching flights from the `flights` table (±2 days around the chosen date)
+- Show calculated duration using airport time-zone data
+- Select a flight to populate the details pane and add it to the session-backed cart
+- Select seats, review cart items, update seats and remove cart items
 - Register a customer account or continue as a guest
 - Log in and log out
-- Enter passenger name, passport, email, and payment details
+- Enter passenger name, passport, email and payment details
 - Record passenger and seat information in the database
 
 ### Administrator workflow
@@ -307,16 +309,33 @@ PrivateBaseView (abstract, standalone, was AuthenticatedBaseView)
     └── AdminFlightManifestView (was FlightManifestView)
 ```
 
+### Customer and Guest Home Pages – Three-Pane Layout
+
+The customer and guest home pages now use a three-pane layout:
+
+1. **Search Flights** – Contains the One Way, Round Trip and Multi-City tabs, route selector, travel date and ticket count.
+
+2. **Flight Details** – Displays the currently selected flight and provides the **Add to Cart** action.
+
+3. **Available Flights** – Lists matching flights retrieved from the database, including calculated flight duration.
+
+**Current Functionality:**
+- **One Way:** Fully functional, including flight searching and selection.
+- **Round Trip:** Visual placeholder displaying a "Coming Soon" message.
+- **Multi-City:** Visual placeholder displaying a "Coming Soon" message.
+
+Only One Way flight searching is currently implemented. Round Trip and Multi-City functionality will be developed in a future update.
+
+
 ## Planned booking enhancements
 
 The database now provides `booking`, `booking_flights`, and dated `flights` structures that can support future itinerary work. Potential future enhancements include:
 
-- Return journeys with separate outbound and return flights
-- Multi-city itineraries with ordered flight legs
+- Full Round Trip and Multi-City booking flows
+- Return-date and multi-leg selection
 - Grouping several selected flights into one booking
-- Consistent flight search, availability, cart, and booking-completion logic
-- A three-pane search, available-flights, and selected-itinerary interface
-- More robust validation and parameterized database access
+- More robust validation and consistent use of prepared statements
+- Rendering the full 180/220-seat aircraft map instead of the legacy 20-seat UI
 
 These are planned enhancements, not claims about functionality currently implemented by the PHP source. The current PHP code still searches routes, uses the session cart, displays 20 seat positions, and writes legacy `passangers` records.
 
@@ -361,4 +380,7 @@ In 2026 the view classes were renamed for clarity and the private view tree was 
 | `Cart` | `Cart` (unchanged) |
 | `DBManager` | `DBManager` (unchanged) |
 
-`AdminView` is a thin subclass of `AdminRoutesView`, retained from the original `InnerAdminView` / `AdminRoutesView` arrangement.
+
+`AdminView` is a thin subclass of `AdminRoutesView`, retained from the original `InnerAdminView / AdminRoutesView` arrangement.
+
+A shared `FlightWorkspace` trait was later introduced to provide the three-pane search interface for both guest and customer views without duplicating markup.

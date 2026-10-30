@@ -57,6 +57,21 @@ function dispatchRequest()
             }
             break;
 
+        case "selectFlight":
+            if (empty($_SESSION['route'])) {
+                new CustomerView($hasCookie);
+                break;
+            }
+            new CustomerFlightResultsView(
+                $_SESSION['route'],
+                $_SESSION['seatCount'],
+                $_SESSION['date'],
+                $hasCookie,
+                loadFlightResults(),
+                (int)(isset($_GET['flightid']) ? $_GET['flightid'] : 0)
+            );
+            break;
+
         case "addFlightToCart":
             handleAddFlightToCart();
             break;
@@ -183,7 +198,8 @@ function dispatchRequest()
                 $_SESSION['route'],
                 $_SESSION['seatCount'],
                 $_SESSION['date'],
-                $hasCookie
+                $hasCookie,
+                loadFlightResults()
             );
 
             handleSeatOccupancyRequest($date);
@@ -206,7 +222,8 @@ function dispatchRequest()
             unset(
                 $_SESSION['route'],
                 $_SESSION['seatCount'],
-                $_SESSION['date']
+                $_SESSION['date'],
+                $_SESSION['trip_type']
             );
 
             new PublicHomeView();
@@ -248,11 +265,99 @@ function isValidDate($date, $format = 'd-m-Y H:i:s')
     return $d && $d->format($format) == $date;
 }
 
+/**
+ * Calculate flight duration using airport time zones.
+ */
+function calculateDuration($date, $depart, $arrive, $fromCity, $toCity)
+{
+    try {
+        $tz   = AIRPORT_TIMEZONES;
+        $from = isset($tz[strtolower($fromCity)]) ? $tz[strtolower($fromCity)] : 'UTC';
+        $to   = isset($tz[strtolower($toCity)])   ? $tz[strtolower($toCity)]   : $from;
+
+        $dep  = new DateTime("$date $depart", new DateTimeZone($from));
+        $arr  = new DateTime("$date $arrive", new DateTimeZone($to));
+
+        // Overnight arrival
+        if ($arr <= $dep) {
+            $arr->modify('+1 day');
+        }
+
+        $mins = (int)(($arr->getTimestamp() - $dep->getTimestamp()) / 60);
+        return $mins > 0 ? ((int)($mins / 60)) . 'h ' . ($mins % 60) . 'm' : null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+/**
+ * Turn raw DB rows into the array structure the views expect.
+ */
+function prepareFlightResults($rows, $seatCount)
+{
+    $out = array();
+    foreach ($rows as $r) {
+        $out[] = array(
+            'flight_id'   => (int)$r['flight_id'],
+            'airline'     => AIRLINE_NAME,
+            'logo'        => AIRLINE_LOGO,
+            'flight_code' => $r['flight_code'],
+            'date'        => $r['flight_date'],
+            'from'        => ucwords($r['source']),
+            'to'          => ucwords($r['dest']),
+            'departs'     => substr($r['departure_time'], 0, 5),
+            'arrives'     => substr($r['arrival_time'], 0, 5),
+            'duration'    => calculateDuration(
+                $r['flight_date'],
+                $r['departure_time'],
+                $r['arrival_time'],
+                $r['source'],
+                $r['dest']
+            ),
+            'fare'        => CURRENCY . number_format($r['price']),
+            'total'       => CURRENCY . number_format($r['price'] * (int)$seatCount),
+        );
+    }
+    return $out;
+}
+
+/**
+ * Load flights for the current search (±2 days around the chosen date).
+ * Returns null when no search has been performed yet.
+ */
+function loadFlightResults()
+{
+    if (empty($_SESSION['route']) || empty($_SESSION['date']) || empty($_SESSION['seatCount'])) {
+        return null; // not searched yet
+    }
+
+    try {
+        $start = new DateTime($_SESSION['date']);
+    } catch (Exception $e) {
+        return array();
+    }
+
+    $DBM  = new DBManager();
+    $from = clone $start;
+    $to   = clone $start;
+    $from->modify('-2 days');
+    $to->modify('+2 days');
+
+    $rows = $DBM->getFlightsForSearch(
+        $_SESSION['route'],
+        $from->format('Y-m-d'),
+        $to->format('Y-m-d')
+    );
+
+    return prepareFlightResults($rows, $_SESSION['seatCount']);
+}
+
 function handleFlightSearch($hasCookie)
 {
-    $_SESSION['route'] = $_POST['route'];
+    $_SESSION['route']     = $_POST['route'];
     $_SESSION['seatCount'] = $_POST['seatCount'];
-    $_SESSION['date'] = $_POST['date'];
+    $_SESSION['date']      = $_POST['date'];
+    $_SESSION['trip_type'] = isset($_POST['trip_type']) ? $_POST['trip_type'] : 'oneway';
 
     try {
         $yrdata = strtotime($_POST['date']);
@@ -278,7 +383,8 @@ function handleFlightSearch($hasCookie)
                 $_POST['route'],
                 $_POST['seatCount'],
                 $_POST['date'],
-                $hasCookie
+                $hasCookie,
+                loadFlightResults()
             );
         }
     } catch (Exception $e) {
@@ -315,11 +421,11 @@ function handleAddFlightToCart()
     if ($freeSeats >= $_SESSION['seatCount']) {
         $_SESSION['cart']->addFlight($flightInfo);
 
-        new CustomerView($hasCookie);
+        new CustomerView($hasCookie, loadFlightResults());
 
         echo "Added to Cart provisional purchases- edit as see fit";
     } else {
-        new CustomerView($hasCookie);
+        new CustomerView($hasCookie, loadFlightResults());
 
         echo "Only $freeSeats available -- not added to cart";
     }

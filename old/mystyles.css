@@ -1,5 +1,8 @@
 /* Airline2026 public pages — Blogger-inspired clarity, retaining the 2014 IDs. */
-* { box-sizing: border-box; }
+
+* {
+    box-sizing: border-box;
+}
 
 :root {
     /* Fonts */
@@ -18,7 +21,13 @@
     --deep-teal-green: #33524e;
 }
 
-html { min-height: 100%; }
+/* --------------------------------------------------
+   Page and original 2014 outer layout
+   -------------------------------------------------- */
+
+html {
+    min-height: 100%;
+}
 
 body {
     margin: 0;
@@ -44,8 +53,8 @@ body {
     margin: 0;
     padding: 28px 30px 22px;
     border-bottom: 1px solid var(--sage-grey);
-    text-align: center;
     background: #fff;
+    text-align: center;
 }
 
 #header h1 {
@@ -62,6 +71,10 @@ body {
     color: var(--muted-grey);
     font-size: 0.95rem;
 }
+
+/* --------------------------------------------------
+   Public navigation
+   -------------------------------------------------- */
 
 #menu.old {
     display: flex;
@@ -80,10 +93,13 @@ body {
 #menu .menu-right {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 4px;
 }
 
-#menu .menu-right { margin-left: auto; }
+#menu .menu-right {
+    margin-left: auto;
+}
 
 #menu a {
     display: inline-block;
@@ -111,6 +127,7 @@ body {
 
 #menu .book-flight-cta:hover,
 #menu .book-flight-cta:focus-visible {
+    border-color: var(--deep-teal-green);
     background: var(--deep-teal-green);
     color: #fff;
 }
@@ -122,6 +139,22 @@ body {
     cursor: not-allowed;
     pointer-events: none;
 }
+
+/* Identity label — directly below the menu */
+#identity {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 12px;
+    background-color: #f5f4ef;
+    color: #386747;
+    border-bottom: 1px solid #e5e4dc;
+    text-align: left;
+    font-weight: 600;
+}
+
+/* --------------------------------------------------
+   Public content area
+   -------------------------------------------------- */
 
 #content {
     float: none;
@@ -140,14 +173,59 @@ body {
     line-height: 1.25;
 }
 
-#content h1 { margin-top: 0; font-size: 1.65rem; }
-#content h2 { font-size: 1.3rem; }
+#content h1 {
+    margin-top: 0;
+    font-size: 1.65rem;
+}
 
-#content form { max-width: 100%; }
-#content table { border-collapse: collapse; max-width: 100%; }
-#content td { padding: 6px 9px 6px 0; vertical-align: top; }
+#content h2 {
+    font-size: 1.3rem;
+}
 
-input, select, textarea, button {
+#content h3 {
+    font-size: 1.1rem;
+}
+
+#content p {
+    margin-top: 0;
+}
+
+#content form {
+    max-width: 100%;
+}
+
+#content table {
+    max-width: 100%;
+    border-collapse: collapse;
+}
+
+#content th {
+    text-align: left;
+}
+
+#content th,
+#content td {
+    padding: 6px 9px 6px 0;
+    vertical-align: top;
+}
+
+#content a {
+    color: var(--deep-green);
+    transition: color 180ms ease;
+}
+
+#content a:hover {
+    color: var(--deep-teal-green);
+}
+
+/* --------------------------------------------------
+   Form controls
+   -------------------------------------------------- */
+
+input,
+select,
+textarea,
+button {
     max-width: 100%;
     font: inherit;
 }
@@ -166,6 +244,19 @@ textarea {
     color: var(--charcoal-blue-grey);
 }
 
+textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--muted-blue-grey);
+    outline-offset: 2px;
+}
+
 input[type="submit"],
 button,
 .button {
@@ -176,26 +267,33 @@ button,
     color: #fff;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 180ms ease, border-color 180ms ease,
-                color 180ms ease, box-shadow 180ms ease;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
 }
 
 input[type="submit"]:hover,
 button:hover,
 .button:hover {
-    background: var(--deep-teal-green);
     border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
 }
 
-#content a {
-    color: var(--deep-green);
-    transition: background-color 180ms ease, border-color 180ms ease,
-                color 180ms ease, box-shadow 180ms ease;
+button:disabled,
+input[type="submit"]:disabled {
+    border-color: var(--sage-grey);
+    background: var(--sage-grey);
+    color: var(--dark-olive);
+    cursor: not-allowed;
 }
 
-#content a:hover { color: var(--deep-teal-green); }
+/* --------------------------------------------------
+   Workspace layout primitives
+   Available for public pages that need multiple panes.
+   -------------------------------------------------- */
 
-/* Shared workspace primitives for customer and administrator inner views. */
 .single-pane,
 .double-pane,
 .triple-pane {
@@ -205,9 +303,17 @@ button:hover,
     gap: 18px;
 }
 
-.single-pane { grid-template-columns: minmax(0, 1fr); }
-.double-pane { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.triple-pane { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.single-pane {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.double-pane {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.triple-pane {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 
 .pane {
     min-width: 0;
@@ -217,8 +323,10 @@ button:hover,
     border: 1px solid var(--sage-grey);
     border-radius: 6px;
     background: #fff;
-    transition: border-color 180ms ease, box-shadow 180ms ease,
-                background-color 180ms ease;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        background-color 180ms ease;
 }
 
 .pane:hover,
@@ -228,8 +336,10 @@ button:hover,
 }
 
 .selectable-row {
-    transition: background-color 180ms ease, border-color 180ms ease,
-                box-shadow 180ms ease;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
 }
 
 .selectable-row:hover,
@@ -238,30 +348,13 @@ button:hover,
     background: var(--off-white);
 }
 
-@media (max-width: 800px) {
-    .double-pane,
-    .triple-pane {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
+/* --------------------------------------------------
+   Original route/blog list area
+   -------------------------------------------------- */
 
-@media (prefers-reduced-motion: reduce) {
-    input[type="submit"],
-    button,
-    .button,
-    #content a,
-    .pane,
-    .selectable-row {
-        transition: none;
-    }
-}
-
-#bloggerlist.old {
-    float: left;
-    width: 100%;
-    padding: 0 32px 20px;
-    border: 0;
-}
+/* --------------------------------------------------
+   Public footer
+   -------------------------------------------------- */
 
 #footer.old {
     display: flex;
@@ -280,21 +373,72 @@ button:hover,
     text-decoration: none;
 }
 
-#footer a:hover { text-decoration: underline; }
+#footer a:hover {
+    color: var(--deep-teal-green);
+    text-decoration: underline;
+}
 
-.welcome-message {
-    margin: 0;
-    padding: 10px 24px 0;
-    color: var(--muted-grey);
-    text-align: center;
+/* --------------------------------------------------
+   Responsive layout
+   -------------------------------------------------- */
+
+@media (max-width: 800px) {
+    .double-pane,
+    .triple-pane {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 @media (max-width: 600px) {
-    body { padding: 10px; }
-    #header.old { padding: 22px 16px 18px; }
-    #menu.old { justify-content: flex-start; padding: 8px; }
-    #menu a { padding: 7px 9px; }
-    #content { padding: 22px 16px 26px; }
-    #content td { display: block; padding-right: 0; }
-    #footer.old { padding: 14px 16px; }
+    body {
+        padding: 10px;
+    }
+
+    #header.old {
+        padding: 22px 16px 18px;
+    }
+
+    #menu.old {
+        justify-content: flex-start;
+        padding: 8px;
+    }
+
+    #menu .menu-right {
+        margin-left: 0;
+    }
+
+    #menu a {
+        padding: 7px 9px;
+    }
+
+    #content {
+        padding: 22px 16px 26px;
+    }
+
+    #content th,
+    #content td {
+        display: block;
+        padding-right: 0;
+    }
+
+    #footer.old {
+        padding: 14px 16px;
+    }
+
+}
+
+/* --------------------------------------------------
+   Accessibility: respect reduced-motion preferences
+   -------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    input[type="submit"],
+    button,
+    .button,
+    #menu a,
+    #content a,
+    .pane,
+    .selectable-row {
+        transition: none;
+    }
 }
