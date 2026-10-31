@@ -338,28 +338,7 @@ trait FlightWorkspace {
 class PublicHomeView extends PublicBaseView {
     use FlightWorkspace;
 
-    // public function __construct() {
-    //     $this->top(false);
-    //     $this->menu(false);
-    //     $this->renderIdentity();
-    //     $this->content();
-    //     $this->bottom();
-    // }
 
-    // public function content() {
-    //     $this->renderWorkspace(false); // no checkout link for guests
-    // }
-    // public function __construct($flights = null) {
-    //     $this->top(false);
-    //     $this->menu(false);
-    //     $this->renderIdentity();
-    //     $this->content($flights);
-    //     $this->bottom();
-    // }
-
-    // public function content($flights = null) {
-    //     $this->renderWorkspace(false, $flights);
-    // }
     public function __construct($flights = null, $selectedId = null) {
         $this->top(false);
         $this->menu(false);
@@ -738,13 +717,64 @@ class Cart {
     private $cartElements = array();
     private $cartID = 0;
 
+    // function addFlight($ticketInfo) {
+    //     $this->cartElements[$this->cartID] = $ticketInfo;
+    //     $this->cartID++;
+    // }
     function addFlight($ticketInfo) {
-        $this->cartElements[$this->cartID] = $ticketInfo;
-        $this->cartID++;
+
+        $flightId = (int)$ticketInfo['flight_id'];
+        $passengers = (int)$ticketInfo['seatCount'];
+
+        if ($flightId <= 0 || $passengers <= 0) {
+            return false;
+        }
+
+        // Flight already exists in the Cart.
+        if (isset($this->cartElements[$flightId])) {
+
+            $this->cartElements[$flightId]['seatCount'] += $passengers;
+
+            $newPassengerCount =
+                $this->cartElements[$flightId]['seatCount'];
+
+            // Preserve the existing 20-passenger search limit.
+            if ($newPassengerCount > 20) {
+
+                $this->cartElements[$flightId]['seatCount'] -= $passengers;
+
+                return false;
+            }
+
+            $this->cartElements[$flightId]['totalFare'] =
+                $this->cartElements[$flightId]['unitFare']
+                * $newPassengerCount;
+
+            return true;
+        }
+
+        // First time this flight is added.
+        $ticketInfo['totalFare'] =
+            $ticketInfo['unitFare'] * $passengers;
+
+        $this->cartElements[$flightId] = $ticketInfo;
+
+        return true;
     }
 
-    function removeFlight($cartID) {
-        unset($this->cartElements[$cartID]);
+    // function removeFlight($cartID) {
+    //     unset($this->cartElements[$cartID]);
+    // }
+    function removeFlight($flightId) {
+
+        $flightId = (int)$flightId;
+
+        if (isset($this->cartElements[$flightId])) {
+            unset($this->cartElements[$flightId]);
+            return true;
+        }
+
+        return false;
     }
 
     function recordBookings($username, $email, $CreditCardNo, $PassportNo) {
@@ -780,46 +810,111 @@ class Cart {
         }
     }
 
+    // function displayCart() {
+    //     $cartIds = array_keys($this->cartElements);
+
+    //     for ($i = 0; $i < sizeof($cartIds); $i++) {
+    //         $cartID = $cartIds[$i];
+
+    //         echo "<p style=\"border:red solid 1px\">";
+    //         echo "Route: " . $this->cartElements[$cartID]['route'] . "<br>";
+    //         echo "date: " . $this->cartElements[$cartID]['date'] . "<br>";
+    //         echo "Number of seats: " . $this->cartElements[$cartID]['seatCount'] . "<br>";
+    //         echo "Occupied Seats:  " . $this->cartElements[$cartID]['freeSeats'] . "<br>";
+    //         echo "<BR> First {$this->cartElements[$cartID]['seatCount']} seats selected will be chosen <BR>";
+
+    //         $count = 0;
+
+    //         for ($j = 0; $j < 20; $j++) {
+    //             $dummy1 = $i . "b" . $j;
+    //             echo $dummy1;
+
+    //             if (($this->cartElements[$cartID]['seats'][$j] == "Y") ||
+    //                 ($this->cartElements[$cartID]['seats'][$j] == "U")) {
+    //                 echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" checked >";
+    //                 echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\"disabled>";
+    //                 $count++;
+    //             } else {
+    //                 echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" >";
+    //                 echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\" checked>";
+    //             }
+    //             echo "<br>";
+    //         }
+
+    //         if ($count == 20)
+    //             echo "<br> ---- FLIGHT BOOKED OUT -- ";
+
+    //         echo '<a href="controller.php?cmd=removeCartItem&cartID=' . $cartID . '">delete</a>';
+    //         echo "</p>";
+    //     }
+
+    //     echo "<br><a href=\"controller.php\">Back to search</a>";
+    //     echo "</p>";
+    // }
+
     function displayCart() {
-        $cartIds = array_keys($this->cartElements);
 
-        for ($i = 0; $i < sizeof($cartIds); $i++) {
-            $cartID = $cartIds[$i];
-
-            echo "<p style=\"border:red solid 1px\">";
-            echo "Route: " . $this->cartElements[$cartID]['route'] . "<br>";
-            echo "date: " . $this->cartElements[$cartID]['date'] . "<br>";
-            echo "Number of seats: " . $this->cartElements[$cartID]['seatCount'] . "<br>";
-            echo "Occupied Seats:  " . $this->cartElements[$cartID]['freeSeats'] . "<br>";
-            echo "<BR> First {$this->cartElements[$cartID]['seatCount']} seats selected will be chosen <BR>";
-
-            $count = 0;
-
-            for ($j = 0; $j < 20; $j++) {
-                $dummy1 = $i . "b" . $j;
-                echo $dummy1;
-
-                if (($this->cartElements[$cartID]['seats'][$j] == "Y") ||
-                    ($this->cartElements[$cartID]['seats'][$j] == "U")) {
-                    echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" checked >";
-                    echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\"disabled>";
-                    $count++;
-                } else {
-                    echo "<input type=\"radio\" name=\"$dummy1\" value=\"Y\" >";
-                    echo "<input type=\"radio\"name=\"$dummy1\" value=\"N\" checked>";
-                }
-                echo "<br>";
-            }
-
-            if ($count == 20)
-                echo "<br> ---- FLIGHT BOOKED OUT -- ";
-
-            echo '<a href="controller.php?cmd=removeCartItem&cartID=' . $cartID . '">delete</a>';
-            echo "</p>";
+        if (empty($this->cartElements)) {
+            echo "<p>Your Cart is currently empty.</p>";
+            echo '<a href="controller.php">Back to search</a>';
+            return;
         }
 
-        echo "<br><a href=\"controller.php\">Back to search</a>";
-        echo "</p>";
+        $grandTotal = 0;
+
+        foreach ($this->cartElements as $flightId => $flight) {
+
+            $passengers = (int)$flight['seatCount'];
+            $unitFare = (float)$flight['unitFare'];
+            $flightTotal = $unitFare * $passengers;
+
+            $grandTotal += $flightTotal;
+
+            echo '<div class="cart-item">';
+
+            echo '<h3>' . htmlspecialchars(
+                $flight['flight_code'] ?? 'Flight',
+                ENT_QUOTES,
+                'UTF-8'
+            ) . '</h3>';
+
+            echo '<p>Route: ' .
+                htmlspecialchars($flight['from'] ?? '', ENT_QUOTES, 'UTF-8') .
+                ' to ' .
+                htmlspecialchars($flight['to'] ?? '', ENT_QUOTES, 'UTF-8') .
+                '</p>';
+
+            echo '<p>Date: ' .
+                htmlspecialchars($flight['date'], ENT_QUOTES, 'UTF-8') .
+                '</p>';
+
+            echo '<p>Departure: ' .
+                htmlspecialchars($flight['departs'] ?? '', ENT_QUOTES, 'UTF-8') .
+                '</p>';
+
+            echo '<p>Arrival: ' .
+                htmlspecialchars($flight['arrives'] ?? '', ENT_QUOTES, 'UTF-8') .
+                '</p>';
+
+            echo '<p>Number of passengers: ' . $passengers . '</p>';
+
+            echo '<p>Fare per passenger: €' .
+                number_format($unitFare, 2) . '</p>';
+
+            echo '<p>Flight total: €' .
+                number_format($flightTotal, 2) . '</p>';
+
+            echo '<a href="controller.php?cmd=removeCartItem&amp;flightId=' .
+                (int)$flightId . '">Remove flight</a>';
+
+            echo '</div>';
+        }
+
+        echo '<div class="cart-total">';
+        echo '<h3>Cart total: €' . number_format($grandTotal, 2) . '</h3>';
+        echo '</div>';
+
+        echo '<a href="controller.php">Back to search</a>';
     }
 
     function processSeatSelections() {
@@ -1022,6 +1117,24 @@ class DBManager {
             ':d_to'   => $toDate
         ));
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getFlightForCart($flightId)
+    {
+        $sql = "SELECT f.flight_id, f.flight_code, f.flight_date,
+                    f.departure_time, f.arrival_time, f.route_id,
+                    r.source, r.dest, r.price
+                FROM flights f
+                JOIN routes r ON r.id = f.route_id
+                WHERE f.flight_id = :flight_id";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute(array(
+            ':flight_id' => (int)$flightId
+        ));
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function authenticateUser($username, $password) {

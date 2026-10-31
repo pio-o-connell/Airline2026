@@ -643,3 +643,109 @@ a.button {
     color: #33524e;
     border: 1px solid #33524e;
 }
+
+/* =====================================
+   AIRLINE2026 - SHOPPING CART
+   ===================================== */
+
+.cart-item {
+    background: #F5F5F0;
+    border: 1px solid #B3B8AB;
+    border-left: 5px solid #3B4D32;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 18px 0;
+    box-shadow: 0 3px 9px rgba(48, 59, 65, 0.10);
+    transition: transform 0.25s ease,
+                box-shadow 0.25s ease,
+                border-color 0.25s ease;
+}
+
+.cart-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 18px rgba(48, 59, 65, 0.16);
+    border-left-color: #2A5B44;
+}
+
+.cart-item h3 {
+    color: #2A5B44;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #B3B8AB;
+}
+
+.cart-item p {
+    color: #303B41;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.95rem;
+    margin: 9px 0;
+    line-height: 1.5;
+}
+
+.cart-item p:last-of-type {
+    font-weight: 700;
+    color: #2A5B44;
+}
+
+.cart-item a {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 15px;
+    background: #3B4D32;
+    color: #F5F5F0;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    transition: background 0.2s ease,
+                transform 0.2s ease;
+}
+
+.cart-item a:hover {
+    background: #2A5B44;
+    transform: translateY(-2px);
+}
+
+/* Cart grand total */
+
+.cart-total {
+    background: #303B41;
+    color: #F5F5F0;
+    border-radius: 9px;
+    padding: 17px 22px;
+    margin: 22px 0;
+    text-align: right;
+    box-shadow: 0 3px 9px rgba(48, 59, 65, 0.15);
+}
+
+.cart-total h3 {
+    color: #F5F5F0;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+/* Cart responsiveness */
+
+@media (max-width: 600px) {
+
+    .cart-item {
+        padding: 16px;
+        margin: 14px 0;
+    }
+
+    .cart-total {
+        text-align: left;
+        padding: 15px;
+    }
+
+    .cart-total h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Ensure Cart total heading is visible on dark background */
+#content .cart-total h3 {
+    color: var(--off-white);
+}
