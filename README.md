@@ -384,3 +384,254 @@ In 2026 the view classes were renamed for clarity and the private view tree was 
 `AdminView` is a thin subclass of `AdminRoutesView`, retained from the original `InnerAdminView / AdminRoutesView` arrangement.
 
 A shared `FlightWorkspace` trait was later introduced to provide the three-pane search interface for both guest and customer views without duplicating markup.
+
+
+## Proposed Cart and Seat Selection Enhancements
+
+The next stage of development will focus on completing the Cart and reservation workflow. The intention is to extend the existing session-backed Cart class while retaining the original PHP server-rendered MVC architecture.
+
+### 1. Cart – Proposed Design
+
+The Cart will act as a temporary reservation basket rather than a conventional online shopping cart.
+
+It will hold the flights selected by the customer, the travel date, passenger count and any seat selections made during the reservation process.
+
+**Proposed Cart responsibilities:**
+
+- Add selected flights to the Cart.
+- Display flight details, including airline, flight code, route, date, departure and arrival times.
+- Display the passenger count and fare total.
+- Allow customers to remove individual flights.
+- Allow customers to select or change seats for each passenger.
+- Display the selected seats and associated fare information.
+- Proceed to Checkout when the reservation is ready.
+
+The existing session-backed Cart will be retained. No additional database table is currently proposed for temporary Cart contents.
+
+### 2. Proposed Booking Workflow
+
+The intended customer journey is:
+
+```text
+          SEARCH FLIGHTS
+                |
+                v
+        SELECT AVAILABLE FLIGHT
+                |
+                v
+             ADD TO CART
+                |
+                v
+       +---------------------+
+       |        CART         |
+       |                     |
+       | Review flight       |
+       | Select passenger    |
+       | seats                |
+       | Remove flight       |
+       +---------------------+
+                |
+                v
+             CHECKOUT
+                |
+                v
+       PASSENGER DETAILS
+                |
+                v
+       VALIDATE AVAILABILITY
+                |
+                v
+       CONFIRM RESERVATION
+                |
+                v
+        CREATE BOOKING
+                |
+                v
+       BOOKING CONFIRMATION
+```
+
+The Cart is a temporary reservation state. A flight added to the Cart is not yet a confirmed booking.
+
+### 3. Guest and Customer Cart Handling
+
+Guests will be able to search for flights, select flights and add them to the Cart without first registering or logging in.
+
+If a guest subsequently logs in or registers, the existing Cart and flight-search state should be preserved.
+
+The intended transition is:
+
+```text
+       GUEST SEARCH
+            |
+            v
+        ADD TO CART
+            |
+            v
+       GUEST CART
+            |
+            v
+       LOGIN / REGISTER
+            |
+            v
+     AUTHENTICATED CUSTOMER
+            |
+            v
+      RESTORE CART STATE
+            |
+            v
+         CHECKOUT
+```
+
+Authentication must not discard the guest's selected flights, Cart contents or current flight-search selection.
+
+### 4. Dynamic Aircraft Seat Selection
+
+The existing Cart interface uses a legacy 20-seat representation. This will eventually be replaced by a dynamic seat map based on the aircraft assigned to each flight.
+
+The database already contains the necessary structures:
+
+- `aircraft` – aircraft model and seating capacity.
+- `aircraft_seats` – individual seat definitions, labels, rows, positions and premium-seat indicators.
+- `flights` – the aircraft assigned to each dated flight.
+- `passangers` – passenger and allocated seat information.
+
+The application will retrieve the seat configuration using the selected flight's `aircraft_id`.
+
+This will allow the interface to support the existing aircraft configurations:
+
+| Aircraft | Capacity | Premium seats |
+|---|---:|---:|
+| `AC180` | 180 | 18 |
+| `AC220` | 220 | 18 |
+
+The seat map will be generated from the database rather than relying on a fixed number of HTML radio buttons.
+
+### 5. Proposed Seat Map Layout
+
+The seat map will use individual HTML elements styled with CSS. Seats will be clickable, rather than using a static aircraft image with image hotspots.
+
+A conceptual six-seat arrangement is illustrated below. The actual layout and seat labels will be driven by the database configuration.
+
+```text
+                 FRONT OF AIRCRAFT
+                  ┌─────────────┐
+                  │   COCKPIT   │
+                  └─────────────┘
+
+                    WINDOW
+                 A   B   C   D   E   F
+
+              01  □   □   □   □   □   □
+              02  □   □   □   □   □   □
+              03  □   □   □   □   □   □
+              04  □   □   □   □   □   □
+              05  □   □   □   □   □   □
+              06  □   □   □   □   □   □
+
+                    ...
+              
+              Additional rows generated
+              according to aircraft capacity.
+
+                  REAR OF AIRCRAFT
+```
+
+### 6. Seat Colour Coding
+
+The existing Airline2026 colour palette will be reused to maintain a consistent appearance.
+
+| Seat state | Proposed appearance | Colour |
+|---|---|---|
+| Available | Off-white seat with green border | `#F5F5F0` |
+| Selected by customer | Deep green background with light text | `#2A5B44` |
+| Occupied | Sage-grey background with muted text | `#B3B8AB` / `#878679` |
+| Premium | Forest-green border or premium indicator | `#3B4D32` |
+
+Premium seats will remain identifiable independently of their availability. A selected premium seat will retain the selected-seat appearance.
+
+The existing palette will also be used for surrounding interface elements:
+
+| Element | Colour |
+|---|---|
+| Main background | `#F5F5F0` |
+| Primary headings | `#3B4D32` |
+| Primary text | `#303B41` |
+| CTA buttons | `#2A5B44` |
+| Borders and separators | `#B3B8AB` |
+| Secondary text | `#878679` |
+
+### 7. Seat Selection Behaviour
+
+The proposed interaction is:
+
+1. The customer opens the Cart.
+2. The application retrieves the aircraft configuration for each selected flight.
+3. The application retrieves existing passenger seat allocations for that flight.
+4. Available seats are displayed as selectable elements.
+5. Occupied seats are displayed in grey and cannot be selected.
+6. Premium seats are visually distinguished.
+7. The customer selects one seat for each passenger.
+8. The selected seats are retained in the session-backed Cart until Checkout.
+
+The interface should prevent a customer from selecting more seats than the passenger count.
+
+Seat availability must be checked again when the booking is confirmed. This is important because another customer may have booked a seat while the current customer was completing their reservation.
+
+The existing unique database constraint on `passangers(flight_id, seatNo)` provides an additional safeguard against duplicate seat allocations.
+
+### 8. Booking Persistence
+
+The existing database schema supports the proposed booking process.
+
+The intended relationships are:
+
+```text
+             booking
+                |
+                | booking_id
+                v
+          booking_flights
+                |
+                | flight_id
+                v
+              flights
+                |
+                | aircraft_id
+                v
+             aircraft
+                |
+                v
+          aircraft_seats
+
+          booking_flights
+                |
+                v
+            passangers
+```
+
+On confirmation, the application will:
+
+- Revalidate the selected seats.
+- Create the booking record.
+- Associate the selected flights through `booking_flights`.
+- Record passenger and seat information in `passangers`.
+- Use a database transaction so that incomplete booking operations can be rolled back.
+- Clear the temporary Cart after successful confirmation.
+
+No additional database tables are currently required for the proposed initial implementation.
+
+### 9. Implementation Approach
+
+The enhancements will be introduced incrementally, preserving the existing class hierarchy and separation between public, customer and administrator views.
+
+The intended implementation sequence is:
+
+1. Define and refine the existing `Cart` class.
+2. Implement reliable flight addition, removal and Cart display.
+3. Implement the dynamic aircraft seat map.
+4. Add seat selection and temporary session storage.
+5. Preserve guest Cart contents during login and registration.
+6. Implement passenger details and Checkout.
+7. Implement transactional booking confirmation and seat allocation.
+
+These enhancements are proposed development work. They are not claims that the complete dynamic seat-selection and reservation workflow is already implemented.

@@ -42,28 +42,50 @@ abstract class PublicBaseView {
                 ';
     }
 
+    // public function menu($info = false) {
+    //     $this->renderCustomerMenu(false);
+    // }
+
+    // protected function renderCustomerMenu($loggedIn) {
+    //     $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
+    //     echo '<nav id="menu" class="old" aria-label="Customer navigation">
+    //         <div class="menu-left">
+    //             <a href="controller.php">Home</a>
+    //         </div>
+    //         <div class="menu-right">';
+    //     if ($loggedIn) {
+    //         echo '<a href="controller.php?cmd=logout">Logout</a>';
+    //     } else {
+    //         echo '<a href="controller.php?cmd=showLogin">Login</a>
+    //               <a href="controller.php?cmd=showRegistration">Register</a>';
+    //     }
+    //     if ($canBook) {
+    //         echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
+    //     } else {
+    //         echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
+    //     }
+    //     echo '</div></nav>';
+    // }
+
     public function menu($info = false) {
         $this->renderCustomerMenu(false);
     }
 
     protected function renderCustomerMenu($loggedIn) {
-        $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
-        echo '<nav id="menu" class="old" aria-label="Customer navigation">
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
             <div class="menu-left">
                 <a href="controller.php">Home</a>
             </div>
-            <div class="menu-right">';
+            <div class="menu-right">
+                <a href="controller.php?cmd=showCheckout">Cart</a>
+                <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
+
         if ($loggedIn) {
             echo '<a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo '<a href="controller.php?cmd=showLogin">Login</a>
-                  <a href="controller.php?cmd=showRegistration">Register</a>';
+            echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
         }
-        if ($canBook) {
-            echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
-        } else {
-            echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
-        }
+
         echo '</div></nav>';
     }
 
@@ -90,41 +112,19 @@ abstract class PublicBaseView {
  * PublicHomeView (guest) and CustomerView (logged-in).
  */
 trait FlightWorkspace {
-
-    // protected function renderWorkspace($showCheckout = false, $flights = null, $selectedId = null) {
-    //     $selected = null;
-    //     if (is_array($flights)) {
-    //         foreach ($flights as $f) {
-    //             if ($f['flight_id'] === $selectedId) {
-    //                 $selected = $f;
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     echo '<div id="content" class="flight-workspace">';
-    //     echo '<div class="col">';
-    //     $this->searchPane($showCheckout);
-    //     $this->detailsPane($selected);
-    //     echo '</div>';
-    //     echo '<div class="col">';
-    //     $this->resultsPane($flights, $selectedId);
-    //     echo '</div>';
-    //     echo '</div>';
-    // }
-   
+ 
     protected function renderWorkspace($showCheckout = false, $flights = null, $selectedId = null) {
         $selected = null;
 
         if (is_array($flights)) {
             foreach ($flights as $f) {
-                if ($f['flight_id'] === $selectedId) {
+                // if ($f['flight_id'] === $selectedId) {
+                if ((int)$f['flight_id'] === (int)$selectedId) {
                     $selected = $f;
                     break;
                 }
             }
         }
-
         echo '<div id="content" class="flight-workspace triple-pane">';
 
         // Pane 1 – Search form and results summary
@@ -137,8 +137,10 @@ trait FlightWorkspace {
         $this->resultsPane($flights, $selectedId);
 
         // Pane 3 – Selected flight details and Add to Cart
-        $this->detailsPane($selected);
-
+        //$this->detailsPane($selected);
+        if ($selected !== null) {
+            $this->detailsPane($selected);
+        } 
         echo '</div>';
     }
 
@@ -209,22 +211,12 @@ trait FlightWorkspace {
     }
 
     protected function resultsPane($flights = null, $selectedId = null) {
-        // $n = is_array($flights) ? count($flights) : 0;
-        // $msg = ($flights === null)
-        //     ? 'Search for a route and date to see flights.'
-        //     : ($n ? $n . ' flight' . ($n === 1 ? '' : 's') . ' found for your search'
-        //          : 'No flights found for those dates.');
-
-        // echo '<section aria-labelledby="results-title">';
-        // echo '<div class="results-header">';
-        // echo '<h2 id="results-title">Available flights</h2>';
-        // echo '<p>' . $msg . '</p>';
-        // echo '</div>';
         echo '<section class="flight-results" aria-label="Available flight results">';
 
         if (is_array($flights)) {
             foreach ($flights as $f) {
-                $cls = ($selectedId === $f['flight_id']) ? ' is-selected' : '';
+                // $cls = ($selectedId === $f['flight_id']) ? ' is-selected' : '';
+                $cls = ((int)$selectedId === (int)$f['flight_id']) ? ' is-selected' : '';
                 echo '<article class="flight-card' . $cls . '">';
                 echo '<div class="flight-top">';
                 if (is_file($f['logo'])) {
@@ -270,33 +262,73 @@ trait FlightWorkspace {
         echo '</section>';
     }
 
+    // protected function detailsPane($selected = null) {
+    //     echo '<section class="search-card" aria-labelledby="details-title">';
+    //     echo '<h2 id="details-title">Flight details</h2>';
+
+    //     if (!$selected) {
+    //         echo '<p>Select a flight to see its details and add it to your cart.</p>';
+    //     } else {
+    //         echo '<p><strong>' . esc($selected['airline']) . '</strong> · Flight ' . esc($selected['flight_code']) . '</p>';
+    //         echo '<p>' . esc($selected['from']) . ' → ' . esc($selected['to']) . '<br>';
+    //         echo esc($selected['date']) . ', ' . esc($selected['departs']) . ' – ' . esc($selected['arrives']);
+    //         if (!empty($selected['duration'])) {
+    //             echo ' (' . esc($selected['duration']) . ')';
+    //         }
+    //         echo '</p>';
+    //         echo '<p>Fare ' . esc($selected['fare']) . ' × ' . (int)(isset($_SESSION['seatCount']) ? $_SESSION['seatCount'] : 1);
+    //         echo ' = <strong>' . esc($selected['total']) . '</strong></p>';
+
+    //         echo '<form action="controller.php" method="post">';
+    //         echo '<input type="hidden" name="cmd" value="addFlightToCart">';
+    //         echo '<input type="hidden" name="flightDate" value="' . esc($selected['date']) . '">';
+    //         echo '<input type="hidden" name="flightId" value="' . (int)$selected['flight_id'] . '">';
+    //         echo '<input type="submit" value="Add to Cart">';
+    //         echo '</form>';
+    //     }
+
+    //     // if (isset($_SESSION['cart'])) {
+    //     //     $_SESSION['cart']->displayCart();
+    //     // }
+    //     echo '</section>';
+    // }
     protected function detailsPane($selected = null) {
-        echo '<section class="search-card" aria-labelledby="details-title">';
+        echo '<section class="search-card flight-details-card" aria-labelledby="details-title">';
         echo '<h2 id="details-title">Flight details</h2>';
 
         if (!$selected) {
             echo '<p>Select a flight to see its details and add it to your cart.</p>';
         } else {
+            $flightId = (int)$selected['flight_id'];
+
+            $isInCart = isset($_SESSION['cartAddedFlightIds'][$flightId]);
+
+            if ($isInCart) {
+                echo '<span class="cart-status-pill">Booked</span>';
+            }
+
             echo '<p><strong>' . esc($selected['airline']) . '</strong> · Flight ' . esc($selected['flight_code']) . '</p>';
             echo '<p>' . esc($selected['from']) . ' → ' . esc($selected['to']) . '<br>';
             echo esc($selected['date']) . ', ' . esc($selected['departs']) . ' – ' . esc($selected['arrives']);
+
             if (!empty($selected['duration'])) {
                 echo ' (' . esc($selected['duration']) . ')';
             }
+
             echo '</p>';
-            echo '<p>Fare ' . esc($selected['fare']) . ' × ' . (int)(isset($_SESSION['seatCount']) ? $_SESSION['seatCount'] : 1);
+            echo '<p>Fare ' . esc($selected['fare']) . ' × ' . (int)($_SESSION['seatCount'] ?? 1);
             echo ' = <strong>' . esc($selected['total']) . '</strong></p>';
 
-            echo '<form action="controller.php" method="post">';
-            echo '<input type="hidden" name="cmd" value="addFlightToCart">';
-            echo '<input type="hidden" name="flightDate" value="' . esc($selected['date']) . '">';
-            echo '<input type="submit" value="Add to Cart">';
-            echo '</form>';
+            if (!$isInCart) {
+                echo '<form action="controller.php" method="post">';
+                echo '<input type="hidden" name="cmd" value="addFlightToCart">';
+                echo '<input type="hidden" name="flightDate" value="' . esc($selected['date']) . '">';
+                echo '<input type="hidden" name="flightId" value="' . $flightId . '">';
+                echo '<input type="submit" value="Add to Cart">';
+                echo '</form>';
+            }
         }
 
-        if (isset($_SESSION['cart'])) {
-            $_SESSION['cart']->displayCart();
-        }
         echo '</section>';
     }
 }
@@ -306,17 +338,40 @@ trait FlightWorkspace {
 class PublicHomeView extends PublicBaseView {
     use FlightWorkspace;
 
-    public function __construct() {
+    // public function __construct() {
+    //     $this->top(false);
+    //     $this->menu(false);
+    //     $this->renderIdentity();
+    //     $this->content();
+    //     $this->bottom();
+    // }
+
+    // public function content() {
+    //     $this->renderWorkspace(false); // no checkout link for guests
+    // }
+    // public function __construct($flights = null) {
+    //     $this->top(false);
+    //     $this->menu(false);
+    //     $this->renderIdentity();
+    //     $this->content($flights);
+    //     $this->bottom();
+    // }
+
+    // public function content($flights = null) {
+    //     $this->renderWorkspace(false, $flights);
+    // }
+    public function __construct($flights = null, $selectedId = null) {
         $this->top(false);
         $this->menu(false);
         $this->renderIdentity();
-        $this->content();
+        $this->content($flights, $selectedId);
         $this->bottom();
     }
 
-    public function content() {
-        $this->renderWorkspace(false); // no checkout link for guests
+    public function content($flights = null, $selectedId = null) {
+        $this->renderWorkspace(false, $flights, $selectedId);
     }
+
 }
 
 // Shared implementation foundation for the separate customer and
@@ -362,29 +417,30 @@ abstract class PrivateBaseView {
 }
 
 abstract class CustomerBaseView extends PrivateBaseView {
+
     public function menu($info = false) {
-        $this->renderCustomerMenu(true);
+        $username = $_SESSION['username'] ?? 'Guest';
+        $loggedIn = ($username !== 'Guest');
+
+        $this->renderCustomerMenu($loggedIn);
         $this->renderIdentity();
     }
 
     protected function renderCustomerMenu($loggedIn) {
-        $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
-        echo '<nav id="menu" class="old" aria-label="Customer navigation">
+        echo '<nav id="menu" class="old" aria-label="Main navigation">
             <div class="menu-left">
                 <a href="controller.php">Home</a>
             </div>
-            <div class="menu-right">';
+            <div class="menu-right">
+                <a href="controller.php?cmd=showCheckout">Cart</a>
+                <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
+
         if ($loggedIn) {
             echo '<a href="controller.php?cmd=logout">Logout</a>';
         } else {
-            echo '<a href="controller.php?cmd=showLogin">Login</a>
-                  <a href="controller.php?cmd=showRegistration">Register</a>';
+            echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
         }
-        if ($canBook) {
-            echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
-        } else {
-            echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
-        }
+
         echo '</div></nav>';
     }
 }

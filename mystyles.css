@@ -661,3 +661,36 @@ input[type="submit"]:disabled {
     }
 
 }
+
+.flight-details-card {
+    position: relative;
+}
+
+.cart-status-pill {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #e5e4dc;
+    color: #77776f;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+input[type="submit"] {
+    background-color: #f5f5f0;
+    color: #33524e;
+    border: 1px solid #33524e;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+a.button {
+    background-color: #f5f5f0;
+    color: #33524e;
+    border: 1px solid #33524e;
+}
