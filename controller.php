@@ -116,8 +116,29 @@ function dispatchRequest()
             handlePassengerDetailsSubmission();
             break;
 
-        case "removeCartItem":
-            $_SESSION['cart']->removeFlight($_GET['cartID']);
+        // case "removeCartItem":
+            // $_SESSION['cart']->removeFlight($_GET['cartID']);
+            // new CustomerCheckoutView($hasCookie);
+            // break;
+
+        // case "removeCartItem":
+        //     $flightId = (int)($_GET['flightId'] ?? 0);
+
+        //     if ($flightId > 0) {
+        //         $_SESSION['cart']->removeFlight($flightId);
+        //     }
+
+        //     new CustomerCheckoutView($hasCookie);
+        //     break;
+         case "removeCartItem":
+            $flightId = (int)($_GET['flightId'] ?? 0);
+
+            if ($flightId > 0) {
+                $_SESSION['cart']->removeFlight($flightId);
+
+                unset($_SESSION['cartAddedFlightIds'][$flightId]);
+            }
+
             new CustomerCheckoutView($hasCookie);
             break;
 

@@ -471,6 +471,25 @@ If a guest subsequently logs in or registers, the existing Cart and flight-searc
 
 Authentication must not discard the guest's selected flights, Cart contents or current flight-search selection.
 
+### Shopping Cart – Initial Implementation
+
+The legacy cart has been replaced with a session-based Cart class.
+
+Current functionality:
+- Add selected flights to the cart.
+- Remove individual flights.
+- Display flight details and passenger quantities.
+- Calculate and display the cart total.
+- Synchronise the home-page flight indicator with cart additions and removals.
+- Allow Guest users to build a cart without authentication.
+
+Next development stages:
+- Passenger details.
+- Interactive aircraft seat selection for AC180 and AC220.
+- Seat availability and booking validation.
+- Checkout authentication.
+- Booking confirmation and database persistence.
+
 ### 4. Dynamic aircraft seat selection
 
 The existing Cart interface uses a legacy 20-position representation. This will eventually be replaced by an aircraft-specific seat map based on the aircraft assigned to each dated flight.
