@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 420 1390" role="img"
+     aria-labelledby="title desc">
+  <title id="title">PHP Airlines AC220 aircraft outline</title>
+  <desc id="desc">Top-down vector outline of the AC220 passenger aircraft, showing nose, cockpit, fuselage, swept wings, engines and tail. Interactive seats are intended to be rendered separately in HTML.</desc>
+  <defs>
+    <linearGradient id="body" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#e8ece8"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e8ece8"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" x2="1">
+      <stop offset="0" stop-color="#dce3dd"/>
+      <stop offset="0.5" stop-color="#f1f4f1"/>
+      <stop offset="1" stop-color="#dce3dd"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Swept wings -->
+  <path d="M130 467
+           L88 600
+           Q80 617 102 622
+           L174 596
+           L246 596
+           L318 622
+           Q340 617 332 600
+           L290 467 Z"
+        fill="url(#wing)" stroke="#738b8f" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Engine nacelles -->
+  <g fill="#cbd4ce" stroke="#738b8f" stroke-width="2.5">
+    <path d="M93 547 Q80 555 84 594
+             Q88 615 111 610
+             L132 588 L132 555 Z"/>
+    <path d="M327 547 Q340 555 336 594
+             Q332 615 309 610
+             L288 588 L288 555 Z"/>
+  </g>
+  <g stroke="#9aa79d" stroke-width="2" fill="none">
+    <path d="M91 576 Q107 569 126 579"/>
+    <path d="M329 576 Q313 569 294 579"/>
+  </g>
+
+  <!-- Horizontal tailplane -->
+  <path d="M164 1195
+           L55 1265
+           Q50 1277 65 1279
+           L196 1258
+           L224 1258
+           L355 1279
+           Q370 1277 365 1265
+           L256 1195 Z"
+        fill="url(#wing)" stroke="#738b8f" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Main fuselage -->
+  <path d="M210 18
+           C166 28 132 65 130 143
+           L130 1135
+           Q130 1212 151 1245
+           L188 1316
+           Q210 1338 232 1316
+           L269 1245
+           Q290 1212 290 1135
+           L290 143
+           C288 65 254 28 210 18 Z"
+        fill="url(#body)" stroke="#386747" stroke-width="4"/>
+
+  <!-- Cockpit glazing -->
+  <path d="M183 65 Q210 39 237 65 L229 91 Q210 100 191 91 Z"
+        fill="#738b8f" stroke="#33524e" stroke-width="2"/>
+  <path d="M210 48 L210 91" stroke="#dce6e0" stroke-width="2" opacity=".8"/>
+
+  <!-- Cabin boundary guides -->
+  <path d="M143 143 L143 1127
+           M277 143 L277 1127"
+        stroke="#b3b8ab" stroke-width="2" stroke-dasharray="5 7" fill="none"/>
+
+  <!-- Door / service-area outlines -->
+  <g fill="none" stroke="#738b8f" stroke-width="2">
+    <rect x="145" y="117" width="130" height="24" rx="8"/>
+    <rect x="145" y="1107" width="130" height="22" rx="8"/>
+  </g>
+
+  <!-- Tail fin -->
+  <path d="M210 1275
+           L184 1342
+           Q210 1362 236 1342 Z"
+        fill="#d5ddd7" stroke="#386747" stroke-width="3"/>
+
+  <!-- Centre line: a visual alignment guide for the HTML seat layer -->
+  <path d="M210 148 L210 1100"
+        stroke="#b3b8ab" stroke-width="1.5" stroke-dasharray="4 8" opacity=".8"/>
+
+  <!-- Model marking -->
+  <text x="210" y="1378" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="12"
+        letter-spacing="2" fill="#386747">AC220</text>
+</svg>

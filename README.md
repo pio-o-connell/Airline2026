@@ -40,6 +40,12 @@ The current PHP source retains the original customer-facing workflow and interfa
 
 The current PHP search and seat interfaces still contain legacy behaviour. In particular, the current search has not yet been fully migrated to use the dated `flights` table, and the active Cart interface displays 20 legacy seat positions. The full dated-flight and aircraft-specific seat-map workflow described later in this README is planned development, not a claim about the current implementation.
 
+The intended booking workflow is:
+
+**Search Flights → Select Flight(s) → Add to Cart → Review Cart → Seat Selection → Passenger Details → Checkout → Guest Login/Register if required → Payment → Payment Verification → Create Booking → Confirmation.**
+
+Guests may search, add flights to the Cart, select seats and enter passenger details without logging in. Authentication is required at checkout only. The guest's Cart, passenger details and seat selections must survive login or registration.
+
 ### Administrator workflow
 
 The existing PHP application provides administrator workflows to:
@@ -315,6 +321,9 @@ The local PHP configuration in [`library.php`](library.php) uses host `127.0.0.1
 - [`mystyles.css`](mystyles.css) — customer-facing styles
 - [`insidestyles.css`](insidestyles.css) — internal and administration styles
 - [`assets/Images/`](assets/Images/) — existing application screenshots
+- [`assets/Images/seating-plans/`](assets/Images/seating-plans/) — illustrative seating-plan images:
+  - `airbus-330.jpg`
+  - `othercraft.jpg`
 - [`old/airline2026_backup.sql`](old/airline2026_backup.sql) — historical backup/reference only
 
 The original interface uses a fixed-width layout of approximately 800 pixels and traditional CSS floats rather than a modern responsive framework. `controller.php` dispatches requests to the views and handlers in `library.php`; supporting classes handle page presentation, Cart operations, seat processing and database access.
@@ -327,21 +336,25 @@ Public and private views are separate hierarchies with their own base class and 
 PublicBaseView (abstract)
 ├── PublicHomeView
 ├── LoginView
-└── RegistrationView
+├── RegistrationView
+└── GuestSeatSelectionView
 
-PrivateBaseView (abstract, standalone, was AuthenticatedBaseView)
+PrivateBaseView (abstract, standalone; formerly AuthenticatedBaseView)
 ├── CustomerBaseView (abstract)
-│   └── CustomerView (was FlightSearchView)
-│       ├── CustomerFlightResultsView (was FlightSearchResultsView)
-│       ├── CustomerPassengerDetailsView (was PassengerDetailsView)
-│       └── CustomerCheckoutView (was CheckoutView)
+│   ├── CustomerView
+│   │   └── CustomerFlightResultsView
+│   ├── CustomerSeatSelectionView
+│   ├── CustomerPassengerDetailsView
+│   └── CustomerCheckoutView
 └── AdminBaseView (abstract)
     ├── AdminRoutesView
-    │   └── AdminView (was InnerAdminView)
-    ├── AdminEditRouteView (was EditRouteView)
-    ├── AdminAddRouteView (was AddRouteView)
-    └── AdminFlightManifestView (was FlightManifestView)
+    │   └── AdminView
+    ├── AdminEditRouteView
+    ├── AdminAddRouteView
+    └── AdminFlightManifestView
 ```
+
+`GuestSeatSelectionView` extends `PublicBaseView`, and `CustomerSeatSelectionView` extends `CustomerBaseView`. These are the only two user-context seat-selection views; both use shared seat-map rendering logic and each loops through every flight in the Cart. The administrator hierarchy remains unchanged.
 
 ### Customer and Guest Home Pages — Three-Pane Layout
 
@@ -390,13 +403,13 @@ It will hold the flights selected by the customer, the travel date, passenger co
 - Allow customers to remove individual flights.
 - Retain passenger and seat-selection information as the booking workflow develops.
 - Display selected seat numbers and associated fare information when seat selection is implemented.
-- Proceed to Checkout when the reservation is ready.
+- Proceed to passenger details only after seat selections for every Cart flight are complete.
 
 The existing session-backed Cart will be retained. No additional database table is currently proposed for temporary Cart contents.
 
 ### 2. Proposed booking workflow
 
-The intended customer journey is:
+The intended guest and customer journey is:
 
 ```text
           SEARCH FLIGHTS
@@ -418,37 +431,44 @@ The intended customer journey is:
        +---------------------+
                 |
                 v
-             CHECKOUT
+             SEAT SELECTION
+             (one aircraft section
+              per Cart flight)
+                      |
+                      v
+             PASSENGER DETAILS
+                      |
+                      v
+                  CHECKOUT
+                      |
+                      v
+             GUEST LOGIN / REGISTER
+             (if required)
                 |
                 v
-        PASSENGER DETAILS
+                   PAYMENT
                 |
                 v
-       SEAT SELECTION
-       (initially a seat-number
-        placeholder; graphical
-        map in a later stage)
+             PAYMENT VERIFICATION
                 |
                 v
-       VALIDATE AVAILABILITY
-                |
-                v
-        CONFIRM RESERVATION
-                |
-                v
-          CREATE BOOKING
-                |
-                v
-       BOOKING CONFIRMATION
+               CREATE BOOKING
+                      |
+                      v
+                CONFIRMATION
 ```
 
 A flight added to the Cart is not a confirmed booking. The Cart is temporary session state. A booking is created only after the customer confirms and the application successfully validates and records the reservation.
 
+All seat selections must be completed for all flights in the Cart before proceeding to passenger details.
+
 ### 3. Guest and customer Cart handling
 
-Guests will be able to search for flights, select flights and add flights to the Cart without first registering or logging in.
+Guests will be able to search for flights, select flights, add flights to the Cart, select seats and enter passenger details without first registering or logging in. Authentication is required at checkout only. A Cart may contain different aircraft types, such as an AC180 flight and an AC220 flight.
 
-If a guest subsequently logs in or registers, the existing Cart and flight-search state should be preserved.
+If a guest subsequently logs in or registers at checkout, the existing Cart, passenger details and seat selections should be preserved.
+
+The seat-selection page will render one separate aircraft section for every Cart flight. Each section uses that flight's own `flight_id` to retrieve its aircraft type, `aircraft_id`, seat layout, booked seats and current customer selections. The customer must complete all sections before proceeding to passenger details.
 
 ```text
          GUEST SEARCH
@@ -460,19 +480,22 @@ If a guest subsequently logs in or registers, the existing Cart and flight-searc
           GUEST CART
               |
               v
-        LOGIN / REGISTER
+       SEAT SELECTION
               |
               v
-     AUTHENTICATED CUSTOMER
-              |
-              v
-       RESTORE CART STATE
+     PASSENGER DETAILS
               |
               v
            CHECKOUT
+              |
+              v
+        LOGIN / REGISTER
+              |
+              v
+      RESTORE CART STATE
 ```
 
-Authentication must not discard the guest's selected flights, Cart contents or current flight-search selection.
+Authentication must not discard the guest's selected flights, Cart contents, passenger details or seat selections.
 
 ### Shopping Cart – Initial Implementation
 
@@ -487,11 +510,13 @@ Current functionality:
 - Allow Guest users to build a cart without authentication.
 
 Next development stages:
-- Passenger details.
-- Interactive aircraft seat selection for AC180 and AC220.
-- Seat availability and booking validation.
-- Checkout authentication.
-- Booking confirmation and database persistence.
+- Complete passenger-details integration into the end-to-end booking journey; the passenger-details views and forms already exist.
+- Add the two seat-selection views and shared renderer.
+- Retrieve aircraft configuration and booked seats separately for every Cart flight.
+- Implement responsive interactive seat maps and retain seat selections independently for every flight.
+- Require guest login or registration only at checkout, preserving the guest's Cart and passenger data.
+- Implement Stripe test-mode payment and payment verification.
+- Implement transactional booking persistence and confirmation.
 
 ### 4. Dynamic aircraft seat selection
 
@@ -504,18 +529,21 @@ The database already contains the necessary structures:
 - `flights` — the aircraft assigned to each dated flight.
 - `passangers` — passenger and allocated seat information.
 
-The application will retrieve the seat configuration using the selected flight's `aircraft_id`. This allows the same booking workflow to display the appropriate layout for either aircraft.
+The application will retrieve the seat configuration using each Cart flight's own `flight_id`, then use its `aircraft_id`. This allows one seat-selection page to display the appropriate layout for every flight, including a Cart containing different aircraft types. For each flight, the page retrieves the aircraft type and `aircraft_id`, aircraft seat layout, seats already booked on that flight, and the customer's selected seats for that flight.
 
-| Aircraft | Total capacity | Premium seats | Standard seats |
-|---|---:|---:|---:|
-| `AC180` | 180 | 18 | 162 |
-| `AC220` | 220 | 18 | 202 |
+| Aircraft | Total seats | Layout | Premium | Standard |
+|---|---:|---|---:|---:|
+| `AC180` | 180 | 30 rows of 6 | 18 | 162 |
+| `AC220` | 220 | 36 rows of 6, plus 4 seats in row 37 | 18 | 202 |
 
 Seat positions, labels and premium classification will be read from `aircraft_seats`, rather than being hard-coded as a fixed collection of HTML radio buttons.
 
 ### 5. Aircraft layouts
 
-Two distinct top-down aircraft layouts will be created, one for `AC180` and one for `AC220`. Both will share the same visual language, seat-state colours, interaction model and responsive behaviour.
+Two distinct top-down aircraft layouts will be created, one for `AC180` and one for `AC220`. Both use the current database's 3–aisle–3 arrangement and will share the same visual language, seat-state colours, interaction model and responsive behaviour. These are illustrative seating-plan images, not interactive seat maps.
+
+![AC180 illustrative seating plan](assets/Images/seating-plans/airbus-330.jpg)
+![AC220 illustrative seating plan](assets/Images/seating-plans/other-aircaft.jpg)
 
 Each layout will show:
 
@@ -563,7 +591,8 @@ The diagram is conceptual. The actual seat labels, positions and premium classif
 
 - 220 seats in total.
 - 36 complete rows of six seats (216 seats), plus four seats in the final row.
-- The final row will be balanced around the central aisle where the database configuration permits.
+- `36 × 6 + 4 = 220`.
+- Both aircraft use the current database's 3–aisle–3 arrangement; AC220's final row contains four seats.
 - 18 premium seats, as defined by the database.
 
 The database remains the source of truth for the exact seat labels, row positions and premium indicators. The layout must not assume that every aircraft has an identical seat configuration.
@@ -603,32 +632,33 @@ The two aircraft designs will have different overall dimensions and row counts, 
 
 The aircraft outline and the interactive seat controls will be separate parts of the interface.
 
-The proposed implementation is:
+The agreed implementation is:
 
-- **SVG:** aircraft structure, including fuselage, nose, tail and wings.
+- **SVG or image:** aircraft structure, including fuselage, nose, tail and wings.
 - **HTML:** individual interactive seat elements and accessible seat labels.
 - **CSS Grid/Flexbox:** seat rows, left and right seat groups, aisle spacing and layout.
 - **CSS media queries:** desktop, tablet and mobile presentation.
-- **Vanilla JavaScript:** immediate seat-selection feedback and client-side interaction.
-- **PHP:** retrieve the aircraft configuration, render the page and integrate seat selections with the session-backed Cart.
-- **MySQL:** authoritative aircraft configuration and confirmed seat allocations.
+- **JavaScript:** immediate seat-selection feedback and client-side interaction.
+- **PHP:** retrieve the aircraft configuration for each Cart flight and render the correct seat map.
+- **MySQL:** authoritative aircraft configuration and flight-specific occupancy.
 
 The seat map will not be a static aircraft image with image hotspots. Each seat will be a real HTML control so that it can be selected, labelled, styled and made accessible.
 
-The AC180 and AC220 layouts will be separate aircraft configurations using shared rendering and interaction principles. The selected flight's `aircraft_id` will determine which configuration is displayed.
+The AC180 and AC220 layouts will be separate aircraft configurations using shared rendering and interaction principles. Each Cart flight's `flight_id` determines its assigned `aircraft_id`, layout and occupancy.
 
 ### 9. Seat-selection behaviour
 
 The proposed interaction is:
 
-1. The customer opens the Cart or the seat-selection stage of the booking workflow.
-2. The application retrieves the aircraft configuration for each selected flight.
-3. The application retrieves existing passenger seat allocations for that flight.
+1. The customer opens the seat-selection stage after reviewing the Cart.
+2. The application loops through every flight in the Cart and retrieves its aircraft configuration using that flight's `flight_id`.
+3. The application retrieves existing passenger seat allocations for that flight and the customer's current selections for that flight.
 4. Available seats are displayed as selectable controls.
 5. Occupied seats are displayed in grey and cannot be selected.
 6. Premium seats are identified in yellow while available.
 7. The customer selects one seat for each passenger.
-8. The selected seats are retained in the session-backed Cart until booking confirmation.
+8. The selected seats are retained independently for each Cart flight until booking confirmation.
+9. All Cart flights must have completed seat selections before the customer proceeds to passenger details.
 
 The interface should prevent a customer from selecting more seats than the passenger count. It should also make it clear which passenger is associated with each selected seat.
 
@@ -698,12 +728,14 @@ The enhancements will be introduced incrementally, preserving the existing class
 The proposed sequence is:
 
 1. **Cart foundation:** refine the existing `Cart` class and implement reliable flight addition, removal and Cart display.
-2. **Booking placeholders:** retain passenger and seat-number placeholders so the Cart and booking workflow can be tested before the graphical map is introduced.
-3. **Passenger and Cart integration:** connect passenger count, passenger details and Cart state without changing the existing MVC architecture.
-4. **Aircraft layout design:** create the separate AC180 and AC220 top-down layouts, including the fuselage, wings, aisle and seat positions.
-5. **Responsive seat-map interface:** implement the HTML seat controls, agreed colour states, legend and desktop/tablet/mobile presentation.
-6. **Session integration:** connect selected seats to the appropriate passenger and flight in the session-backed booking state.
-7. **Booking confirmation:** implement final database validation, transactional booking persistence and duplicate-seat handling.
+2. **Seat-selection views:** add `GuestSeatSelectionView`, `CustomerSeatSelectionView` and the shared seat-map renderer.
+3. **Flight-specific seat data:** retrieve aircraft configuration and booked seats separately for every Cart flight using its own `flight_id`.
+4. **Responsive seat maps:** implement the HTML seat controls, agreed colour states, legend and desktop/tablet/mobile presentation.
+5. **Per-flight selections:** retain seat selections independently for every Cart flight and associate them with passengers.
+6. **Passenger details:** complete passenger-details integration into the end-to-end booking journey.
+7. **Checkout authentication:** require guest login or registration only at checkout, preserving the guest's Cart and passenger data.
+8. **Payment:** implement Stripe test-mode payment and payment verification.
+9. **Booking confirmation:** implement transactional booking persistence and confirmation with final database validation and duplicate-seat handling.
 
 This sequence allows the Cart and booking workflow to be completed and tested before the more involved graphical seat-map interface is integrated.
 
@@ -730,10 +762,18 @@ The following distinction is important:
 | Legacy seat interface | Displays 20 seat positions |
 | Aircraft database | `AC180` and `AC220` configurations are present |
 | Aircraft seat definitions | Stored in `aircraft_seats` |
-| Full 180/220-seat graphical maps | Proposed; not yet implemented |
-| Responsive interactive seat map | Proposed; not yet implemented |
-| Seat selection retained in Cart | Planned integration |
-| Transactional booking confirmation | Planned enhancement |
+| `GuestSeatSelectionView` | Planned; not yet implemented |
+| `CustomerSeatSelectionView` | Planned; not yet implemented |
+| Shared seat-map renderer | Planned; not yet implemented |
+| Multiple aircraft types in one Cart | Planned; each flight will receive its own aircraft section |
+| Flight-specific seat availability | Planned; availability will be retrieved per `flight_id` |
+| Full 180/220-seat graphical maps | Planned; not yet implemented |
+| Responsive seat selection | Planned; not yet implemented |
+| Seat selection retained per Cart flight | Planned integration |
+| Checkout authentication | Planned; authentication occurs at checkout only |
+| Stripe test-mode payment | Planned; not yet implemented |
+| Payment verification | Planned; not yet implemented |
+| Transactional booking confirmation | Planned; not yet implemented |
 
 The proposed seat-map layouts, colours and workflow describe the intended development direction. They should not be interpreted as features already delivered by the current PHP source.
 

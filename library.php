@@ -570,6 +570,32 @@
         /**
          * Store selected seat numbers for a flight.
          */
+        // public function updateSeatSelections($flightId, $seatSelections) {
+
+        //     $flightId = (int)$flightId;
+
+        //     if (!isset($this->cartElements[$flightId])) {
+        //         return false;
+        //     }
+
+        //     if (!is_array($seatSelections)) {
+        //         return false;
+        //     }
+
+        //     if (count($seatSelections) !== $this->cartElements[$flightId]['seatCount']) {
+        //         return false;
+        //     }
+
+        //     $this->cartElements[$flightId]['seatSelections'] = $seatSelections;
+
+        //     return true;
+        // }
+        /**
+         * Store selected seat numbers for a flight.
+         *
+         * Each passenger must have one unique, valid seat number.
+         * Seat availability is checked separately by processSeatSelections().
+         */
         public function updateSeatSelections($flightId, $seatSelections) {
 
             $flightId = (int)$flightId;
@@ -582,11 +608,34 @@
                 return false;
             }
 
-            if (count($seatSelections) !== $this->cartElements[$flightId]['seatCount']) {
+            $passengerCount = (int)$this->cartElements[$flightId]['seatCount'];
+
+            if (count($seatSelections) !== $passengerCount) {
                 return false;
             }
 
-            $this->cartElements[$flightId]['seatSelections'] = $seatSelections;
+            $validatedSeats = array();
+
+            foreach ($seatSelections as $seat) {
+
+                if (filter_var($seat, FILTER_VALIDATE_INT) === false) {
+                    return false;
+                }
+
+                $seatNumber = (int)$seat;
+
+                if ($seatNumber <= 0) {
+                    return false;
+                }
+
+                if (in_array($seatNumber, $validatedSeats, true)) {
+                    return false;
+                }
+
+                $validatedSeats[] = $seatNumber;
+            }
+
+            $this->cartElements[$flightId]['seatSelections'] = $validatedSeats;
 
             return true;
         }
@@ -773,10 +822,67 @@
          * Temporary compatibility method.
          * The old 20-seat radio-button system is no longer used.
          */
+        // public function processSeatSelections() {
+
+        //     // New aircraft seat selection will update the Cart
+        //     // through updateSeatSelections().
+
+        //     return true;
+        // }
+
+        /**
+         * Validate all selected seats against current database availability.
+         *
+         * Every passenger must have one unique seat on each flight.
+         * A seat must exist on that aircraft and must not already be booked.
+         */
         public function processSeatSelections() {
 
-            // New aircraft seat selection will update the Cart
-            // through updateSeatSelections().
+            if (empty($this->cartElements)) {
+                return false;
+            }
+
+            $db = new DBManager();
+
+            foreach ($this->cartElements as $flightId => $flight) {
+
+                $passengerCount = (int)$flight['seatCount'];
+                $selections = $flight['seatSelections'] ?? array();
+
+                // Every passenger must have a selected seat.
+                if (!is_array($selections) ||
+                    count($selections) !== $passengerCount) {
+                    return false;
+                }
+
+                // Retrieve the actual aircraft seat availability.
+                $seatMap = $db->getSeatMapForFlight($flightId);
+
+                if (empty($seatMap)) {
+                    return false;
+                }
+
+                $availableSeats = array();
+
+                foreach ($seatMap as $seat) {
+
+                    $seatNumber = (int)$seat['seat_no'];
+
+                    if ((int)$seat['is_booked'] === 0) {
+                        $availableSeats[] = $seatNumber;
+                    }
+                }
+
+                // Check that every selected seat exists and is available.
+                foreach ($selections as $seatNumber) {
+
+                    $seatNumber = (int)$seatNumber;
+
+                    if (!in_array($seatNumber, $availableSeats, true)) {
+                        return false;
+                    }
+                }
+            }
 
             return true;
         }
@@ -1500,6 +1606,67 @@
             ));
 
             return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        /**
+         * Retrieve the aircraft seat map and occupancy for a specific flight.
+         *
+         * Aircraft layout comes from aircraft and aircraft_seats.
+         * Seat occupancy is determined separately for each flight
+         * using the passangers table.
+         *
+         * Returns one row per aircraft seat.
+         */
+        public function getSeatMapForFlight($flightId) {
+
+            $sql = "
+                SELECT
+                    f.flight_id,
+                    f.flight_code,
+                    f.flight_date,
+
+                    a.aircraft_id,
+                    a.aircraft_code,
+                    a.model,
+                    a.configuration_name,
+                    a.capacity,
+
+                    s.aircraft_seat_id,
+                    s.seat_no,
+                    s.seat_label,
+                    s.seat_row,
+                    s.seat_position,
+                    s.is_premium,
+
+                    CASE
+                        WHEN p.id IS NULL THEN 0
+                        ELSE 1
+                    END AS is_booked
+
+                FROM flights f
+
+                JOIN aircraft a
+                    ON a.aircraft_id = f.aircraft_id
+
+                JOIN aircraft_seats s
+                    ON s.aircraft_id = a.aircraft_id
+
+                LEFT JOIN passangers p
+                    ON p.flight_id = f.flight_id
+                    AND p.seatNo = s.seat_no
+
+                WHERE f.flight_id = :flight_id
+
+                ORDER BY s.seat_row, s.seat_no
+            ";
+
+            $stmt = $this->db->prepare($sql);
+
+            $stmt->execute(array(
+                ':flight_id' => (int)$flightId
+            ));
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         public function authenticateUser($username, $password) {
