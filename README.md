@@ -4,7 +4,10 @@ Airline2026 restores and develops an original 2014 PHP airline booking applicati
 
 The original application was developed as part of the **Higher Diploma in Cloud and Mobile with Data Science**. This project is a local restoration and development reference, not a replacement rewrite. Its interface and naming retain many conventions from the 2014 application.
 
-![Home screen](assets/Images/newHome.jpg)
+
+<img src="assets/Images/newHome.jpg" alt="Home Cart screen" width="80%">
+<img src="assets/Images/newCart.jpg" alt="Home Cart screen" width="40%">
+<img src="assets/Images/newCheckout.jpg" alt="Home Checkout screen" width="40%">
 
 ## Technology
 

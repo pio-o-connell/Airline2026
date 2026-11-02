@@ -42,31 +42,6 @@
                     ';
         }
 
-        // public function menu($info = false) {
-        //     $this->renderCustomerMenu(false);
-        // }
-
-        // protected function renderCustomerMenu($loggedIn) {
-        //     $canBook = $loggedIn && isset($_SESSION['route'], $_SESSION['date'], $_SESSION['seatCount']);
-        //     echo '<nav id="menu" class="old" aria-label="Customer navigation">
-        //         <div class="menu-left">
-        //             <a href="controller.php">Home</a>
-        //         </div>
-        //         <div class="menu-right">';
-        //     if ($loggedIn) {
-        //         echo '<a href="controller.php?cmd=logout">Logout</a>';
-        //     } else {
-        //         echo '<a href="controller.php?cmd=showLogin">Login</a>
-        //               <a href="controller.php?cmd=showRegistration">Register</a>';
-        //     }
-        //     if ($canBook) {
-        //         echo '<a class="book-flight-cta" href="controller.php?cmd=showPassengerDetails">Book Flight</a>';
-        //     } else {
-        //         echo '<span class="book-flight-cta is-disabled" aria-disabled="true">Book Flight</span>';
-        //     }
-        //     echo '</div></nav>';
-        // }
-
         public function menu($info = false) {
             $this->renderCustomerMenu(false);
         }
@@ -407,6 +382,418 @@
         }
     }
 
+    /**
+     * Cart
+     *
+     * Manages a customer's flight selections throughout the booking process.
+     *
+     * Stores selected flights, passenger information, seat selections and fares
+     * in the session-based cart. Supports adding and removing flights, updating
+     * passenger details, recording seat selections and calculating the total fare.
+     *
+     * The cart is available to both Guest and authenticated customers. Guest
+     * booking information is retained until checkout, where authentication is
+     * required before a booking can be completed.
+     *
+     * Booking persistence is handled separately and must only take place after
+     * the customer has authenticated and confirmed the booking.
+     */
+    class Cart {
+
+        private $cartElements = array();
+        private $bookingPassengers = array();
+
+
+        public function getBookingPassengers() {
+            return $this->bookingPassengers;
+        }
+
+        /**
+         * Get the cart elements.
+         */
+        public function getCartElements() {
+            return $this->cartElements;
+        }
+
+
+        public function addFlight($ticketInfo) {
+
+            $flightId = (int)($ticketInfo['flight_id'] ?? 0);
+            $passengerCount = (int)($ticketInfo['seatCount'] ?? 0);
+
+            if ($flightId <= 0 || $passengerCount <= 0 || $passengerCount > 20) {
+                return false;
+            }
+
+            if (isset($this->cartElements[$flightId])) {
+                return true;
+            }
+
+            $unitFare = (float)($ticketInfo['unitFare'] ?? 0);
+
+            if ($unitFare <= 0) {
+                return false;
+            }
+
+            // All flight legs must have the same passenger count.
+            if (!empty($this->bookingPassengers) &&
+                count($this->bookingPassengers) !== $passengerCount) {
+                return false;
+            }
+
+            // Create passenger records only once per booking.
+            if (empty($this->bookingPassengers)) {
+
+                for ($i = 0; $i < $passengerCount; $i++) {
+
+                    $this->bookingPassengers[] = array(
+                        'passengerNumber' => $i + 1,
+                        'name' => '',
+                        'email' => '',
+                        'passport' => ''
+                    );
+                }
+            }
+
+            $ticketInfo['seatCount'] = $passengerCount;
+            $ticketInfo['unitFare'] = $unitFare;
+            $ticketInfo['totalFare'] = $unitFare * $passengerCount;
+
+            // Seat selections remain specific to each flight.
+            $ticketInfo['seatSelections'] = array();
+
+            $this->cartElements[$flightId] = $ticketInfo;
+
+            return true;
+        }
+
+
+        /**
+         * Remove a flight from the Cart.
+         */
+        public function removeFlight($flightId) {
+
+            $flightId = (int)$flightId;
+
+            if (!isset($this->cartElements[$flightId])) {
+                return false;
+            }
+
+            unset($this->cartElements[$flightId]);
+
+            if (empty($this->cartElements)) {
+                $this->bookingPassengers = array();
+            }
+
+            return true;
+        }
+        
+
+        /**
+         * Return one flight from the Cart.
+         */
+        public function getFlight($flightId) {
+
+            $flightId = (int)$flightId;
+
+            return $this->cartElements[$flightId] ?? null;
+        }
+
+        /**
+         * Update passenger details for a flight.
+         */
+
+        // public function updatePassengers($passengers) {
+
+        //     if (empty($this->cartElements) || !is_array($passengers)) {
+        //         return false;
+        //     }
+
+        //     if (count($passengers) !== count($this->bookingPassengers)) {
+        //         return false;
+        //     }
+
+        //     $this->bookingPassengers = array_values($passengers);
+
+        //     return true;
+        // }
+        
+        /**
+         * Update passenger details for the booking.
+         */
+        public function updatePassengers($passengers) {
+
+            if (empty($this->cartElements) || !is_array($passengers)) {
+                return false;
+            }
+
+            if (count($passengers) !== count($this->bookingPassengers)) {
+                return false;
+            }
+
+            $passengers = array_values($passengers);
+
+            foreach ($this->bookingPassengers as $index => &$existingPassenger) {
+
+                if (!isset($passengers[$index]) || !is_array($passengers[$index])) {
+                    unset($existingPassenger);
+                    return false;
+                }
+
+                $submittedPassenger = $passengers[$index];
+
+                foreach (['name', 'email', 'passport'] as $field) {
+
+                    if (isset($submittedPassenger[$field]) &&
+                        !is_scalar($submittedPassenger[$field])) {
+                        unset($existingPassenger);
+                        return false;
+                    }
+                }
+
+                $existingPassenger['name'] =
+                    trim((string)($submittedPassenger['name'] ?? ''));
+
+                $existingPassenger['email'] =
+                    trim((string)($submittedPassenger['email'] ?? ''));
+
+                $existingPassenger['passport'] =
+                    trim((string)($submittedPassenger['passport'] ?? ''));
+            }
+
+            unset($existingPassenger);
+
+            return true;
+        }
+
+
+        /**
+         * Store selected seat numbers for a flight.
+         */
+        public function updateSeatSelections($flightId, $seatSelections) {
+
+            $flightId = (int)$flightId;
+
+            if (!isset($this->cartElements[$flightId])) {
+                return false;
+            }
+
+            if (!is_array($seatSelections)) {
+                return false;
+            }
+
+            if (count($seatSelections) !== $this->cartElements[$flightId]['seatCount']) {
+                return false;
+            }
+
+            $this->cartElements[$flightId]['seatSelections'] = $seatSelections;
+
+            return true;
+        }
+
+        
+
+        /**
+         * Calculate the total value of the Cart.
+         */
+        public function getGrandTotal() {
+
+            $grandTotal = 0;
+
+            foreach ($this->cartElements as $flight) {
+                $grandTotal += (float)$flight['unitFare']
+                            * (int)$flight['seatCount'];
+            }
+
+            return $grandTotal;
+        }
+
+        /**
+         * Display Cart contents.
+         */
+        // public function displayCart() {
+
+        //     if (empty($this->cartElements)) {
+
+        //         echo '<p>Your Cart is currently empty.</p>';
+        //         echo '<a href="controller.php">Back to search</a>';
+
+        //         return;
+        //     }
+
+        //     foreach ($this->cartElements as $flightId => $flight) {
+
+        //         $passengers = (int)$flight['seatCount'];
+        //         $unitFare = (float)$flight['unitFare'];
+        //         $flightTotal = $unitFare * $passengers;
+
+        //         echo '<div class="cart-item">';
+
+        //         echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
+
+        //         echo '<p>Route: '
+        //             . esc($flight['from'] ?? '') . ' to '
+        //             . esc($flight['to'] ?? '') . '</p>';
+
+        //         echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
+
+        //         echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
+
+        //         echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
+
+        //         echo '<p>Number of passengers: ' . $passengers . '</p>';
+
+        //         echo '<p>Fare per passenger: €'
+        //             . number_format($unitFare, 2) . '</p>';
+
+        //         echo '<p>Flight total: €'
+        //             . number_format($flightTotal, 2) . '</p>';
+
+        //         echo '<h4>Passengers and seats</h4>';
+
+        //         foreach ($this->bookingPassengers as $passenger) {
+
+        //             echo '<p>Passenger '
+        //                 . (int)$passenger['passengerNumber']
+        //                 . ' — ';
+
+        //             echo !empty($passenger['name'])
+        //                 ? esc($passenger['name'])
+        //                 : 'Details pending';
+
+        //             echo ' — Seat: ';
+
+        //             echo !empty($passenger['seatNumber'])
+        //                 ? esc($passenger['seatNumber'])
+        //                 : 'Pending selection';
+
+        //             echo '</p>';
+        //         }
+        //         echo '<a href="controller.php?cmd=removeCartItem&amp;flightId='
+        //             . (int)$flightId . '">Remove flight</a>';
+
+        //         echo '</div>';
+        //     }
+
+        //     echo '<div class="cart-total">';
+        //     echo '<h3>Cart total: €'
+        //         . number_format($this->getGrandTotal(), 2)
+        //         . '</h3>';
+        //     echo '</div>';
+
+        //     echo '<a href="controller.php">Back to search</a>';
+        // }
+        
+        public function displayCart() {
+
+            if (empty($this->cartElements)) {
+
+                echo '<p>Your Cart is currently empty.</p>';
+                echo '<a href="controller.php">Back to search</a>';
+
+                return;
+            }
+
+            foreach ($this->cartElements as $flightId => $flight) {
+
+                $passengers = (int)$flight['seatCount'];
+                $unitFare = (float)$flight['unitFare'];
+                $flightTotal = $unitFare * $passengers;
+
+                echo '<div class="cart-item">';
+
+                // echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
+                echo '<div class="cart-item-header">';
+
+                echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
+
+                echo '<a class="button cart-checkout-button"
+                    href="controller.php?cmd=showPassengerDetails">
+                    Continue to Checkout
+                </a>';
+
+                echo '</div>';
+                echo '<p>Route: '
+                    . esc($flight['from'] ?? '') . ' to '
+                    . esc($flight['to'] ?? '') . '</p>';
+
+                echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
+                echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
+                echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
+
+                echo '<p>Number of passengers: ' . $passengers . '</p>';
+
+                echo '<p>Fare per passenger: €'
+                    . number_format($unitFare, 2) . '</p>';
+
+                echo '<p>Flight total: €'
+                    . number_format($flightTotal, 2) . '</p>';
+
+                echo '<h4>Seat selection</h4>';
+                echo '<p>Seat selection pending.</p>';
+
+                // echo '<a href="controller.php?cmd=removeCartItem&amp;flightId='
+                //     . (int)$flightId . '">Remove flight</a>';
+                echo '<a class="cart-remove-button" href="controller.php?cmd=removeCartItem&amp;flightId='
+                    . (int)$flightId . '">Remove Flight</a>';
+
+
+                echo '</div>';
+            }
+
+            echo '<div class="cart-passengers">';
+            echo '<h3>Passengers</h3>';
+
+            foreach ($this->bookingPassengers as $passenger) {
+
+                echo '<p>Passenger '
+                    . (int)$passenger['passengerNumber']
+                    . ' — ';
+
+                echo !empty($passenger['name'])
+                    ? esc($passenger['name'])
+                    : 'Details pending';
+
+                echo '</p>';
+            }
+
+            echo '</div>';
+
+            echo '<div class="cart-total">';
+            echo '<h3>Cart total: €'
+                . number_format($this->getGrandTotal(), 2)
+                . '</h3>';
+            echo '</div>';
+
+            echo '<a href="controller.php">Back to search</a>';
+        }
+
+
+        /**
+         * Temporary compatibility method.
+         * The old 20-seat radio-button system is no longer used.
+         */
+        public function processSeatSelections() {
+
+            // New aircraft seat selection will update the Cart
+            // through updateSeatSelections().
+
+            return true;
+        }
+
+        /**
+         * Booking persistence will be implemented after the
+         * new passenger and aircraft seat-selection workflow.
+         */
+        public function recordBookings($username, $email, $CreditCardNo = null, $PassportNo = null) {
+
+            return false;
+        }
+    }
+
+
+
+
     // Renders the customer and administrator login form.
     class LoginView extends PublicBaseView {
 
@@ -433,8 +820,435 @@
                     </FORM>              
                 </div>
                 ";
+            echo '<p class="register-prompt">';
+            echo 'Don\'t have an account? ';
+            echo '<a href="controller.php?cmd=showRegistration">Register here</a>';
+            echo '</p>';
         }
     }
+
+    // Renders the customer registration form.
+    class RegistrationView extends PublicBaseView {
+
+        public function __construct() {
+            $info = 0;
+            $this->top($info);
+            $this->menu($info);
+            $this->content();
+            $this->bottom();
+        }
+
+        public function menu($info = false) {
+            parent::menu($info);
+        }
+
+        public function content() {
+            echo "
+        <div id=\"content\">
+                    <h1> Register </h1>
+                        <form action=\"controller.php\" method=\"post\">
+                    <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
+                    <table>
+                        <tr>
+                            <td>username:</td>
+                            <td><input type=\"text\" name=\"username\"> </td>
+
+                        </tr>
+                        <tr>
+                            <td>password:</td>
+                            <td><input type=\"password\" name=\"password\"></td>
+                        </tr>
+                        <tr>
+                            <td>e-mail address:</td>
+                            <td><input type=\"email\" name=\"email\"></td>
+                        </tr>
+                    
+                        <tr>
+                            <td>Credit Card No:</td>
+                            <td><input type=\"text\" name=\"CreditCardNo\"></td>
+                        </tr>
+                        <tr>
+                            <td>Passport No:</td>
+                            <td><input type=\"text\" name=\"PassportNo\"></td>
+                        </tr>
+                        <tr>
+                            <td><input type=\"submit\" value=\"Submit\"></td>
+                            <td></td>
+
+                        </tr> 
+                        
+                    
+                </div>
+                </form>
+                ";
+        }
+    }
+
+    
+    /**
+     * Displays the session Cart to a Guest.
+     */
+    class GuestCartView extends PublicBaseView {
+
+        public function __construct() {
+            $this->top();
+            $this->menu();
+            $this->renderIdentity();
+            $this->content();
+            $this->bottom();
+        }
+
+        public function content() {
+            echo '<div id="content">';
+            echo '<h1>Your Cart</h1>';
+
+            $cart = $_SESSION['cart'] ?? null;
+
+            if ($cart) {
+                $cart->displayCart();
+
+                // if (!empty($cart->getCartElements())) {
+                //     echo '<p><a class="button" href="controller.php?cmd=showPassengerDetails">Continue to Checkout</a></p>';
+                // }
+            } else {
+                echo '<p>Your Cart is currently empty.</p>';
+            }
+
+            echo '</div>';
+        }
+    }
+
+    /**
+     * Guest checkout: passenger details can be entered
+     * without requiring authentication.
+     */
+    class GuestCheckoutView extends PublicBaseView {
+
+        public function __construct() {
+            $this->top();
+            $this->menu();
+            $this->renderIdentity();
+            $this->content();
+            $this->bottom();
+        }
+
+        // public function content() {
+        //     $cart = $_SESSION['cart'] ?? null;
+
+        //     echo '<div id="content">';
+        //     echo '<h1>Checkout – Passenger Details</h1>';
+
+        //     if (!$cart || empty($cart->getCartElements())) {
+        //         echo '<p>Your Cart is empty.</p>';
+        //         echo '<a href="controller.php">Return to flight search</a>';
+        //         echo '</div>';
+        //         return;
+        //     }
+
+        //     $passengers = $cart->getBookingPassengers();
+
+        //     echo '<form action="controller.php" method="post">';
+        //     echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
+
+        //     foreach ($passengers as $index => $passenger) {
+        //         $number = (int)$passenger['passengerNumber'];
+
+        //         echo '<fieldset class="passenger-details">';
+        //         echo '<legend>Passenger ' . $number . '</legend>';
+
+        //         echo '<label for="guest-name-' . $index . '">Full name</label>';
+        //         echo '<input type="text"
+        //             id="guest-name-' . $index . '"
+        //             name="passengers[' . $index . '][name]"
+        //             value="' . esc($passenger['name']) . '"
+        //             required>';
+
+        //         echo '<label for="guest-email-' . $index . '">Email address</label>';
+        //         echo '<input type="email"
+        //             id="guest-email-' . $index . '"
+        //             name="passengers[' . $index . '][email]"
+        //             value="' . esc($passenger['email']) . '"
+        //             required>';
+
+        //         echo '<label for="guest-passport-' . $index . '">Passport number</label>';
+        //         echo '<input type="text"
+        //             id="guest-passport-' . $index . '"
+        //             name="passengers[' . $index . '][passport]"
+        //             value="' . esc($passenger['passport']) . '">';
+
+        //         echo '</fieldset>';
+        //     }
+
+        //     echo '<button type="submit">Save Passenger Details</button>';
+        //     echo '</form>';
+
+        //     echo '</div>';
+        // }
+        
+        public function content() {
+
+            $cart = $_SESSION['cart'] ?? null;
+
+            echo '<div id="content" class="checkout-page">';
+            echo '<h1>Checkout</h1>';
+
+            if (!$cart || empty($cart->getCartElements())) {
+                echo '<p>Your Cart is empty.</p>';
+                echo '<a href="controller.php">Return to flight search</a>';
+                echo '</div>';
+                return;
+            }
+
+            $passengers = $cart->getBookingPassengers();
+
+            echo '<div class="checkout-layout">';
+
+            // LEFT: Passenger details
+            echo '<section class="checkout-details">';
+            echo '<h2>Passenger Details</h2>';
+            echo '<p>Enter the details for each traveller.</p>';
+
+            echo '<form action="controller.php" method="post">';
+            echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
+
+            foreach ($passengers as $index => $passenger) {
+
+                // $number = (int)$passenger['passengerNumber'];
+                $number = (int)($passenger['passengerNumber'] ?? ($index + 1));
+
+                echo '<fieldset class="passenger-details">';
+                echo '<legend>Passenger ' . $number . '</legend>';
+
+                echo '<label for="guest-name-' . $index . '">Full name</label>';
+                echo '<input type="text"
+                    id="guest-name-' . $index . '"
+                    name="passengers[' . $index . '][name]"
+                    value="' . esc($passenger['name'] ?? '') . '"
+                    required>';
+
+                echo '<label for="guest-email-' . $index . '">Email address</label>';
+                echo '<input type="email"
+                    id="guest-email-' . $index . '"
+                    name="passengers[' . $index . '][email]"
+                    value="' . esc($passenger['email'] ?? '') . '"
+                    required>';
+
+                echo '<label for="guest-passport-' . $index . '">Passport number</label>';
+                echo '<input type="text"
+                    id="guest-passport-' . $index . '"
+                    name="passengers[' . $index . '][passport]"
+                    value="' . esc($passenger['passport'] ?? '') . '">';
+
+                echo '</fieldset>';
+            }
+
+            echo '<button type="submit">Save Passenger Details</button>';
+            echo '</form>';
+            echo '</section>';
+
+            // RIGHT: Booking summary
+            echo '<aside class="checkout-summary">';
+            echo '<h2>Booking Summary</h2>';
+
+            $grandTotal = 0;
+
+            foreach ($cart->getCartElements() as $flight) {
+
+                $seatCount = (int)$flight['seatCount'];
+                $unitFare = (float)$flight['unitFare'];
+                $flightTotal = $seatCount * $unitFare;
+
+                $grandTotal += $flightTotal;
+
+                echo '<div class="checkout-flight">';
+
+                echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
+
+                echo '<p><strong>'
+                    . esc($flight['from'] ?? '')
+                    . ' → '
+                    . esc($flight['to'] ?? '')
+                    . '</strong></p>';
+
+                echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
+
+                echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
+
+                echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
+
+                echo '<p>Passengers: ' . $seatCount . '</p>';
+
+                echo '<p>Fare per passenger: €'
+                    . number_format($unitFare, 2) . '</p>';
+
+                echo '<p>Flight total: €'
+                    . number_format($flightTotal, 2) . '</p>';
+
+                echo '</div>';
+            }
+
+            echo '<div class="checkout-total">';
+            echo '<h3>Total: €' . number_format($grandTotal, 2) . '</h3>';
+            echo '</div>';
+
+            echo '<a href="controller.php?cmd=showCheckout">Return to Cart</a>';
+
+            echo '</aside>';
+
+            echo '</div>'; // checkout-layout
+            echo '</div>'; // content
+        }
+
+    }
+
+
+
+
+
+    // Renders the flight search form (logged-in customer).
+    class CustomerView extends CustomerBaseView {
+        use FlightWorkspace;
+
+        protected $flights = null;
+        protected $selectedId = null;
+
+        public function __construct($info, $flights = null, $selectedId = null) {
+            $this->flights    = $flights;
+            $this->selectedId = $selectedId;
+            $this->top($info);
+            $this->menu($info);
+            $this->content();
+            $this->bottom();
+        }
+
+        public function content() {
+            $this->renderWorkspace(true, $this->flights, $this->selectedId);
+        }
+
+        // Keep top() override that was in the original for welcome message (currently commented)
+        function top($hasCookie = false, $stylesheet = 'insidestyles.css') {
+            parent::top($hasCookie, $stylesheet);
+            $username = isset($_COOKIE['username']) ? $_COOKIE['username'] : (isset($_SESSION['username']) ? $_SESSION['username'] : '');
+        }
+
+        function bottom() {
+            parent::bottom();
+        }
+    }
+
+    /**
+     * Displays flight-search results for a selected route, ticket quantity
+     * and travel date. Uses the new FlightWorkspace layout.
+     */
+    class CustomerFlightResultsView extends CustomerView {
+
+        public function __construct($route, $seatCount, $date, $info, $flights = null, $selectedId = null) {
+            $_SESSION['route']     = $route;
+            $_SESSION['seatCount'] = $seatCount;
+            $_SESSION['date']      = $date;
+
+            parent::__construct($info, $flights, $selectedId);
+        }
+    }
+
+    /**
+    * Displays passenger details for the current booking.
+    */
+    class CustomerPassengerDetailsView extends CustomerView {
+
+        public function __construct($hasCookie) {
+            $this->top($hasCookie);
+            $this->menu($hasCookie);
+            $this->getUserdetails($hasCookie);
+            $this->bottom();
+        }
+
+        public function getUserdetails($hasCookie) {
+
+            $cart = $_SESSION['cart'] ?? null;
+
+            echo '<div id="content">';
+            echo '<h1>Passenger Details</h1>';
+
+            if (!$cart || empty($cart->getCartElements())) {
+                echo '<p>Your Cart is empty.</p>';
+                echo '<a href="controller.php">Return to flight search</a>';
+                echo '</div>';
+                return;
+            }
+
+            $passengers = $cart->getBookingPassengers();
+
+            echo '<form action="controller.php" method="post">';
+            echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
+
+            foreach ($passengers as $index => $passenger) {
+
+                $number = (int)$passenger['passengerNumber'];
+
+                echo '<fieldset class="passenger-details">';
+                echo '<legend>Passenger ' . $number . '</legend>';
+
+                echo '<label for="name-' . $index . '">Full name</label>';
+                echo '<input type="text"
+                    id="name-' . $index . '"
+                    name="passengers[' . $index . '][name]"
+                    required>';
+
+                echo '<label for="email-' . $index . '">Email address</label>';
+                echo '<input type="email"
+                    id="email-' . $index . '"
+                    name="passengers[' . $index . '][email]"
+                    required>';
+
+                echo '<label for="passport-' . $index . '">Passport number</label>';
+                echo '<input type="text"
+                    id="passport-' . $index . '"
+                    name="passengers[' . $index . '][passport]">';
+
+                echo '</fieldset>';
+            }
+
+            echo '<button type="submit">Save Passenger Details</button>';
+            echo '</form>';
+
+            echo '</div>';
+        }
+    }
+   
+    /**
+     * Displays the checkout page.
+     */
+    class CustomerCheckoutView extends CustomerView {
+
+        public function __construct($info) {
+            $this->top($info);
+            $this->menu($info);
+            $this->searchDiv();
+            $this->bottom();
+        }
+
+        function searchDiv() {
+            echo "<div id=\"content\">
+                        <form action=\"controller.php\" method=\"post\">
+                
+                        <input type=\"hidden\" name=\"cmd\" value=\"updateCartSeats\">
+                        <table>
+                            <tr>
+                            <td> </td>
+                        </tr>";
+            $_SESSION['cart']->displayCart();
+
+            echo"   <tr>
+                <td><input type=\"submit\" value=\"Seat Changes\"></td>
+                    </tr>
+                </div>
+                </form>
+                ";
+        }
+    }
+
+
 
     // Renders the administrator route-management page.
     class AdminRoutesView extends AdminBaseView {
@@ -625,459 +1439,7 @@
         }
     }
 
-    // Renders the customer registration form.
-    class RegistrationView extends PublicBaseView {
 
-        public function __construct() {
-            $info = 0;
-            $this->top($info);
-            $this->menu($info);
-            $this->content();
-            $this->bottom();
-        }
-
-        public function menu($info = false) {
-            parent::menu($info);
-        }
-
-        public function content() {
-            echo "
-        <div id=\"content\">
-                    <h1> Register </h1>
-                        <form action=\"controller.php\" method=\"post\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"registerUser\">
-                    <table>
-                        <tr>
-                            <td>username:</td>
-                            <td><input type=\"text\" name=\"username\"> </td>
-
-                        </tr>
-                        <tr>
-                            <td>password:</td>
-                            <td><input type=\"password\" name=\"password\"></td>
-                        </tr>
-                        <tr>
-                            <td>e-mail address:</td>
-                            <td><input type=\"email\" name=\"email\"></td>
-                        </tr>
-                    
-                        <tr>
-                            <td>Credit Card No:</td>
-                            <td><input type=\"text\" name=\"CreditCardNo\"></td>
-                        </tr>
-                        <tr>
-                            <td>Passport No:</td>
-                            <td><input type=\"text\" name=\"PassportNo\"></td>
-                        </tr>
-                        <tr>
-                            <td><input type=\"submit\" value=\"Submit\"></td>
-                            <td></td>
-
-                        </tr> 
-                        
-                    
-                </div>
-                </form>
-                ";
-        }
-    }
-
-    /**
-     * Cart
-     *
-     * Manages a customer's flight selections throughout the booking process.
-     *
-     * Stores selected flights, passenger information, seat selections and fares
-     * in the session-based cart. Supports adding and removing flights, updating
-     * passenger details, recording seat selections and calculating the total fare.
-     *
-     * The cart is available to both Guest and authenticated customers. Guest
-     * booking information is retained until checkout, where authentication is
-     * required before a booking can be completed.
-     *
-     * Booking persistence is handled separately and must only take place after
-     * the customer has authenticated and confirmed the booking.
-     */
-    class Cart {
-
-        private $cartElements = array();
-
-        /**
-         * Add a flight to the Cart.
-         */
-        public function addFlight($ticketInfo) {
-
-            $flightId = (int)($ticketInfo['flight_id'] ?? 0);
-            $passengers = (int)($ticketInfo['seatCount'] ?? 0);
-
-            if ($flightId <= 0 || $passengers <= 0 || $passengers > 20) {
-                return false;
-            }
-
-            // A flight can only appear once in the Cart.
-            if (isset($this->cartElements[$flightId])) {
-                return true;
-            }
-
-            $unitFare = (float)($ticketInfo['unitFare'] ?? 0);
-
-            if ($unitFare <= 0) {
-                return false;
-            }
-
-            $ticketInfo['seatCount'] = $passengers;
-            $ticketInfo['unitFare'] = $unitFare;
-            $ticketInfo['totalFare'] = $unitFare * $passengers;
-
-            // Initialise passenger and seat information.
-            $ticketInfo['passengers'] = array();
-
-            for ($i = 0; $i < $passengers; $i++) {
-
-                $ticketInfo['passengers'][] = array(
-                    'passengerNumber' => $i + 1,
-                    'name' => '',
-                    'email' => '',
-                    'passport' => '',
-                    'seatNumber' => null
-                );
-            }
-
-            $ticketInfo['seatSelections'] = array();
-
-            $this->cartElements[$flightId] = $ticketInfo;
-
-            return true;
-        }
-
-        /**
-         * Remove a flight from the Cart.
-         */
-        public function removeFlight($flightId) {
-
-            $flightId = (int)$flightId;
-
-            if (!isset($this->cartElements[$flightId])) {
-                return false;
-            }
-
-            unset($this->cartElements[$flightId]);
-
-            return true;
-        }
-
-        /**
-         * Return all Cart contents.
-         */
-        public function getCartElements() {
-            return $this->cartElements;
-        }
-
-        /**
-         * Return one flight from the Cart.
-         */
-        public function getFlight($flightId) {
-
-            $flightId = (int)$flightId;
-
-            return $this->cartElements[$flightId] ?? null;
-        }
-
-        /**
-         * Update passenger details for a flight.
-         */
-        public function updatePassengers($flightId, $passengers) {
-
-            $flightId = (int)$flightId;
-
-            if (!isset($this->cartElements[$flightId])) {
-                return false;
-            }
-
-            if (!is_array($passengers)) {
-                return false;
-            }
-
-            if (count($passengers) !== $this->cartElements[$flightId]['seatCount']) {
-                return false;
-            }
-
-            $this->cartElements[$flightId]['passengers'] = $passengers;
-
-            return true;
-        }
-
-        /**
-         * Store selected seat numbers for a flight.
-         */
-        public function updateSeatSelections($flightId, $seatSelections) {
-
-            $flightId = (int)$flightId;
-
-            if (!isset($this->cartElements[$flightId])) {
-                return false;
-            }
-
-            if (!is_array($seatSelections)) {
-                return false;
-            }
-
-            if (count($seatSelections) !== $this->cartElements[$flightId]['seatCount']) {
-                return false;
-            }
-
-            $this->cartElements[$flightId]['seatSelections'] = $seatSelections;
-
-            return true;
-        }
-
-        /**
-         * Calculate the total value of the Cart.
-         */
-        public function getGrandTotal() {
-
-            $grandTotal = 0;
-
-            foreach ($this->cartElements as $flight) {
-                $grandTotal += (float)$flight['unitFare']
-                            * (int)$flight['seatCount'];
-            }
-
-            return $grandTotal;
-        }
-
-        /**
-         * Display Cart contents.
-         */
-        public function displayCart() {
-
-            if (empty($this->cartElements)) {
-
-                echo '<p>Your Cart is currently empty.</p>';
-                echo '<a href="controller.php">Back to search</a>';
-
-                return;
-            }
-
-            foreach ($this->cartElements as $flightId => $flight) {
-
-                $passengers = (int)$flight['seatCount'];
-                $unitFare = (float)$flight['unitFare'];
-                $flightTotal = $unitFare * $passengers;
-
-                echo '<div class="cart-item">';
-
-                echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
-
-                echo '<p>Route: '
-                    . esc($flight['from'] ?? '') . ' to '
-                    . esc($flight['to'] ?? '') . '</p>';
-
-                echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
-
-                echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
-
-                echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
-
-                echo '<p>Number of passengers: ' . $passengers . '</p>';
-
-                echo '<p>Fare per passenger: €'
-                    . number_format($unitFare, 2) . '</p>';
-
-                echo '<p>Flight total: €'
-                    . number_format($flightTotal, 2) . '</p>';
-
-                echo '<h4>Passengers and seats</h4>';
-
-                foreach ($flight['passengers'] as $passenger) {
-
-                    echo '<p>Passenger '
-                        . (int)$passenger['passengerNumber']
-                        . ' — ';
-
-                    echo !empty($passenger['name'])
-                        ? esc($passenger['name'])
-                        : 'Details pending';
-
-                    echo ' — Seat: ';
-
-                    echo !empty($passenger['seatNumber'])
-                        ? esc($passenger['seatNumber'])
-                        : 'Pending selection';
-
-                    echo '</p>';
-                }
-
-                echo '<a href="controller.php?cmd=removeCartItem&amp;flightId='
-                    . (int)$flightId . '">Remove flight</a>';
-
-                echo '</div>';
-            }
-
-            echo '<div class="cart-total">';
-            echo '<h3>Cart total: €'
-                . number_format($this->getGrandTotal(), 2)
-                . '</h3>';
-            echo '</div>';
-
-            echo '<a href="controller.php">Back to search</a>';
-        }
-
-        /**
-         * Temporary compatibility method.
-         * The old 20-seat radio-button system is no longer used.
-         */
-        public function processSeatSelections() {
-
-            // New aircraft seat selection will update the Cart
-            // through updateSeatSelections().
-
-            return true;
-        }
-
-        /**
-         * Booking persistence will be implemented after the
-         * new passenger and aircraft seat-selection workflow.
-         */
-        public function recordBookings($username, $email, $CreditCardNo = null, $PassportNo = null) {
-
-            return false;
-        }
-    }
-
-    // Renders the flight search form (logged-in customer).
-    class CustomerView extends CustomerBaseView {
-        use FlightWorkspace;
-
-        protected $flights = null;
-        protected $selectedId = null;
-
-        public function __construct($info, $flights = null, $selectedId = null) {
-            $this->flights    = $flights;
-            $this->selectedId = $selectedId;
-            $this->top($info);
-            $this->menu($info);
-            $this->content();
-            $this->bottom();
-        }
-
-        public function content() {
-            $this->renderWorkspace(true, $this->flights, $this->selectedId);
-        }
-
-        // Keep top() override that was in the original for welcome message (currently commented)
-        function top($hasCookie = false, $stylesheet = 'insidestyles.css') {
-            parent::top($hasCookie, $stylesheet);
-            $username = isset($_COOKIE['username']) ? $_COOKIE['username'] : (isset($_SESSION['username']) ? $_SESSION['username'] : '');
-        }
-
-        function bottom() {
-            parent::bottom();
-        }
-    }
-
-    /**
-     * Displays flight-search results for a selected route, ticket quantity
-     * and travel date. Uses the new FlightWorkspace layout.
-     */
-    class CustomerFlightResultsView extends CustomerView {
-
-        public function __construct($route, $seatCount, $date, $info, $flights = null, $selectedId = null) {
-            $_SESSION['route']     = $route;
-            $_SESSION['seatCount'] = $seatCount;
-            $_SESSION['date']      = $date;
-
-            parent::__construct($info, $flights, $selectedId);
-        }
-    }
-
-    /**
-     * Displays the passenger purchasing-details page.
-     */
-    class CustomerPassengerDetailsView extends CustomerView {
-
-        public function __construct($hasCookie) {
-            $this->top($hasCookie);
-            $this->menu($hasCookie);
-            $this->getUserdetails($hasCookie);
-            $this->bottom();
-        }
-
-        public function getUserdetails($hasCookie) {
-            $hasCookie = false;
-            if (isset($_COOKIE['username'])) {
-                $hasCookie = true;
-            }
-
-            echo "<div id=\"content\">";
-            if (!$hasCookie) {
-                echo" <h1> Ticket/Purchasing Details </h1>
-                        <form action=\"controller.php\" method=\"post\">
-                    <input type=\"hidden\" name=\"cmd\" value=\"submitPassengerDetails\">
-                    <table>
-                        <tr>
-                            <td>Name to be printed on ticket:</td>
-                            <td><input type=\"text\" name=\"username\"> </td>
-                        </tr>
-                        <tr>
-                            <td>e-mail address:</td>
-                            <td><input type=\"email\" name=\"email\"></td>
-                        </tr>
-                        <tr>
-                            <td>Credit Card No:</td>
-                            <td><input type=\"text\" name=\"CreditCardNo\"></td>
-                        </tr>
-                        <tr>
-                            <td>Passport No:</td>
-                            <td><input type=\"text\" name=\"PassportNo\"></td>
-                        </tr>
-                        <tr>
-                            <td><input type=\"submit\" value=\"Submit\"></td>
-                            <td></td>
-                        </tr> 
-                </div>
-                </form>
-                ";
-            } else {
-                echo "we need to reteive data from db,display for editing";
-                $DBM = new DBManager();
-                $customerDetails = $DBM->displaySavedCustomerDetails();
-            }
-            echo "</div>";
-        }
-    }
-
-    /**
-     * Displays the checkout page.
-     */
-    class CustomerCheckoutView extends CustomerView {
-
-        public function __construct($info) {
-            $this->top($info);
-            $this->menu($info);
-            $this->searchDiv();
-            $this->bottom();
-        }
-
-        function searchDiv() {
-            echo "<div id=\"content\">
-                        <form action=\"controller.php\" method=\"post\">
-                
-                        <input type=\"hidden\" name=\"cmd\" value=\"updateCartSeats\">
-                        <table>
-                            <tr>
-                            <td> </td>
-                        </tr>";
-            $_SESSION['cart']->displayCart();
-
-            echo"   <tr>
-                <td><input type=\"submit\" value=\"Seat Changes\"></td>
-                    </tr>
-                </div>
-                </form>
-                ";
-        }
-    }
 
     /**
      * Manages the database connection and provides methods for user authentication,

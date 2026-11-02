@@ -100,54 +100,66 @@ function dispatchRequest()
             handleAddFlightToCart();
             break;
 
+        // case "updateCartSeats":
+        //     $_SESSION['cart']->processSeatSelections();
+        //     new CustomerPassengerDetailsView($hasCookie);
+        //     break;
+
         case "updateCartSeats":
             $_SESSION['cart']->processSeatSelections();
-            new CustomerPassengerDetailsView($hasCookie);
-            break;
 
-        case "showCheckout":
-            new CustomerCheckoutView($hasCookie);
+            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                new GuestCheckoutView();
+            } else {
+                new CustomerPassengerDetailsView($hasCookie);
+            }
             break;
 
         case "submitPassengerDetails":
-            if (!requireCustomer()) {
-                break;
-            }
             handlePassengerDetailsSubmission();
             break;
 
-        // case "removeCartItem":
-            // $_SESSION['cart']->removeFlight($_GET['cartID']);
-            // new CustomerCheckoutView($hasCookie);
-            // break;
-
-        // case "removeCartItem":
-        //     $flightId = (int)($_GET['flightId'] ?? 0);
-
-        //     if ($flightId > 0) {
-        //         $_SESSION['cart']->removeFlight($flightId);
-        //     }
-
-        //     new CustomerCheckoutView($hasCookie);
+        // case "showPassengerDetails":
+        //     new CustomerPassengerDetailsView($hasCookie);
         //     break;
-         case "removeCartItem":
+        case "showPassengerDetails":
+            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                new GuestCheckoutView();
+            } else {
+                new CustomerPassengerDetailsView($hasCookie);
+            }
+            break;
+
+        case "showCheckout":
+            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                new GuestCartView();
+            } else {
+                new CustomerCheckoutView($hasCookie);
+            }
+            break;
+
+
+        case "removeCartItem":
             $flightId = (int)($_GET['flightId'] ?? 0);
 
             if ($flightId > 0) {
                 $_SESSION['cart']->removeFlight($flightId);
-
                 unset($_SESSION['cartAddedFlightIds'][$flightId]);
             }
 
-            new CustomerCheckoutView($hasCookie);
+            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                new GuestCartView();
+            } else {
+                new CustomerCheckoutView($hasCookie);
+            }
             break;
 
-        case "showPassengerDetails":
-            if (!requireCustomer()) {
-                break;
-            }
-            new CustomerPassengerDetailsView($hasCookie);
-            break;
+        // case "showPassengerDetails":
+        //     if (!requireCustomer()) {
+        //         break;
+        //     }
+        //     new CustomerPassengerDetailsView($hasCookie);
+        //     break;
 
         case "registerUser":
             handleUserRegistration($hasCookie);
@@ -672,16 +684,36 @@ function handleRouteCreation(
     }
 }
 
+
 function handlePassengerDetailsSubmission()
 {
-    $_SESSION['cart']->recordBookings(
-        $_POST['username'],
-        $_POST['email'],
-        $_POST['CreditCardNo'],
-        $_POST['PassportNo']
-    );
+    if (
+        !isset($_POST['passengers']) ||
+        !is_array($_POST['passengers'])
+    ) {
+        echo '<p>No passenger details were submitted.</p>';
+        return;
+    }
 
-    echo '<br><a href="controller.php">Back to search</a>';
+    $cart = $_SESSION['cart'] ?? null;
+
+    if (!$cart) {
+        echo '<p>Your Cart is empty.</p>';
+        return;
+    }
+
+    if (!$cart->updatePassengers($_POST['passengers'])) {
+        echo '<p>Unable to update passenger details.</p>';
+        return;
+    }
+
+    echo '<p>Passenger details saved successfully.</p>';
+
+    if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+        new GuestCheckoutView();
+    } else {
+        new CustomerPassengerDetailsView(true);
+    }
 }
 
 function handleFlightManifestRequest($hasCookie)

@@ -800,3 +800,147 @@ a.button {
 #content .cart-total h3 {
     color: var(--off-white);
 }
+
+.cart-remove-button {
+    display: inline-block;
+    background-color: #386747;
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.cart-remove-button:hover {
+    background-color: #294d35;
+    color: #ffffff !important;
+}
+
+
+/* Checkout layout */
+
+.checkout-page {
+    width: 100%;
+}
+
+.checkout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(240px, 2fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.checkout-details,
+.checkout-summary {
+    min-width: 0;
+    padding: 20px;
+    border-radius: 8px;
+    background: #f5f4ef;
+}
+
+.checkout-details h2,
+.checkout-summary h2 {
+    color: #294d35;
+    margin-top: 0;
+}
+
+.passenger-details {
+    margin: 18px 0;
+    padding: 16px;
+    border: 1px solid #b3b8ab;
+    border-radius: 6px;
+}
+
+.passenger-details legend {
+    padding: 0 8px;
+    font-weight: 600;
+    color: #294d35;
+}
+
+.passenger-details label {
+    display: block;
+    margin: 12px 0 5px;
+    font-weight: 600;
+}
+
+.passenger-details input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #b3b8ab;
+    border-radius: 4px;
+}
+
+.checkout-flight {
+    padding: 14px 0;
+    border-bottom: 1px solid #b3b8ab;
+}
+
+.checkout-flight h3 {
+    color: #386747;
+}
+
+.checkout-flight p {
+    margin: 7px 0;
+}
+
+.checkout-total {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 2px solid #386747;
+    color: #294d35;
+}
+
+.checkout-details button {
+    margin-top: 12px;
+}
+
+/* Responsive checkout */
+
+@media (max-width: 700px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-details,
+    .checkout-summary {
+        padding: 14px;
+    }
+}
+
+
+.cart-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.cart-item-header h3 {
+    margin: 0;
+}
+
+.cart-checkout-button {
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .cart-item-header {
+        align-items: flex-start;
+    }
+}
+
+.cart-checkout-button,
+.cart-checkout-button:visited,
+.cart-checkout-button:hover,
+.cart-checkout-button:focus {
+    color: #ffffff !important;
+    background-color: #386747;
+    text-decoration: none;
+}
+
+.cart-checkout-button:hover {
+    background-color: #294d35;
+}
