@@ -1,29 +1,32 @@
-/* Airline2026 public pages — Blogger-inspired clarity, retaining the 2014 IDs. */
+/*
+ * Airline2026 authenticated pages.
+ * Shared outer styling follows mystyles.css.
+ * Authenticated panes and navigation remain separately styled.
+ */
+
+/* Authenticated colour palette */
+:root {
+    --forest-green: #3b4d32;
+    --deep-green: #285c43;
+    --deep-teal-green: #1d4632;
+    --off-white: #f5f4ef;
+    --charcoal-blue-grey: #292d2b;
+    --muted-grey: #69736b;
+    --sage-grey: #b3b8ab;
+    --muted-blue-grey: #738b8f;
+
+    --inner-border: var(--sage-grey);
+    --inner-pane-background: #ffffff;
+    --inner-selected-background: #edf2eb;
+}
+
+/* --------------------------------------------------
+   Shared page foundation — aligned with mystyles.css
+   -------------------------------------------------- */
 
 * {
     box-sizing: border-box;
 }
-
-:root {
-    /* Fonts */
-    --font-primary: "Roboto", "Segoe UI", Arial, sans-serif;
-    --font-secondary: "Montserrat", "Roboto", "Segoe UI", Arial, sans-serif;
-
-    /* Airline2026 colour palette */
-    --forest-green: #3b4d32;
-    --deep-green: #2a5b44;
-    --off-white: #f5f5f0;
-    --charcoal-blue-grey: #303b41;
-    --muted-grey: #878679;
-    --dark-olive: #444235;
-    --sage-grey: #b3b8ab;
-    --muted-blue-grey: #738b8f;
-    --deep-teal-green: #33524e;
-}
-
-/* --------------------------------------------------
-   Page and original 2014 outer layout
-   -------------------------------------------------- */
 
 html {
     min-height: 100%;
@@ -32,35 +35,37 @@ html {
 body {
     margin: 0;
     padding: 28px 16px;
-    background: var(--off-white);
-    color: var(--charcoal-blue-grey);
-    font-family: var(--font-primary);
+    background: #f5f4ef;
+    color: #292d2b;
+    font-family: Roboto, "Segoe UI", Arial, sans-serif;
     font-size: 16px;
     line-height: 1.55;
 }
 
+/* Outer page frame */
 #main.old {
     width: min(100%, 1000px);
     margin: 0 auto;
     overflow: hidden;
     background: #fff;
-    border: 1px solid var(--sage-grey);
+    border: 1px solid #e5e4dc;
     border-radius: 8px;
     box-shadow: 0 5px 20px rgba(30, 40, 30, 0.06);
 }
 
+/* Page header */
 #header.old {
     margin: 0;
     padding: 28px 30px 22px;
-    border-bottom: 1px solid var(--sage-grey);
-    background: #fff;
+    border-bottom: 1px solid #e8e8e1;
     text-align: center;
+    background: #fff;
 }
 
 #header h1 {
     margin: 0;
-    color: var(--forest-green);
-    font-family: var(--font-secondary);
+    color: #244f3b;
+    font-family: Montserrat, Roboto, "Segoe UI", Arial, sans-serif;
     font-size: clamp(1.8rem, 4vw, 2.5rem);
     font-weight: 700;
     letter-spacing: -0.035em;
@@ -68,44 +73,29 @@ body {
 
 #header .tagline {
     margin: 5px 0 0;
-    color: var(--muted-grey);
+    color: #6b746d;
     font-size: 0.95rem;
 }
 
-/* --------------------------------------------------
-   Public navigation
-   -------------------------------------------------- */
-
+/* Navigation band */
 #menu.old {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 4px;
     min-height: 48px;
     padding: 7px 16px;
-    border-bottom: 1px solid var(--sage-grey);
-    background: var(--off-white);
+    border-bottom: 1px solid #e8e8e1;
+    background: #fafaf7;
     text-align: center;
-}
-
-#menu .menu-left,
-#menu .menu-right {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-#menu .menu-right {
-    margin-left: auto;
 }
 
 #menu a {
     display: inline-block;
     padding: 8px 13px;
     border-radius: 5px;
-    color: var(--deep-green);
+    color: #285c43;
     font-weight: 600;
     text-decoration: none;
     transition: background-color 120ms ease, color 120ms ease;
@@ -113,49 +103,58 @@ body {
 
 #menu a:hover,
 #menu a:focus-visible {
-    background: var(--sage-grey);
-    color: var(--dark-olive);
+    background: #e8f0e9;
+    color: #163b29;
     outline: none;
 }
 
-#menu .book-flight-cta {
+#menu.old .menu-left,
+#menu.old .menu-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#menu.old .menu-right {
+    margin-left: auto;
+}
+
+#menu.old .book-flight-cta {
     margin-left: auto;
     border: 1px solid var(--deep-green);
+    border-radius: 5px;
     background: var(--deep-green);
     color: #fff;
+    padding: 8px 13px;
+    text-decoration: none;
 }
 
-#menu .book-flight-cta:hover,
-#menu .book-flight-cta:focus-visible {
+#menu.old .book-flight-cta:hover {
     border-color: var(--deep-teal-green);
     background: var(--deep-teal-green);
-    color: #fff;
 }
 
-#menu .book-flight-cta.is-disabled {
+#menu.old .book-flight-cta.is-disabled {
     border-color: var(--sage-grey);
-    background: var(--off-white);
+    background: #e8ebe7;
     color: var(--muted-grey);
     cursor: not-allowed;
     pointer-events: none;
 }
 
-/* Identity label — directly below the menu */
+/* Identity strip */
 #identity {
     box-sizing: border-box;
     width: 100%;
     padding: 8px 12px;
-    background-color: #f5f4ef;
+    background: #f5f4ef;
     color: #386747;
     border-bottom: 1px solid #e5e4dc;
     text-align: left;
     font-weight: 600;
 }
 
-/* --------------------------------------------------
-   Public content area
-   -------------------------------------------------- */
-
+/* Main content frame */
 #content {
     float: none;
     width: auto;
@@ -168,8 +167,8 @@ body {
 #content h1,
 #content h2,
 #content h3 {
-    color: var(--forest-green);
-    font-family: var(--font-secondary);
+    color: #293f32;
+    font-family: Montserrat, Roboto, "Segoe UI", Arial, sans-serif;
     line-height: 1.25;
 }
 
@@ -182,116 +181,22 @@ body {
     font-size: 1.3rem;
 }
 
-#content h3 {
-    font-size: 1.1rem;
-}
-
-#content p {
-    margin-top: 0;
-}
-
 #content form {
     max-width: 100%;
 }
 
 #content table {
-    max-width: 100%;
     border-collapse: collapse;
+    max-width: 100%;
 }
 
-#content th {
-    text-align: left;
-}
-
-#content th,
 #content td {
     padding: 6px 9px 6px 0;
     vertical-align: top;
 }
 
-#content a {
-    color: var(--deep-green);
-    transition: color 180ms ease;
-}
-
-#content a:hover {
-    color: var(--deep-teal-green);
-}
-
 /* --------------------------------------------------
-   Form controls
-   -------------------------------------------------- */
-
-input,
-select,
-textarea,
-button {
-    max-width: 100%;
-    font: inherit;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="date"],
-input[type="number"],
-select,
-textarea {
-    padding: 8px 10px;
-    border: 1px solid var(--sage-grey);
-    border-radius: 4px;
-    background: #fff;
-    color: var(--charcoal-blue-grey);
-}
-
-textarea {
-    width: 100%;
-    resize: vertical;
-}
-
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--muted-blue-grey);
-    outline-offset: 2px;
-}
-
-input[type="submit"],
-button,
-.button {
-    padding: 9px 16px;
-    border: 1px solid var(--deep-green);
-    border-radius: 5px;
-    background: var(--deep-green);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-        background-color 180ms ease,
-        border-color 180ms ease,
-        color 180ms ease,
-        box-shadow 180ms ease;
-}
-
-input[type="submit"]:hover,
-button:hover,
-.button:hover {
-    border-color: var(--deep-teal-green);
-    background: var(--deep-teal-green);
-}
-
-button:disabled,
-input[type="submit"]:disabled {
-    border-color: var(--sage-grey);
-    background: var(--sage-grey);
-    color: var(--dark-olive);
-    cursor: not-allowed;
-}
-
-/* --------------------------------------------------
-   Workspace layout primitives
-   Available for public pages that need multiple panes.
+   Authenticated workspace layouts
    -------------------------------------------------- */
 
 .single-pane,
@@ -320,9 +225,10 @@ input[type="submit"]:disabled {
     min-height: 0;
     overflow: auto;
     padding: 16px;
-    border: 1px solid var(--sage-grey);
+    border: 1px solid var(--inner-border);
     border-radius: 6px;
-    background: #fff;
+    background: var(--inner-pane-background);
+    box-sizing: border-box;
     transition:
         border-color 180ms ease,
         box-shadow 180ms ease,
@@ -344,48 +250,90 @@ input[type="submit"]:disabled {
 
 .selectable-row:hover,
 .selectable-row.is-selected {
-    border-color: var(--muted-blue-grey);
-    background: var(--off-white);
+    border-color: var(--deep-green);
+    background: var(--inner-selected-background);
 }
 
-/* --------------------------------------------------
-   Original route/blog list area
-   -------------------------------------------------- */
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+    font-family: Roboto, "Segoe UI", Arial, sans-serif;
+}
 
-/* --------------------------------------------------
-   Public footer
-   -------------------------------------------------- */
+input[type="submit"],
+button,
+.button {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--deep-green);
+    border-radius: 4px;
+    background: var(--deep-green);
+    color: #fff;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background-color 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
+}
 
+input[type="submit"]:hover,
+button:hover,
+.button:hover {
+    border-color: var(--deep-teal-green);
+    background: var(--deep-teal-green);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--muted-blue-grey);
+    outline-offset: 2px;
+}
+
+/* Footer */
 #footer.old {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px;
     padding: 15px 24px;
-    border-top: 1px solid var(--sage-grey);
-    background: var(--off-white);
-    color: var(--muted-grey);
+    border-top: 1px solid #e8e8e1;
+    background: #fafaf7;
+    color: #69736b;
     font-size: 0.9rem;
 }
 
 #footer a {
-    color: var(--deep-green);
+    color: #285c43;
     text-decoration: none;
 }
 
 #footer a:hover {
-    color: var(--deep-teal-green);
     text-decoration: underline;
 }
 
 /* --------------------------------------------------
-   Responsive layout
+   Responsive behaviour
    -------------------------------------------------- */
 
 @media (max-width: 800px) {
     .double-pane,
     .triple-pane {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    #menu.old {
+        flex-wrap: wrap;
+    }
+
+    #menu.old .menu-right {
+        flex-wrap: wrap;
     }
 }
 
@@ -403,10 +351,6 @@ input[type="submit"]:disabled {
         padding: 8px;
     }
 
-    #menu .menu-right {
-        margin-left: 0;
-    }
-
     #menu a {
         padding: 7px 9px;
     }
@@ -415,7 +359,6 @@ input[type="submit"]:disabled {
         padding: 22px 16px 26px;
     }
 
-    #content th,
     #content td {
         display: block;
         padding-right: 0;
@@ -424,48 +367,33 @@ input[type="submit"]:disabled {
     #footer.old {
         padding: 14px 16px;
     }
-
 }
 
-/* --------------------------------------------------
-   Accessibility: respect reduced-motion preferences
-   -------------------------------------------------- */
-
 @media (prefers-reduced-motion: reduce) {
+    .pane,
+    .selectable-row,
     input[type="submit"],
     button,
     .button,
-    #menu a,
-    #content a,
-    .pane,
-    .selectable-row {
+    #menu.old a {
         transition: none;
     }
 }
 
+/* =====================================
+   AIRLINE2026 — FLIGHT WORKSPACE
+   ===================================== */
 
-/* ===== Flight workspace (three panes) ===== */
-/* .flight-workspace {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-    gap: 24px;
-    align-items: start;
-}
-.flight-workspace .col {
-    display: grid;
-    gap: 18px;
-    min-width: 0;
-} */
-
-/* ===== Flight workspace – true three panes ===== */
 .flight-workspace.triple-pane {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1.15fr);
     gap: 18px;
     align-items: start;
 }
 
-/* Search pane and results summary grouped in Pane 1 */
 .workspace-search-column {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -473,7 +401,6 @@ input[type="submit"]:disabled {
     min-width: 0;
 }
 
-/* Available flights summary below search form */
 .results-summary {
     min-width: 0;
 }
@@ -486,8 +413,6 @@ input[type="submit"]:disabled {
     margin-bottom: 0;
 }
 
-/* Remove the old .col rules – they are no longer needed */
-
 .search-card,
 .flight-card {
     background: #fff;
@@ -495,9 +420,11 @@ input[type="submit"]:disabled {
     border-radius: 10px;
     box-shadow: 0 4px 14px rgba(30, 40, 30, 0.06);
 }
+
 .search-card {
     padding: 20px;
 }
+
 .search-card h2 {
     margin-top: 0;
 }
@@ -512,6 +439,7 @@ input[type="submit"]:disabled {
     border-radius: 999px;
     width: fit-content;
 }
+
 .trip-tab {
     border: none;
     background: transparent;
@@ -523,33 +451,39 @@ input[type="submit"]:disabled {
     cursor: pointer;
     transition: all 0.15s ease;
 }
+
 .trip-tab:hover {
     background: rgba(42, 91, 68, 0.08);
 }
+
 .trip-tab.is-active {
     background: var(--deep-green);
     color: #fff;
 }
 
-/* Form fields inside search card */
+/* Search form fields */
 .field-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
 }
+
 .field {
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
 }
+
 .field.full {
     grid-column: 1 / -1;
 }
+
 .field label {
     font-size: 0.85rem;
     font-weight: 600;
 }
+
 .search-card input[type="text"],
 .search-card input[type="number"],
 .search-card input[type="date"],
@@ -561,6 +495,7 @@ input[type="submit"]:disabled {
     background: #fff;
     color: var(--charcoal-blue-grey);
 }
+
 .find-flights {
     width: 100%;
     margin-top: 16px;
@@ -569,51 +504,59 @@ input[type="submit"]:disabled {
     border-radius: 8px;
 }
 
-/* Results header */
+/* Results */
 .results-header h2 {
     margin-bottom: 2px;
 }
+
 .results-header p {
     margin: 0 0 14px;
     color: var(--muted-grey);
     font-size: 0.9rem;
 }
 
-/* Flight cards */
 .flight-card {
     padding: 16px;
     margin-bottom: 14px;
 }
+
 .flight-card.is-selected {
     border-color: var(--deep-green);
     box-shadow: 0 0 0 2px var(--sage-grey);
 }
+
 .flight-top {
     display: flex;
     align-items: center;
     gap: 12px;
 }
+
 .flight-top .airline {
     flex: 1;
 }
+
 .flight-top .airline span,
 .price span {
     color: var(--muted-grey);
     font-size: 0.85rem;
 }
+
 .airline-logo {
     height: 32px;
     width: auto;
 }
+
 .chip {
     padding: 3px 10px;
     border: 1px solid var(--sage-grey);
     border-radius: 999px;
     font-size: 0.85rem;
 }
+
 .price {
     text-align: right;
 }
+
 .price strong {
     font-size: 1.35rem;
 }
@@ -627,39 +570,39 @@ input[type="submit"]:disabled {
     background: var(--off-white);
     border-radius: 8px;
 }
+
 .route .time {
     display: block;
     font-size: 1.25rem;
     font-weight: 700;
 }
+
 .route .city {
     display: block;
     color: var(--muted-grey);
     font-size: 0.85rem;
 }
+
 .route .end {
     text-align: right;
 }
+
 .route .line {
     flex: 1;
     height: 1px;
     margin: 0 14px;
     background: var(--sage-grey);
 }
+
 .flight-actions {
     display: flex;
     justify-content: flex-end;
 }
 
-/* @media (max-width: 800px) {
-    .flight-workspace {
-        grid-template-columns: minmax(0, 1fr);
-    } */
-   @media (max-width: 900px) {
+@media (max-width: 900px) {
     .flight-workspace.triple-pane {
         grid-template-columns: minmax(0, 1fr);
     }
-
 }
 
 .flight-details-card {
@@ -679,6 +622,7 @@ input[type="submit"]:disabled {
     opacity: 0.85;
 }
 
+/* Flight action buttons */
 input[type="submit"] {
     background-color: #f5f5f0;
     color: #33524e;
@@ -696,7 +640,7 @@ a.button {
 }
 
 /* =====================================
-   AIRLINE2026 - SHOPPING CART
+   AIRLINE2026 — SHOPPING CART
    ===================================== */
 
 .cart-item {
@@ -707,9 +651,10 @@ a.button {
     padding: 20px 24px;
     margin: 18px 0;
     box-shadow: 0 3px 9px rgba(48, 59, 65, 0.10);
-    transition: transform 0.25s ease,
-                box-shadow 0.25s ease,
-                border-color 0.25s ease;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 }
 
 .cart-item:hover {
@@ -749,8 +694,9 @@ a.button {
     text-decoration: none;
     border-radius: 5px;
     font-size: 0.85rem;
-    transition: background 0.2s ease,
-                transform 0.2s ease;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
 .cart-item a:hover {
@@ -759,7 +705,6 @@ a.button {
 }
 
 /* Cart grand total */
-
 .cart-total {
     background: #303B41;
     color: #F5F5F0;
@@ -778,9 +723,7 @@ a.button {
 }
 
 /* Cart responsiveness */
-
 @media (max-width: 600px) {
-
     .cart-item {
         padding: 16px;
         margin: 14px 0;
@@ -816,8 +759,9 @@ a.button {
     color: #ffffff !important;
 }
 
-
-/* Checkout layout */
+/* =====================================
+   AIRLINE2026 — CHECKOUT
+   ===================================== */
 
 .checkout-page {
     width: 100%;
@@ -896,7 +840,6 @@ a.button {
 }
 
 /* Responsive checkout */
-
 @media (max-width: 700px) {
     .checkout-layout {
         grid-template-columns: 1fr;
@@ -908,7 +851,7 @@ a.button {
     }
 }
 
-
+/* Cart item heading and checkout link */
 .cart-item-header {
     display: flex;
     justify-content: space-between;
@@ -943,4 +886,251 @@ a.button {
 
 .cart-checkout-button:hover {
     background-color: #294d35;
+}
+
+/* =====================================
+   AIRLINE2026 — AIRCRAFT SEAT SELECTION
+   Shared by guest and authenticated customer views
+   ===================================== */
+
+.seat-selection-page {
+    width: 100%;
+}
+
+.seat-selection-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+    gap: 24px;
+    align-items: start;
+}
+
+.seat-map-panel,
+.seat-selection-summary {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--sage-grey);
+    border-radius: 8px;
+    background: #fff;
+}
+
+.seat-map-panel h2,
+.seat-selection-summary h2 {
+    margin-top: 0;
+}
+
+.seat-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 12px;
+    border-radius: 12px;
+    background: var(--off-white);
+    overflow-x: auto;
+}
+
+/* Decorative background only; database-driven HTML seats
+   remain authoritative and interactive. */
+.seat-map-image {
+    display: block;
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    margin: 0 auto 18px;
+    opacity: 0.18;
+    pointer-events: none;
+}
+
+/* Seat-map legend */
+.seat-map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 16px 0 22px;
+}
+
+.seat-legend {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.seat-legend::before {
+    content: "";
+    width: 15px;
+    height: 15px;
+    margin-right: 6px;
+    border: 1px solid var(--forest-green);
+    border-radius: 4px;
+    background: white;
+}
+
+.seat-legend.premium::before {
+    background: #d9c69b;
+}
+
+.seat-legend.booked::before {
+    background: #a9aaa5;
+    border-color: #777;
+}
+
+.seat-legend.selected::before {
+    background: var(--deep-green);
+}
+
+/* Aircraft outline */
+.aircraft-seat-map {
+    min-width: 480px;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 22px 16px;
+    border: 2px solid var(--sage-grey);
+    border-radius: 48% 48% 16px 16px / 12% 12% 16px 16px;
+    background: #fff;
+}
+
+.aircraft-front,
+.aircraft-rear {
+    padding: 12px;
+    color: var(--muted-grey);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-align: center;
+}
+
+/* Individual seat rows */
+.seat-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 5px 0;
+}
+
+.seat-row-number {
+    width: 26px;
+    color: var(--muted-grey);
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.seat-group {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 4px;
+}
+
+.seat-aisle {
+    width: 22px;
+    flex: 0 0 22px;
+}
+
+/* Seat buttons */
+.seat-option {
+    display: block;
+    cursor: pointer;
+}
+
+.seat-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.seat-option span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 30px;
+    border: 1px solid var(--forest-green);
+    border-radius: 6px 6px 3px 3px;
+    background: #fff;
+    color: var(--deep-green);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* Premium seats */
+.seat-option.is-premium span {
+    background: #d9c69b;
+    color: #443b28;
+}
+
+/* Booked seats */
+.seat-option.is-booked {
+    cursor: not-allowed;
+}
+
+.seat-option.is-booked span {
+    background: #a9aaa5;
+    border-color: #888;
+    color: #555;
+}
+
+/* Selected seats */
+.seat-option.is-selected span {
+    background: var(--deep-green);
+    border-color: var(--deep-green);
+    color: #fff;
+}
+
+.seat-option:not(.is-booked):hover span {
+    outline: 2px solid var(--muted-blue-grey);
+}
+
+.seat-option input:focus-visible + span {
+    outline: 3px solid var(--muted-blue-grey);
+    outline-offset: 2px;
+}
+
+/* Empty positions, where required by a row layout */
+.seat-placeholder {
+    width: 34px;
+}
+
+/* Seat-map error message */
+.seat-map-error {
+    padding: 12px;
+    border-left: 4px solid #a34b40;
+    background: #f5e9e6;
+    color: #71352e;
+}
+
+/* Responsive seat selection */
+@media (max-width: 700px) {
+    .seat-selection-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .seat-map-panel,
+    .seat-selection-summary {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 600px) {
+    .seat-map-panel {
+        padding: 10px;
+    }
+
+    .aircraft-seat-map {
+        padding: 16px 6px;
+    }
+
+    .seat-option span,
+    .seat-placeholder {
+        width: 27px;
+    }
+
+    .seat-aisle {
+        width: 12px;
+        flex-basis: 12px;
+    }
+
+    .seat-row {
+        gap: 3px;
+    }
 }

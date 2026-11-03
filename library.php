@@ -382,6 +382,254 @@
         }
     }
 
+    
+    /**
+     * Shared renderer for aircraft seat maps.
+     *
+     * The database supplies the seats, rows, premium status and occupancy.
+     * The aircraft code determines where the aisle gaps appear.
+     */
+    class SeatMapRenderer {
+
+        public static function render($flightId, $seatMap, $passengerCount, $selectedSeats = array()) {
+
+            if (empty($seatMap)) {
+                echo '<p class="seat-map-error">Seat information is unavailable for this flight.</p>';
+                return;
+            }
+
+            $aircraftCode = $seatMap[0]['aircraft_code'];
+            $flightCode = $seatMap[0]['flight_code'];
+
+            if ($aircraftCode === 'AC180') {
+                $groups = array(
+                    array('A', 'B', 'C'),
+                    array('D', 'E', 'F')
+                );
+            } elseif ($aircraftCode === 'AC220') {
+                $groups = array(
+                    array('A', 'B', 'C'),
+                    array('D', 'E', 'F', 'G'),
+                    array('H', 'I', 'J')
+                );
+            } else {
+                echo '<p class="seat-map-error">Unknown aircraft layout: '
+                    . esc($aircraftCode) . '</p>';
+                return;
+            }
+
+            $seatsByRow = array();
+
+            foreach ($seatMap as $seat) {
+                $row = (int)$seat['seat_row'];
+                $seatsByRow[$row][] = $seat;
+            }
+
+            $selectedSeats = array_map('intval', $selectedSeats);
+
+            echo '<section class="seat-map-panel">';
+            echo '<h2>' . esc($flightCode) . ' — '
+                . esc($aircraftCode) . '</h2>';
+            echo '<p>Select one seat for each of the '
+                . (int)$passengerCount . ' passengers.</p>';
+
+            echo '<div class="seat-map-legend">';
+            echo '<span class="seat-legend available">Available</span>';
+            echo '<span class="seat-legend premium">Premium</span>';
+            echo '<span class="seat-legend booked">Booked</span>';
+            echo '<span class="seat-legend selected">Selected</span>';
+            echo '</div>';
+
+            echo '<div class="aircraft-seat-map" data-flight-id="'
+                . (int)$flightId . '" data-passenger-count="'
+                . (int)$passengerCount . '">';
+
+            echo '<div class="aircraft-front">FRONT OF AIRCRAFT</div>';
+
+            foreach ($seatsByRow as $rowNumber => $rowSeats) {
+
+                $seatsByPosition = array();
+
+                foreach ($rowSeats as $seat) {
+                    $seatsByPosition[$seat['seat_position']] = $seat;
+                }
+
+                echo '<div class="seat-row">';
+                echo '<span class="seat-row-number">'
+                    . (int)$rowNumber . '</span>';
+
+                foreach ($groups as $groupIndex => $group) {
+
+                    if ($groupIndex > 0) {
+                        echo '<span class="seat-aisle" aria-hidden="true"></span>';
+                    }
+
+                    echo '<div class="seat-group">';
+
+                    foreach ($group as $position) {
+
+                        if (!isset($seatsByPosition[$position])) {
+                            echo '<span class="seat-placeholder"></span>';
+                            continue;
+                        }
+
+                        $seat = $seatsByPosition[$position];
+                        $seatNumber = (int)$seat['seat_no'];
+                        $seatLabel = $seat['seat_label'];
+                        $isBooked = ((int)$seat['is_booked'] === 1);
+                        $isPremium = ((int)$seat['is_premium'] === 1);
+                        $isSelected = in_array($seatNumber, $selectedSeats, true);
+
+                        $classes = array('seat-option');
+
+                        if ($isPremium) {
+                            $classes[] = 'is-premium';
+                        }
+
+                        if ($isBooked) {
+                            $classes[] = 'is-booked';
+                        }
+
+                        if ($isSelected) {
+                            $classes[] = 'is-selected';
+                        }
+
+                        echo '<label class="' . esc(implode(' ', $classes)) . '">';
+
+                        echo '<input type="checkbox"'
+                            . ' name="seatSelections[' . (int)$flightId . '][]"'
+                            . ' value="' . $seatNumber . '"'
+                            . ($isBooked ? ' disabled' : '')
+                            . ($isSelected ? ' checked' : '')
+                            . '>';
+
+                        echo '<span>' . esc($seatLabel) . '</span>';
+                        echo '</label>';
+                    }
+
+                    echo '</div>';
+                }
+
+                echo '</div>';
+            }
+
+            echo '<div class="aircraft-rear">REAR OF AIRCRAFT</div>';
+            echo '</div>';
+            echo '</section>';
+        }
+    }
+
+
+    /**
+     * Shared workflow for guest and authenticated seat-selection views.
+     */
+    trait SeatSelectionWorkspace {
+
+        protected function renderSeatSelectionContent() {
+
+            $cart = $_SESSION['cart'] ?? null;
+
+            echo '<div id="content" class="seat-selection-page">';
+            echo '<h1>Select Your Seats</h1>';
+
+            if (!$cart || empty($cart->getCartElements())) {
+                echo '<p>Your Cart is empty.</p>';
+                echo '<a href="controller.php">Return to flight search</a>';
+                echo '</div>';
+                return;
+            }
+
+            $db = new DBManager();
+
+            echo '<form action="controller.php" method="post">';
+            echo '<input type="hidden" name="cmd" value="updateCartSeats">';
+
+            foreach ($cart->getCartElements() as $flightId => $flight) {
+
+                $seatMap = $db->getSeatMapForFlight($flightId);
+                $selectedSeats = $flight['seatSelections'] ?? array();
+
+                SeatMapRenderer::render(
+                    $flightId,
+                    $seatMap,
+                    (int)$flight['seatCount'],
+                    $selectedSeats
+                );
+            }
+
+            echo '<button type="submit">Save Seat Selections</button>';
+            echo '</form>';
+            echo '</div>';
+
+            // Limit selections independently for each flight.
+            echo '<script>
+            document.querySelectorAll(".aircraft-seat-map").forEach(function(map) {
+
+                var limit = parseInt(map.dataset.passengerCount, 10);
+                var checkboxes = map.querySelectorAll(
+                    "input[type=checkbox]:not(:disabled)"
+                );
+
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.addEventListener("change", function() {
+
+                        var selected = map.querySelectorAll(
+                            "input[type=checkbox]:checked"
+                        );
+
+                        if (selected.length > limit) {
+                            this.checked = false;
+                            alert("Please select no more than " + limit + " seats for this flight.");
+                        }
+
+                        var label = this.closest(".seat-option");
+
+                        if (label) {
+                            label.classList.toggle("is-selected", this.checked);
+                        }
+                    });
+                });
+            });
+            </script>';
+        }
+    }
+
+
+    /**
+     * Guest seat selection.
+     */
+    class GuestSeatSelectionView extends PublicBaseView {
+
+        use SeatSelectionWorkspace;
+
+        public function __construct() {
+            $this->top();
+            $this->menu();
+            $this->renderIdentity();
+            $this->renderSeatSelectionContent();
+            $this->bottom();
+        }
+    }
+
+
+    /**
+     * Authenticated customer seat selection.
+     */
+    class CustomerSeatSelectionView extends CustomerBaseView {
+
+        use SeatSelectionWorkspace;
+
+        public function __construct($hasCookie = false) {
+            $this->top($hasCookie);
+            $this->menu($hasCookie);
+            $this->renderSeatSelectionContent();
+            $this->bottom();
+        }
+    }
+
+
+
+
     /**
      * Cart
      *
@@ -756,9 +1004,13 @@
 
                 echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
 
+                // echo '<a class="button cart-checkout-button"
+                //     href="controller.php?cmd=showPassengerDetails">
+                //     Continue to Checkout
+                // </a>';
                 echo '<a class="button cart-checkout-button"
-                    href="controller.php?cmd=showPassengerDetails">
-                    Continue to Checkout
+                    href="controller.php?cmd=showSeatSelection">
+                    Select Seats
                 </a>';
 
                 echo '</div>';
@@ -778,8 +1030,19 @@
                 echo '<p>Flight total: €'
                     . number_format($flightTotal, 2) . '</p>';
 
+                // echo '<h4>Seat selection</h4>';
+                // echo '<p>Seat selection pending.</p>';
                 echo '<h4>Seat selection</h4>';
-                echo '<p>Seat selection pending.</p>';
+
+                $selectedSeats = $flight['seatSelections'] ?? array();
+
+                if (count($selectedSeats) === $passengers) {
+                    echo '<p>Selected seats: '
+                        . esc(implode(', ', $selectedSeats))
+                        . '</p>';
+                } else {
+                    echo '<p>Seat selection pending.</p>';
+                }
 
                 // echo '<a href="controller.php?cmd=removeCartItem&amp;flightId='
                 //     . (int)$flightId . '">Remove flight</a>';
@@ -836,6 +1099,56 @@
          * Every passenger must have one unique seat on each flight.
          * A seat must exist on that aircraft and must not already be booked.
          */
+        // public function processSeatSelections() {
+
+        //     if (empty($this->cartElements)) {
+        //         return false;
+        //     }
+
+        //     $db = new DBManager();
+
+        //     foreach ($this->cartElements as $flightId => $flight) {
+
+        //         $passengerCount = (int)$flight['seatCount'];
+        //         $selections = $flight['seatSelections'] ?? array();
+
+        //         // Every passenger must have a selected seat.
+        //         if (!is_array($selections) ||
+        //             count($selections) !== $passengerCount) {
+        //             return false;
+        //         }
+
+        //         // Retrieve the actual aircraft seat availability.
+        //         $seatMap = $db->getSeatMapForFlight($flightId);
+
+        //         if (empty($seatMap)) {
+        //             return false;
+        //         }
+
+        //         $availableSeats = array();
+
+        //         foreach ($seatMap as $seat) {
+
+        //             $seatNumber = (int)$seat['seat_no'];
+
+        //             if ((int)$seat['is_booked'] === 0) {
+        //                 $availableSeats[] = $seatNumber;
+        //             }
+        //         }
+
+        //         // Check that every selected seat exists and is available.
+        //         foreach ($selections as $seatNumber) {
+
+        //             $seatNumber = (int)$seatNumber;
+
+        //             if (!in_array($seatNumber, $availableSeats, true)) {
+        //                 return false;
+        //             }
+        //         }
+        //     }
+
+        //     return true;
+        // }
         public function processSeatSelections() {
 
             if (empty($this->cartElements)) {
@@ -852,6 +1165,13 @@
                 // Every passenger must have a selected seat.
                 if (!is_array($selections) ||
                     count($selections) !== $passengerCount) {
+                    return false;
+                }
+
+                // Normalise seat numbers and reject duplicates.
+                $selections = array_map('intval', $selections);
+
+                if (count(array_unique($selections)) !== count($selections)) {
                     return false;
                 }
 
@@ -875,8 +1195,6 @@
 
                 // Check that every selected seat exists and is available.
                 foreach ($selections as $seatNumber) {
-
-                    $seatNumber = (int)$seatNumber;
 
                     if (!in_array($seatNumber, $availableSeats, true)) {
                         return false;

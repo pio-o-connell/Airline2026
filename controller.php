@@ -87,8 +87,61 @@ function dispatchRequest()
             handleAddFlightToCart();
             break;
 
+        
+        case "showSeatSelection":
+            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                new GuestSeatSelectionView();
+            } else {
+                new CustomerSeatSelectionView($hasCookie);
+            }
+            break;
+
+
+        // case "updateCartSeats":
+        //     $_SESSION['cart']->processSeatSelections();
+
+        //     if (($_SESSION['username'] ?? "Guest") === "Guest") {
+        //         new GuestCheckoutView();
+        //     } else {
+        //         new CustomerPassengerDetailsView($hasCookie);
+        //     }
+        //     break;
+        
         case "updateCartSeats":
-            $_SESSION['cart']->processSeatSelections();
+            $cart = $_SESSION['cart'] ?? null;
+            $valid = ($cart !== null);
+
+            if ($valid) {
+                $cartFlights = $cart->getCartElements();
+                $submittedSelections = $_POST['seatSelections'] ?? array();
+
+                foreach ($cartFlights as $flightId => $flight) {
+
+                    $selections = $submittedSelections[$flightId] ?? null;
+
+                    if (!$cart->updateSeatSelections($flightId, $selections)) {
+                        $valid = false;
+                        break;
+                    }
+                }
+            }
+
+            if ($valid) {
+                $valid = $cart->processSeatSelections();
+            }
+
+            if (!$valid) {
+                echo '<p class="seat-map-error">'
+                    . 'Please select the required number of available seats for every flight.'
+                    . '</p>';
+
+                if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                    new GuestSeatSelectionView();
+                } else {
+                    new CustomerSeatSelectionView($hasCookie);
+                }
+                break;
+            }
 
             if (($_SESSION['username'] ?? "Guest") === "Guest") {
                 new GuestCheckoutView();
@@ -96,6 +149,7 @@ function dispatchRequest()
                 new CustomerPassengerDetailsView($hasCookie);
             }
             break;
+
 
         case "submitPassengerDetails":
             handlePassengerDetailsSubmission();
@@ -104,13 +158,30 @@ function dispatchRequest()
         // case "showPassengerDetails":
         //     new CustomerPassengerDetailsView($hasCookie);
         //     break;
+        // case "showPassengerDetails":
+        //     if (($_SESSION['username'] ?? "Guest") === "Guest") {
+        //         new GuestCheckoutView();
+        //     } else {
+        //         new CustomerPassengerDetailsView($hasCookie);
+        //     }
+        //     break;
+        
         case "showPassengerDetails":
-            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+            $cart = $_SESSION['cart'] ?? null;
+
+            if (!$cart || !$cart->processSeatSelections()) {
+                if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                    new GuestSeatSelectionView();
+                } else {
+                    new CustomerSeatSelectionView($hasCookie);
+                }
+            } elseif (($_SESSION['username'] ?? "Guest") === "Guest") {
                 new GuestCheckoutView();
             } else {
                 new CustomerPassengerDetailsView($hasCookie);
             }
             break;
+
 
         case "showCheckout":
             if (($_SESSION['username'] ?? "Guest") === "Guest") {
