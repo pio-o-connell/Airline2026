@@ -57,53 +57,35 @@ function dispatchRequest()
             }
             break;
 
+        // break;
         case "selectFlight":
-            // if (empty($_SESSION['route'])) {
-            //     new CustomerView($hasCookie);
-            //     break;
-            // }
-            // new CustomerFlightResultsView(
-            //     $_SESSION['route'],
-            //     $_SESSION['seatCount'],
-            //     $_SESSION['date'],
-            //     $hasCookie,
-            //     loadFlightResults(),
-            //     (int)(isset($_GET['flightid']) ? $_GET['flightid'] : 0)
-            // );
-            // break;
-            case "selectFlight":
-                if (empty($_SESSION['route'])) {
-                    if (($_SESSION['username'] ?? "Guest") === "Guest") {
-                        new PublicHomeView();
-                    } else {
-                        new CustomerView($hasCookie);
-                    }
-                    break;
-                }
-                $flights = loadFlightResults();
-                $selectedId = (int)(isset($_GET['flightid']) ? $_GET['flightid'] : 0);
+            if (empty($_SESSION['route'])) {
                 if (($_SESSION['username'] ?? "Guest") === "Guest") {
-                    new PublicHomeView($flights, $selectedId);
+                    new PublicHomeView();
                 } else {
-                    new CustomerFlightResultsView(
-                        $_SESSION['route'],
-                        $_SESSION['seatCount'],
-                        $_SESSION['date'],
-                        $hasCookie,
-                        $flights,
-                        $selectedId
-                    );
+                    new CustomerView($hasCookie);
                 }
                 break;
+            }
+            $flights = loadFlightResults();
+            $selectedId = (int)(isset($_GET['flightid']) ? $_GET['flightid'] : 0);
+            if (($_SESSION['username'] ?? "Guest") === "Guest") {
+                new PublicHomeView($flights, $selectedId);
+            } else {
+                new CustomerFlightResultsView(
+                    $_SESSION['route'],
+                    $_SESSION['seatCount'],
+                    $_SESSION['date'],
+                    $hasCookie,
+                    $flights,
+                    $selectedId
+                );
+            }
+            break;
 
         case "addFlightToCart":
             handleAddFlightToCart();
             break;
-
-        // case "updateCartSeats":
-        //     $_SESSION['cart']->processSeatSelections();
-        //     new CustomerPassengerDetailsView($hasCookie);
-        //     break;
 
         case "updateCartSeats":
             $_SESSION['cart']->processSeatSelections();
