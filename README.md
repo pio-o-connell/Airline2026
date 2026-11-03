@@ -8,20 +8,22 @@ The original application was developed as part of the **Higher Diploma in Cloud 
 
 <img src="assets/Images/newCart.jpg" alt="Airline2026 Cart screen" width="40%">
 <img src="assets/Images/newCheckout.jpg" alt="Airline2026 Checkout screen" width="40%">
-<img src="assets/Images/seats-choice.jpg" alt="Airline2026 Checkout screen" width="40%">
+<img src="assets/Images/seats-choice.jpg" alt="Airline2026 seat selection screen" width="40%">
 
 ## Technology
 
-- PHP with PDO.
+- PHP 8.4.26 with PDO.
 - MySQL 5.7 for the current local database.
 - Server-rendered HTML forms and PHP views.
-- Vanilla JavaScript for trip-type tabs and interactive seat-selection behaviour.
-- CSS in [`mystyles.css`](mystyles.css) and [`insidestyles.css`](insidestyles.css).
-- PHP sessions for login, Cart contents and booking workflow state.
+- Vanilla JavaScript for trip-type tabs and seat-selection interactions.
+- CSS in `mystyles.css` and `insidestyles.css`.
+- PHP sessions for login, Cart contents and booking-workflow state.
+- SVG aircraft seating-plan reference artwork.
+- Database-driven HTML seat controls styled with CSS.
 
 The original SQL dump was produced in the PHP 5.4.19, MySQL 5.5.32 and phpMyAdmin 4.0.4.1 era. The current standalone database script targets MySQL 5.7.
 
-The application remains primarily server-rendered. There is no separate JavaScript application or frontend framework in this repository.
+The application remains primarily server-rendered. It does not use Bootstrap, a separate JavaScript application or a frontend framework.
 
 ## Functionality
 
@@ -33,15 +35,18 @@ The guest and customer home pages share a three-pane flight workspace:
 2. **Available Flights** — matching flight options.
 3. **Selected Flight Details** — details of the selected flight and the Add to Cart action.
 
-Current search interface features include:
+Current search-interface features include:
 
 - One Way search.
 - Round Trip and Multi-City tabs, currently presented as Coming Soon placeholders.
-- Route, travel date and passenger-count selection.
+- Route selection.
+- Travel-date selection.
+- Passenger-count selection.
 - Flight results and flight selection.
 - Selected-flight details and fare calculation.
+- Add to Cart action.
 
-The dated flight database contains the flight schedules and aircraft assignments used by the booking application.
+The current search uses the dated flight information available in the database. Round Trip and Multi-City are not yet implemented as complete booking journeys.
 
 ### Cart
 
@@ -56,13 +61,20 @@ Current functionality includes:
 - Remove individual flights.
 - Retain Cart state in the PHP session.
 - Allow guests to build a Cart without logging in.
-- Maintain the aircraft and flight information needed for seat selection.
+- Retain flight and aircraft information needed for seat selection.
+- Store seat selections independently for each flight.
+
+Each Cart flight is keyed by its own `flight_id`. Its Cart entry contains its own `seatSelections` array.
+
+Passenger details are stored once at booking level rather than being duplicated for every flight leg. This allows the same passengers to travel on multiple selected flights.
+
+All flight legs in a Cart must use the same passenger count. The current `Cart::addFlight()` method also limits the passenger count to 20.
 
 A flight added to the Cart is not a confirmed booking. The Cart represents temporary session state.
 
 ### Aircraft-specific seat selection
 
-The application now includes separate guest and authenticated customer seat-selection views:
+The application includes separate guest and authenticated customer seat-selection views:
 
 - `GuestSeatSelectionView`
 - `CustomerSeatSelectionView`
@@ -73,32 +85,44 @@ The seat-selection workflow:
 
 - Loops through every flight in the Cart.
 - Retrieves the seat map for each flight using its own `flight_id`.
-- Uses the assigned aircraft configuration to obtain the seat definitions.
+- Uses the aircraft assigned to that flight to retrieve the seat definitions.
 - Displays available, premium, booked and selected seat states.
 - Retains selected seats independently for each Cart flight.
 - Limits the number of selections to the passenger count for that flight.
 - Validates submitted selections on the server before proceeding.
 
-The seat map is generated using HTML controls and CSS rather than image hotspots. JavaScript provides immediate selection feedback and prevents the user from selecting more seats than the passenger count. PHP and the database remain responsible for the authoritative seat data and validation.
+The seat map is generated using HTML controls and CSS rather than image hotspots. JavaScript provides immediate selection feedback and prevents the user from selecting more seats than the passenger count.
 
-The aircraft seating-plan imagery provides the visual aircraft presentation; the individual interactive seats are separate HTML elements.
+PHP and the database remain responsible for the authoritative seat data and validation.
+
+The aircraft seating-plan imagery provides a visual reference for the aircraft presentation. Individual interactive seats are separate HTML elements.
 
 The database defines two aircraft configurations:
 
-| Aircraft | Capacity | Seat configuration | Premium seats |
+| Aircraft | Capacity | Database configuration | Premium seats |
 |---|---:|---|---:|
 | `AC180` | 180 | 30 rows of 6 | 18 |
-| `AC220` | 220 | 36 rows of 6, plus 4 seats in row 37 | 18 |
+| `AC220` | 220 | 37 rows: 36 rows of 6 plus 4 seats | 18 |
 
-The database is the source of truth for seat labels, row positions and premium classification. The aircraft-specific rendering must remain consistent with those definitions.
+The database is the source of truth for seat labels, row positions and premium classification.
+
+**Important implementation note:** the current SQL defines both aircraft using seat positions A–F. The current `SeatMapRenderer`, however, declares AC220 using A–J in a 3–4–3 grouping. This discrepancy must be resolved so that the rendered AC220 arrangement agrees with the database before the layout is considered final.
 
 ### Passenger details and checkout
 
 The application retains separate guest and customer booking paths.
 
-Guests can search, add flights to the Cart and select seats without first registering or logging in. Authentication is intended to be required at checkout only.
+Guests can search, add flights to the Cart and select seats without first registering or logging in.
+
+Passenger information is stored once in the Cart's booking-level passenger collection. The current passenger-details view collects:
+
+- Full name.
+- Email address.
+- Passport information.
 
 The guest's Cart and booking information must be preserved through login or registration.
+
+Authentication is intended to be required at checkout only. Guests should not be forced to log in before searching, adding flights or selecting seats.
 
 Passenger-details and checkout views are part of the existing PHP view structure. Completing the full end-to-end payment and booking-confirmation process remains outstanding.
 
@@ -107,20 +131,22 @@ Passenger-details and checkout views are part of the existing PHP view structure
 The seat-selection interface supports the two aircraft configurations:
 
 - **AC180** — 180 seats, with 18 premium seats.
-- ![AC180 Seating Plan](assets/Images/planes/Claude/AC180_seating_plan.svg)
-  
-- **AC220** — 220 seats, with 18 premium seats.
-- ![AC180 Seating Plan](assets/Images/planes/Claude/AC220_seating_plan.svg)
 
-Each aircraft has its own seating-plan reference image. The interactive seat map is rendered dynamically from the database rather than relying on static image hotspots.
+  ![AC180 Seating Plan](assets/Images/planes/Claude/AC180_seating_plan.svg)
+
+- **AC220** — 220 seats, with 18 premium seats.
+
+  ![AC220 Seating Plan](assets/Images/planes/Claude/AC220_seating_plan.svg)
+
+Each aircraft has its own seating-plan reference image.
+
+The interactive seat map is rendered dynamically from the database rather than relying on static image hotspots.
 
 Seat availability and occupancy are retrieved from the `aircraft_seats` table and the associated flight and passenger records. Passengers select seats using HTML controls styled with CSS.
 
 The aircraft body and outline are created using CSS, allowing the aircraft presentation to be resized independently of the seat labels and interface text.
 
-This approach keeps the seat map interactive, database-driven and independent of JavaScript-based image hotspots.
-
-
+The SVG seating plans are reference artwork. They do not themselves provide the interactive seat controls.
 
 ### Administrator workflow
 
@@ -135,7 +161,7 @@ The existing PHP application provides administrator workflows to:
 - Open flight details, including passenger and seat information.
 - View route and passenger data used to calculate flight revenue.
 
-The administrator account is `rmiller` / `rmiller`. The PHP controller authorizes this account by username. The database also retains the historical `login` table for compatibility.
+The original administrator username `rmiller` is retained. The application identifies the administrator through the username. The database also retains the historical `login` table for compatibility.
 
 ## Intended booking workflow
 
@@ -143,7 +169,9 @@ The intended guest and customer journey is:
 
 **Search Flights → Select Flight(s) → Add to Cart → Review Cart → Seat Selection → Passenger Details → Checkout → Guest Login/Register if required → Payment → Payment Verification → Create Booking → Confirmation.**
 
-The guest can progress through flight search, Cart handling and seat selection without authentication. Login or registration is required at checkout before payment and final booking completion.
+The guest can progress through flight search, Cart handling and seat selection without authentication.
+
+Login or registration is required at checkout before payment and final booking completion.
 
 The remaining work includes:
 
@@ -210,9 +238,11 @@ CSS custom properties use descriptive names:
 }
 ```
 
+The palette above documents the original design reference. The current stylesheets also use adjusted shades for individual components and authenticated pages.
+
 ### Seat-map state colours
 
-The seat map uses a dedicated set of state colours consistent with the wider Airline2026 palette.
+The documented seat-state design uses the following reference colours:
 
 | Seat state | Colour | Hex | Meaning |
 |---|---|---|---|
@@ -222,9 +252,23 @@ The seat map uses a dedicated set of state colours consistent with the wider Air
 | Premium | Yellow | `#F4C542` | Premium seat classification |
 | Hover / keyboard focus | Dark green outline | `#294D35` | Highlights the seat under interaction |
 
-Premium status and seat availability are separate properties. A premium seat can be available, selected or occupied. The legend explains the states beside the seat map.
+Premium status and seat availability are separate properties. A premium seat can be available, selected or occupied.
 
-The surrounding interface continues to use the main application palette.
+The current stylesheet contains component-specific colours, including a tan premium-seat colour, grey booked-seat colour and deep-green selected-seat colour. The rendered appearance is controlled by the CSS rules, so the reference colour table should not be interpreted as a guarantee that every current component uses those exact hex values.
+
+The seat map includes a legend to explain the displayed states.
+
+### General interface palette
+
+| Interface element | Design reference |
+|---|---|
+| Main background | Off-white |
+| Primary headings | Dark forest green |
+| Primary text | Charcoal blue-grey |
+| CTA buttons | Deep green |
+| Borders and separators | Sage grey |
+| Secondary text | Muted grey |
+| Supporting accents | Deep teal green |
 
 ## Typography
 
@@ -259,7 +303,7 @@ These existing captures document the original customer and administration workfl
 | ![Search](assets/Images/search.jpg) | Route search |
 | ![Search results](assets/Images/search-results.jpg) | Available flight results |
 | ![Availability](assets/Images/availability.jpg) | Legacy seat availability |
-| ![Booked seats](assets/Images/seats-booked.jpg) | Seat allocation after booking |
+| ![Booked seats](assets/Images/seats-booked.jpg) | Historical seat allocation after booking |
 | ![Booked seats PNG](assets/Images/seats-booked.png) | Additional seat-allocation capture |
 | ![Purchase complete](assets/Images/purchased.jpg) | Historical completed purchase screen |
 
@@ -278,7 +322,9 @@ These existing captures document the original customer and administration workfl
 
 It creates the `airline2026` database from scratch, creates its tables, relationships, indexes, trigger and constraints, and inserts the initial fictional test data.
 
-The script is destructive: it drops and recreates the existing `airline2026` database. Any existing data in that database will be lost. It does not need the historical backup to run. The separate `airline2013` database is not the target of this setup.
+The script is destructive: it drops and recreates the existing `airline2026` database. Any existing data in that database will be lost.
+
+It does not need the historical backup to run. The separate `airline2013` database is not the target of this setup.
 
 ### Running the script locally
 
@@ -294,7 +340,9 @@ This PowerShell command streams the local SQL file to the MySQL client. The scri
 
 ### Flight-code generation and duplicate prevention
 
-The flight seed data generates flight codes using route identity and flight date. This addresses the earlier duplicate-entry error involving `PA101` on `2026-10-24`, which violated the unique `uq_flights_code_date` constraint.
+The flight seed data generates flight codes using route identity and flight date.
+
+This addresses the earlier duplicate-entry error involving `PA101` on `2026-10-24`, which violated the unique `uq_flights_code_date` constraint.
 
 The corrected seed query uses `SELECT DISTINCT` to eliminate duplicate rows from its selected results. The unique constraint on flight code and flight date remains in place as a database-level safeguard.
 
@@ -372,9 +420,13 @@ The expected configurations are 180 seats for `AC180` and 220 seats for `AC220`,
 
 Routes own flights. Flights reference routes and aircraft. Aircraft own their seat definitions. Bookings reference users where applicable and link to flights through `booking_flights`. Passenger records can reference routes, flights and optional booking-flight rows.
 
-The unique `passangers(flight_id, seatNo)` key prevents the same seat from being recorded twice on a flight. A trigger fills `flight_id` for compatible legacy PHP inserts that provide only route and date information.
+The unique `passangers(flight_id, seatNo)` key prevents the same seat from being recorded twice on a flight.
 
-The database includes fictional 180-seat `AC180` and 220-seat `AC220` configurations. Individual seats have visual labels such as `1A`; seats 1 through 18 are marked premium. Flight capacity is intended to match the assigned aircraft.
+A trigger fills `flight_id` for compatible legacy PHP inserts that provide only route and date information.
+
+The database includes fictional 180-seat `AC180` and 220-seat `AC220` configurations. Individual seats have visual labels such as `1A`; seats 1 through 18 are marked premium.
+
+The `passangers` spelling is retained for compatibility with the original application.
 
 ## Run locally
 
@@ -393,20 +445,23 @@ The traditional PHP entry point is `controller.php`.
 
 Use the fictional accounts in the SQL data for testing. The suspended sample user is `eoinnolan`; the current PHP authentication method does not enforce the `suspend` flag, so suspension is stored data rather than a complete application feature.
 
-The local PHP configuration in [`library.php`](library.php) uses host `127.0.0.1`, port `3307`, database `airline2026`, user `root`, and the configured local password. Check the local configuration on your own machine; development credentials must not be used in production.
+The local PHP configuration in `library.php` uses host `127.0.0.1`, port `3307`, database `airline2026`, user `root`, and the configured local password. Check the local configuration on your own machine. Development credentials must not be used in production.
 
 ## Project structure
 
-- [`controller.php`](controller.php) — central GET/POST command router and request handlers.
-- [`library.php`](library.php) — view classes, Cart behaviour, seat processing and `DBManager`.
-- [`airline2026.sql`](airline2026.sql) — standalone MySQL 5.7 database schema and test data.
-- [`mystyles.css`](mystyles.css) — public and guest-facing styles.
-- [`insidestyles.css`](insidestyles.css) — authenticated customer and administration styles.
-- [`assets/Images/`](assets/Images/) — application imagery and screenshots.
-- [`assets/Images/seating-plans/`](assets/Images/seating-plans/) — illustrative aircraft seating-plan images:
-- [`old/airline2026_backup.sql`](old/airline2026_backup.sql) — historical backup/reference only.
+- `controller.php` — central GET/POST command router and request handlers.
+- `library.php` — view classes, Cart behaviour, seat processing and `DBManager`.
+- `airline2026.sql` — standalone MySQL 5.7 database schema and test data.
+- `mystyles.css` — public and guest-facing styles.
+- `insidestyles.css` — authenticated customer and administration styles.
+- `assets/Images/` — application imagery and screenshots.
+- `assets/Images/planes/Claude/` — AC180 and AC220 SVG seating-plan artwork.
+- `assets/Images/seating-plans/` — additional illustrative aircraft seating-plan images.
+- `old/airline2026_backup.sql` — historical backup/reference only.
 
-The original interface uses a fixed-width layout of approximately 800 pixels and traditional CSS floats rather than a modern responsive framework. `controller.php` dispatches requests to the views and handlers in `library.php`; supporting classes handle page presentation, Cart operations, seat processing and database access.
+The page frame is responsive up to approximately 1000 pixels wide. The application retains traditional PHP rendering and its original MVC organisation rather than adopting a modern frontend framework.
+
+`controller.php` dispatches requests to the views and handlers in `library.php`. Supporting classes handle page presentation, Cart operations, seat processing and database access.
 
 ## View class hierarchy
 
@@ -427,16 +482,18 @@ PrivateBaseView (abstract, standalone)
 │   ├── CustomerPassengerDetailsView
 │   └── CustomerCheckoutView
 └── AdminBaseView (abstract)
-    └── AdminRoutesView
-        └── AdminView
+    ├── AdminRoutesView
+    │   └── AdminView
     ├── AdminEditRouteView
     ├── AdminAddRouteView
     └── AdminFlightManifestView
 ```
 
-`GuestSeatSelectionView` extends `PublicBaseView`, and `CustomerSeatSelectionView` extends `CustomerBaseView`.
+`GuestSeatSelectionView` extends `PublicBaseView`.
 
-Both seat-selection views use the shared `SeatSelectionWorkspace` trait and `SeatMapRenderer`. The renderer is responsible for presenting the seat data retrieved for each flight in the Cart.
+`CustomerSeatSelectionView`, `CustomerPassengerDetailsView` and `CustomerCheckoutView` belong to the customer hierarchy.
+
+`AdminView` is a thin subclass of `AdminRoutesView`.
 
 `Cart` and `DBManager` are standalone classes.
 
@@ -450,7 +507,46 @@ The panes are:
 2. **Available Flights** — matching flight options.
 3. **Selected Flight Details** — selected flight information and Add to Cart action.
 
-The public and private view hierarchies remain separate; the shared trait provides common flight-workspace behaviour.
+The public and private view hierarchies remain separate. The shared trait provides common flight-workspace behaviour.
+
+### Shared seat-selection workspace
+
+The guest and authenticated customer seat-selection views use the `SeatSelectionWorkspace` trait.
+
+The trait:
+
+- Reads the Cart from the PHP session.
+- Loops through each selected flight.
+- Retrieves that flight's seat map using its `flight_id`.
+- Passes the seat map and selected seats to `SeatMapRenderer`.
+- Renders the seat-selection form for all Cart flights.
+- Uses JavaScript to enforce the passenger-count limit independently for each flight.
+
+`SeatMapRenderer` creates the actual HTML seat controls and displays the seat labels, premium status, occupancy and selected state.
+
+## Cart and booking data design
+
+The `Cart` class is session-based and supports multiple flight selections.
+
+Each flight is stored under its own `flight_id`. The flight entry includes the flight information, passenger count, fare information and its own `seatSelections` array.
+
+Passenger details are stored once in the Cart's booking-level passenger collection. This avoids duplicating the same passenger records for each flight leg.
+
+The current Cart responsibilities include:
+
+- Add a flight.
+- Remove a flight.
+- Retrieve one flight.
+- Retrieve all Cart flights.
+- Retain passenger information.
+- Update passenger details.
+- Store selected seat numbers per flight.
+- Calculate the grand total.
+- Display the Cart.
+
+The seat-selection methods validate the submitted number of seats, reject duplicate seat numbers and check that selected seats exist and are available for the corresponding flight.
+
+The Cart does not create a confirmed booking. The current `Cart::recordBookings()` method returns `false`; booking persistence remains outstanding.
 
 ## Current implementation and remaining work
 
@@ -464,21 +560,23 @@ The public and private view hierarchies remain separate; the shared trait provid
 | Session-backed Cart | Implemented |
 | Multiple flights in Cart | Implemented |
 | Guest Cart access | Implemented |
+| Passenger information stored once per booking | Implemented in Cart |
 | Guest seat-selection view | Implemented |
 | Customer seat-selection view | Implemented |
 | Shared seat-map renderer | Implemented |
 | Flight-specific seat-map retrieval | Implemented |
 | Premium and booked seat presentation | Implemented |
+| Independent seat selections per flight | Implemented |
 | Client-side passenger-count selection limit | Implemented |
 | Server-side seat-selection validation | Implemented |
-| Passenger-details workflow | Present; full booking integration remains to be completed |
-| Checkout authentication preservation | Further integration/testing required |
+| Passenger-details view | Present; full booking integration remains outstanding |
+| Guest authentication at checkout | Further integration/testing required |
 | Stripe test-mode payment | Not implemented |
 | Payment verification | Not implemented |
 | Transactional booking completion | Not implemented |
 | Booking confirmation and itinerary | Not implemented |
 
-The aircraft configurations in the database are authoritative. The rendered AC180 and AC220 layouts must match their actual seat definitions, including the four-seat final row of AC220.
+The aircraft configurations in the database are authoritative. The AC180 and AC220 rendered layouts must match their actual seat definitions, including the four-seat final row of AC220.
 
 ## Remaining booking enhancements
 
@@ -495,7 +593,18 @@ The next development stages are:
 
 The browser's seat map is a presentation of current availability, not a reservation lock. Seat availability must be checked again when the booking is confirmed.
 
-The final booking operation should validate the selected flight and seats, insert the booking and passenger records in a database transaction, and roll back if any operation fails. The Cart should only be cleared after successful confirmation.
+The final booking operation should:
+
+- Revalidate each selected flight.
+- Confirm that every selected seat belongs to the aircraft assigned to that flight.
+- Confirm that no selected seat has already been allocated to another passenger.
+- Confirm that the number of seats matches the passenger count.
+- Insert the booking, flight links and passenger allocations in a database transaction.
+- Roll back the transaction if any operation fails.
+- Retain the Cart if confirmation fails.
+- Clear the Cart only after successful confirmation.
+
+The existing unique key on `passangers(flight_id, seatNo)` provides a database-level safeguard against duplicate seat allocations.
 
 ## Scope and compatibility
 
@@ -507,17 +616,20 @@ The enhancements preserve:
 - The existing MySQL tables and relationships.
 - The legacy `passangers` table spelling for compatibility.
 - The established Airline2026 colour palette and typography.
+- The session-backed Cart design.
 
-The seat-map work extends the existing application; it does not introduce a separate JavaScript framework or replace the original backend architecture.
+The seat-map work extends the existing application. It does not introduce a separate JavaScript framework or replace the original backend architecture.
 
 ## Backup and limitations
 
-[`old/airline2026_backup.sql`](old/airline2026_backup.sql) is a retained historical backup/reference dump. It is not required for installation and must not be run in sequence with the standalone script.
+`old/airline2026_backup.sql` is a retained historical backup/reference dump. It is not required for installation and must not be run in sequence with the standalone script.
 
 Known limitations include:
 
 - Round Trip and Multi-City search are not implemented.
+- AC220's current renderer grouping does not match the database's A–F seat configuration and must be aligned.
 - Passenger details, payment and final booking confirmation still require end-to-end integration.
+- `Cart::recordBookings()` does not yet persist bookings.
 - Stripe payment processing is not implemented.
 - Passwords are stored and compared in plain text for legacy compatibility.
 - Several PHP queries use string interpolation rather than prepared statements.
@@ -529,7 +641,7 @@ Before real-world use, the application would require a security and reliability 
 
 ## Refactor history
 
-In 2026 the view classes were renamed for clarity and the private view tree was made independent of the public one, with no change in the intended server-rendered MVC approach.
+In 2026 the view classes were renamed for clarity and the private view tree was made independent of the public one, while retaining the original server-rendered MVC approach.
 
 | 2014 class name | Current class name |
 |---|---|
@@ -555,3 +667,5 @@ In 2026 the view classes were renamed for clarity and the private view tree was 
 `AdminView` is a thin subclass of `AdminRoutesView`, retained from the original `InnerAdminView / AdminRoutesView` arrangement.
 
 A shared `FlightWorkspace` trait was introduced to provide the three-pane search interface for both guest and customer views without duplicating markup.
+
+The shared `SeatSelectionWorkspace` trait and `SeatMapRenderer` were introduced to provide the aircraft seat-selection interface to both guest and authenticated customers.
