@@ -8,6 +8,7 @@ The original application was developed as part of the **Higher Diploma in Cloud 
 
 <img src="assets/Images/newCart.jpg" alt="Airline2026 Cart screen" width="40%">
 <img src="assets/Images/newCheckout.jpg" alt="Airline2026 Checkout screen" width="40%">
+<img src="assets/Images/seats-choice.jpg" alt="Airline2026 Checkout screen" width="40%">
 
 ## Technology
 
