@@ -20,6 +20,95 @@
         return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
     }
 
+    class StripeGateway {
+
+        private $secretKey;
+
+        public function __construct() {
+            $this->secretKey = getenv('STRIPE_SECRET_KEY');
+        }
+
+        public function createCheckoutSession(Cart $cart, $successUrl, $cancelUrl) {
+            if (!$this->secretKey) {
+                throw new RuntimeException('Stripe is not configured. Set STRIPE_SECRET_KEY before checkout.');
+            }
+
+            $fields = array(
+                'mode' => 'payment',
+                'success_url' => $successUrl . '&session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => $cancelUrl,
+                'payment_method_types[0]' => 'card',
+            );
+
+            $line = 0;
+            foreach ($cart->getCartElements() as $flight) {
+                $fields['line_items[' . $line . '][price_data][currency]'] = 'eur';
+                $fields['line_items[' . $line . '][price_data][product_data][name]'] =
+                    'PHP Airlines ' . ($flight['flight_code'] ?? 'flight');
+                $fields['line_items[' . $line . '][price_data][unit_amount]'] =
+                    (int)round((float)$flight['unitFare'] * 100);
+                $fields['line_items[' . $line . '][quantity]'] =
+                    (int)$flight['seatCount'];
+                $line++;
+            }
+
+            $response = $this->request('POST', '/v1/checkout/sessions', $fields);
+
+            if (empty($response['id']) || empty($response['url'])) {
+                throw new RuntimeException('Stripe did not return a checkout session.');
+            }
+
+            return $response;
+        }
+
+        public function retrieveCheckoutSession($sessionId) {
+            if (!$this->secretKey) {
+                throw new RuntimeException('Stripe is not configured. Set STRIPE_SECRET_KEY before checkout.');
+            }
+
+            if (!preg_match('/^cs_[A-Za-z0-9_]+$/', $sessionId)) {
+                throw new InvalidArgumentException('Invalid Stripe checkout session.');
+            }
+
+            return $this->request('GET', '/v1/checkout/sessions/' . rawurlencode($sessionId));
+        }
+
+        private function request($method, $path, $fields = array()) {
+            if (!function_exists('curl_init')) {
+                throw new RuntimeException('The PHP cURL extension is required for Stripe checkout.');
+            }
+
+            $curl = curl_init('https://api.stripe.com' . $path);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+                'Authorization: Bearer ' . $this->secretKey,
+                'Content-Type: application/x-www-form-urlencoded'
+            ));
+
+            if ($method === 'POST') {
+                curl_setopt($curl, CURLOPT_POST, true);
+                curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($fields));
+            }
+
+            $body = curl_exec($curl);
+            $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $error = curl_error($curl);
+            curl_close($curl);
+
+            if ($body === false || $error) {
+                throw new RuntimeException('Stripe request failed: ' . $error);
+            }
+
+            $response = json_decode($body, true);
+            if ($status < 200 || $status >= 300 || !is_array($response)) {
+                $message = $response['error']['message'] ?? 'Stripe returned an unexpected response.';
+                throw new RuntimeException($message);
+            }
+
+            return $response;
+        }
+    }
+
     // Shared base view for public pages.
     abstract class PublicBaseView {
         // Shared public-page shell. Concrete views call inherited methods themselves.
@@ -807,9 +896,36 @@
 
                 $existingPassenger['passport'] =
                     trim((string)($submittedPassenger['passport'] ?? ''));
+
+                if ($existingPassenger['name'] === ''
+                    || !filter_var($existingPassenger['email'], FILTER_VALIDATE_EMAIL)
+                    || strlen($existingPassenger['name']) > 20
+                    || strlen($existingPassenger['email']) > 40
+                    || strlen($existingPassenger['passport']) > 10) {
+                    unset($existingPassenger);
+                    return false;
+                }
             }
 
             unset($existingPassenger);
+
+            return true;
+        }
+
+        public function hasCompletePassengerDetails() {
+            if (empty($this->bookingPassengers)) {
+                return false;
+            }
+
+            foreach ($this->bookingPassengers as $passenger) {
+                if (empty($passenger['name'])
+                    || !filter_var($passenger['email'], FILTER_VALIDATE_EMAIL)
+                    || strlen($passenger['name']) > 20
+                    || strlen($passenger['email']) > 40
+                    || strlen($passenger['passport']) > 10) {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -1206,12 +1322,124 @@
         }
 
         /**
-         * Booking persistence will be implemented after the
-         * new passenger and aircraft seat-selection workflow.
+         * Persist a paid Cart as one transactional booking.
          */
-        public function recordBookings($username, $email, $CreditCardNo = null, $PassportNo = null) {
+        public function recordBookings($username, $paymentSessionId) {
+            if (empty($this->cartElements)
+                || !$this->hasCompletePassengerDetails()
+                || !$this->processSeatSelections()) {
+                return array('success' => false, 'error' => 'The booking details or seat selections are incomplete.');
+            }
 
-            return false;
+            $passengers = $this->bookingPassengers;
+            $userId = null;
+            $reference = 'PA' . strtoupper(bin2hex(random_bytes(6)));
+            $db = new DBManager();
+
+            try {
+                $db->getConnection()->beginTransaction();
+
+                if ($username && $username !== 'Guest') {
+                    $userStmt = $db->getConnection()->prepare('SELECT id FROM user WHERE username = :username');
+                    $userStmt->execute(array(':username' => $username));
+                    $userId = $userStmt->fetchColumn();
+                    if ($userId === false) {
+                        throw new RuntimeException('The signed-in customer could not be found.');
+                    }
+                }
+
+                $bookingStmt = $db->getConnection()->prepare(
+                    'INSERT INTO booking
+                        (booking_reference, user_id, booking_status, payment_session_id)
+                     VALUES (:reference, :user_id, :status, :payment_session_id)'
+                );
+                $bookingStmt->execute(array(
+                    ':reference' => $reference,
+                    ':user_id' => $userId,
+                    ':status' => 'paid',
+                    ':payment_session_id' => $paymentSessionId
+                ));
+                $bookingId = $db->getConnection()->lastInsertId();
+
+                $sequence = 1;
+                foreach ($this->cartElements as $flightId => $flight) {
+                    $flightStmt = $db->getConnection()->prepare(
+                        'SELECT route_id, flight_date FROM flights
+                         WHERE flight_id = :flight_id FOR UPDATE'
+                    );
+                    $flightStmt->execute(array(':flight_id' => (int)$flightId));
+                    $flightRow = $flightStmt->fetch(PDO::FETCH_ASSOC);
+                    if (!$flightRow) {
+                        throw new RuntimeException('A selected flight is no longer available.');
+                    }
+
+                    $linkStmt = $db->getConnection()->prepare(
+                        'INSERT INTO booking_flights
+                            (booking_id, flight_id, sequence_no)
+                         VALUES (:booking_id, :flight_id, :sequence_no)'
+                    );
+                    $linkStmt->execute(array(
+                        ':booking_id' => $bookingId,
+                        ':flight_id' => (int)$flightId,
+                        ':sequence_no' => $sequence
+                    ));
+                    $bookingFlightId = $db->getConnection()->lastInsertId();
+
+                    $seatStmt = $db->getConnection()->prepare(
+                        'SELECT s.seat_no
+                         FROM aircraft_seats s
+                         JOIN flights f ON f.aircraft_id = s.aircraft_id
+                         LEFT JOIN passangers p
+                           ON p.flight_id = f.flight_id AND p.seatNo = s.seat_no
+                         WHERE f.flight_id = :flight_id
+                           AND s.seat_no = :seat_no
+                           AND p.id IS NULL
+                         FOR UPDATE'
+                    );
+                    $insertPassenger = $db->getConnection()->prepare(
+                        'INSERT INTO passangers
+                            (name, passport, route, date, registered, registeredName,
+                             creditCardno, email, seatNo, flight_id, booking_flight_id)
+                         VALUES
+                            (:name, :passport, :route, :date, :registered, :registered_name,
+                             :credit_card, :email, :seat_no, :flight_id, :booking_flight_id)'
+                    );
+
+                    foreach ($flight['seatSelections'] as $passengerIndex => $seatNo) {
+                        $seatStmt->execute(array(
+                            ':flight_id' => (int)$flightId,
+                            ':seat_no' => (int)$seatNo
+                        ));
+                        if (!$seatStmt->fetchColumn()) {
+                            throw new RuntimeException('One or more selected seats are no longer available.');
+                        }
+
+                        $passenger = $passengers[$passengerIndex];
+                        $insertPassenger->execute(array(
+                            ':name' => $passenger['name'],
+                            ':passport' => $passenger['passport'],
+                            ':route' => (int)$flightRow['route_id'],
+                            ':date' => $flightRow['flight_date'],
+                            ':registered' => $userId ? 1 : 0,
+                            ':registered_name' => $username ?: '',
+                            ':credit_card' => '',
+                            ':email' => $passenger['email'],
+                            ':seat_no' => (int)$seatNo,
+                            ':flight_id' => (int)$flightId,
+                            ':booking_flight_id' => $bookingFlightId
+                        ));
+                    }
+                    $sequence++;
+                }
+
+                $db->getConnection()->commit();
+                return array('success' => true, 'reference' => $reference);
+            } catch (Throwable $e) {
+                if ($db->getConnection()->inTransaction()) {
+                    $db->getConnection()->rollBack();
+                }
+                return array('success' => false, 'error' => $e->getMessage());
+            }
         }
     }
 
@@ -1517,12 +1745,43 @@
 
             echo '<a href="controller.php?cmd=showCheckout">Return to Cart</a>';
 
+            if ($cart->hasCompletePassengerDetails()
+                && $cart->processSeatSelections()) {
+                echo '<form action="controller.php" method="post" class="payment-form">';
+                echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
+                echo '<button type="submit">Pay securely with Stripe</button>';
+                echo '</form>';
+            }
+
             echo '</aside>';
 
             echo '</div>'; // checkout-layout
             echo '</div>'; // content
         }
+    }
 
+    class BookingConfirmationView extends PublicBaseView {
+
+            private $reference;
+
+            public function __construct($reference) {
+                $this->reference = $reference;
+                $this->top();
+                $this->menu();
+                $this->content();
+                $this->bottom();
+            }
+
+            public function content() {
+                echo '<div id="content" class="checkout-page">';
+                echo '<h1>Booking confirmed</h1>';
+                echo '<p>Thank you. Your booking reference is <strong>'
+                    . esc($this->reference)
+                    . '</strong>.</p>';
+                echo '<p>Your payment was confirmed and your seats have been allocated.</p>';
+                echo '<p><a class="button" href="controller.php">Return to home</a></p>';
+                echo '</div>';
+            }
     }
 
 
@@ -1662,6 +1921,12 @@
                             <td> </td>
                         </tr>";
             $_SESSION['cart']->displayCart();
+
+            if ($_SESSION['cart']->hasCompletePassengerDetails()
+                && $_SESSION['cart']->processSeatSelections()) {
+                echo '<button type="submit" name="cmd" value="startStripeCheckout">'
+                    . 'Pay securely with Stripe</button>';
+            }
 
             echo"   <tr>
                 <td><input type=\"submit\" value=\"Seat Changes\"></td>
@@ -1879,12 +2144,28 @@
             $password = 'Spring57Local!';
 
             try {
-                $this->db = new PDO($address, $username, $password);
+                $this->db = new PDO($address, $username, $password, array(
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ));
             } catch (PDOException $e) {
                 $error_message = $e->getMessage();
                 echo $error_message;
                 exit();
             }
+        }
+
+        public function getConnection() {
+            return $this->db;
+        }
+
+        public function getBookingByPaymentSession($paymentSessionId) {
+            $stmt = $this->db->prepare(
+                'SELECT booking_reference
+                 FROM booking
+                 WHERE payment_session_id = :payment_session_id'
+            );
+            $stmt->execute(array(':payment_session_id' => $paymentSessionId));
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         }
 
         /**

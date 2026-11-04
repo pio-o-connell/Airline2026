@@ -97,9 +97,11 @@ CREATE TABLE `booking` (
   `booking_reference` varchar(30) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `booking_status` varchar(20) NOT NULL DEFAULT 'pending',
+  `payment_session_id` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`booking_id`),
   UNIQUE KEY `uq_booking_reference` (`booking_reference`),
+  UNIQUE KEY `uq_booking_payment_session` (`payment_session_id`),
   KEY `idx_booking_user` (`user_id`),
   CONSTRAINT `fk_booking_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
     ON DELETE RESTRICT ON UPDATE RESTRICT

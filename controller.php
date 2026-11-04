@@ -155,6 +155,23 @@ function dispatchRequest()
             handlePassengerDetailsSubmission();
             break;
 
+        case "startStripeCheckout":
+            handleStripeCheckout();
+            break;
+
+        case "stripeSuccess":
+            handleStripeSuccess();
+            break;
+
+        case "stripeCancel":
+            echo '<p>Payment was cancelled. Your Cart has been retained.</p>';
+            if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+                new GuestCheckoutView();
+            } else {
+                new CustomerCheckoutView($hasCookie);
+            }
+            break;
+
         // case "showPassengerDetails":
         //     new CustomerPassengerDetailsView($hasCookie);
         //     break;
@@ -760,12 +777,91 @@ function handlePassengerDetailsSubmission()
         return;
     }
 
-    echo '<p>Passenger details saved successfully.</p>';
-
     if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
         new GuestCheckoutView();
     } else {
-        new CustomerPassengerDetailsView(true);
+        new CustomerCheckoutView(true);
+    }
+}
+
+function handleStripeCheckout()
+{
+    $cart = $_SESSION['cart'] ?? null;
+
+    if (!$cart || empty($cart->getCartElements())
+        || !$cart->hasCompletePassengerDetails()
+        || !$cart->processSeatSelections()) {
+        echo '<p>Complete passenger details and seat selection before payment.</p>';
+        if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+            new GuestCheckoutView();
+        } else {
+            new CustomerCheckoutView(true);
+        }
+        return;
+    }
+
+    try {
+        $gateway = new StripeGateway();
+        $baseUrl = 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost:8000');
+        $successUrl = $baseUrl . '/controller.php?cmd=stripeSuccess';
+        $cancelUrl = $baseUrl . '/controller.php?cmd=stripeCancel';
+        $session = $gateway->createCheckoutSession($cart, $successUrl, $cancelUrl);
+        $_SESSION['stripe_checkout_session_id'] = $session['id'];
+        header('Location: ' . $session['url']);
+        exit();
+    } catch (Throwable $e) {
+        echo '<p>Unable to start payment: ' . esc($e->getMessage()) . '</p>';
+        if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+            new GuestCheckoutView();
+        } else {
+            new CustomerCheckoutView(true);
+        }
+    }
+}
+
+function handleStripeSuccess()
+{
+    $sessionId = trim((string)($_GET['session_id'] ?? ''));
+
+    try {
+        $gateway = new StripeGateway();
+        $stripeSession = $gateway->retrieveCheckoutSession($sessionId);
+
+        if (($stripeSession['payment_status'] ?? '') !== 'paid'
+            || ($stripeSession['status'] ?? '') !== 'complete') {
+            throw new RuntimeException('Stripe has not confirmed this payment.');
+        }
+
+        $db = new DBManager();
+        $existing = $db->getBookingByPaymentSession($sessionId);
+        if ($existing) {
+            $_SESSION['cart'] = new Cart();
+            new BookingConfirmationView($existing['booking_reference']);
+            return;
+        }
+
+        $cart = $_SESSION['cart'] ?? null;
+        if (!$cart instanceof Cart) {
+            throw new RuntimeException('The booking Cart is no longer available.');
+        }
+
+        $result = $cart->recordBookings(
+            $_SESSION['username'] ?? 'Guest',
+            $sessionId
+        );
+
+        if (!$result['success']) {
+            throw new RuntimeException($result['error']);
+        }
+
+        $_SESSION['cart'] = new Cart();
+        unset($_SESSION['stripe_checkout_session_id']);
+        new BookingConfirmationView($result['reference']);
+    } catch (Throwable $e) {
+        echo '<p>Payment was received, but booking confirmation failed: '
+            . esc($e->getMessage())
+            . '</p>';
+        echo '<p>Your Cart has been retained. Please contact support before retrying payment.</p>';
     }
 }
 

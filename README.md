@@ -167,20 +167,16 @@ The original administrator username `rmiller` is retained. The application ident
 
 The intended guest and customer journey is:
 
-**Search Flights → Select Flight(s) → Add to Cart → Review Cart → Seat Selection → Passenger Details → Checkout → Guest Login/Register if required → Payment → Payment Verification → Create Booking → Confirmation.**
+**Search Flights → Select Flight(s) → Add to Cart → Review Cart → Seat Selection → Passenger Details → Checkout → Payment → Payment Verification → Create Booking → Confirmation.**
 
 The guest can progress through flight search, Cart handling and seat selection without authentication.
 
-Login or registration is required at checkout before payment and final booking completion.
+Guests can complete payment without logging in. Authenticated customers can use the same flow, with their booking linked to their customer account.
 
 The remaining work includes:
 
-- Completing the passenger-details integration.
-- Preserving guest Cart and passenger information through authentication.
-- Stripe test-mode payment.
-- Payment verification.
-- Transactional booking persistence.
-- Booking confirmation with a reference and itinerary.
+- Adding asynchronous Stripe webhook handling.
+- Generating a richer confirmation itinerary and sending it to the passenger.
 
 ## Colour scheme
 
@@ -414,7 +410,7 @@ The expected configurations are 180 seats for `AC180` and 220 seats for `AC220`,
 | `aircraft` | Aircraft configurations: `aircraft_id`, `aircraft_code`, `model`, `configuration_name`, `capacity` |
 | `aircraft_seats` | Individual seats: `aircraft_id`, `seat_no`, `seat_label`, `seat_row`, `seat_position`, `is_premium` |
 | `flights` | Dated departures: `flight_id`, `route_id`, `flight_date`, `flight_code`, `aircraft_id`, scheduled and expected times, `capacity`, `price`, `status` |
-| `booking` | Booking header and optional customer link: `booking_id`, `booking_reference`, `user_id`, `booking_status`, `created_at` |
+| `booking` | Booking header and optional customer/payment link: `booking_id`, `booking_reference`, `user_id`, `booking_status`, `payment_session_id`, `created_at` |
 | `booking_flights` | Ordered booking-to-flight links: `booking_flight_id`, `booking_id`, `flight_id`, `sequence_no` |
 | `passangers` | Legacy-spelled passenger records: `id`, `name`, `passport`, `route`, `date`, `registered`, `registeredName`, `creditCardno`, `email`, `seatNo`, `flight_id`, `booking_flight_id` |
 
@@ -546,7 +542,9 @@ The current Cart responsibilities include:
 
 The seat-selection methods validate the submitted number of seats, reject duplicate seat numbers and check that selected seats exist and are available for the corresponding flight.
 
-The Cart does not create a confirmed booking. The current `Cart::recordBookings()` method returns `false`; booking persistence remains outstanding.
+After passenger details are saved, guests and authenticated customers can start a Stripe Checkout payment. The return handler retrieves the Checkout Session from Stripe and verifies both `status=complete` and `payment_status=paid` before creating the booking.
+
+Booking persistence runs in a MySQL transaction. It revalidates every selected seat, inserts the booking, flight links and passenger allocations, and clears the Cart only after a successful commit. A unique Stripe session ID prevents a refreshed success URL from creating a second booking.
 
 ## Current implementation and remaining work
 
@@ -569,12 +567,12 @@ The Cart does not create a confirmed booking. The current `Cart::recordBookings(
 | Independent seat selections per flight | Implemented |
 | Client-side passenger-count selection limit | Implemented |
 | Server-side seat-selection validation | Implemented |
-| Passenger-details view | Present; full booking integration remains outstanding |
-| Guest authentication at checkout | Further integration/testing required |
-| Stripe test-mode payment | Not implemented |
-| Payment verification | Not implemented |
-| Transactional booking completion | Not implemented |
-| Booking confirmation and itinerary | Not implemented |
+| Passenger-details view | Implemented for guests and customers |
+| Guest checkout without login | Implemented; the Cart is retained in the session |
+| Stripe Checkout payment | Implemented through the Stripe HTTP API |
+| Payment verification | Implemented on the server when Stripe redirects back |
+| Transactional booking completion | Implemented using `booking`, `booking_flights` and `passangers` |
+| Booking confirmation and reference | Implemented |
 
 The aircraft configurations in the database are authoritative. The AC180 and AC220 rendered layouts must match their actual seat definitions, including the four-seat final row of AC220.
 
@@ -582,14 +580,11 @@ The aircraft configurations in the database are authoritative. The AC180 and AC2
 
 The next development stages are:
 
-1. Complete and test the Cart-to-passenger-details workflow.
+1. Verify the Cart-to-passenger-details workflow across guest and customer sessions.
 2. Verify that selections for every Cart flight are retained correctly.
-3. Complete guest authentication at checkout without losing Cart or passenger information.
-4. Implement Stripe test-mode payment.
-5. Verify payment results on the server.
-6. Implement transactional booking persistence using `booking`, `booking_flights` and `passangers`.
-7. Generate a booking reference and confirmation itinerary.
-8. Revalidate seat availability at final booking time and handle conflicts safely.
+3. Add a Stripe webhook endpoint for asynchronous payment and dispute events.
+4. Generate a richer confirmation itinerary and email it to the passenger.
+5. Improve payment and booking observability for production deployment.
 
 The browser's seat map is a presentation of current availability, not a reservation lock. Seat availability must be checked again when the booking is confirmed.
 
@@ -628,9 +623,9 @@ Known limitations include:
 
 - Round Trip and Multi-City search are not implemented.
 - AC220's current renderer grouping does not match the database's A–F seat configuration and must be aligned.
-- Passenger details, payment and final booking confirmation still require end-to-end integration.
-- `Cart::recordBookings()` does not yet persist bookings.
-- Stripe payment processing is not implemented.
+- Stripe Checkout requires the PHP cURL extension and a configured secret key.
+- The current flow verifies payment on the Stripe success redirect; a webhook is still recommended for production-grade asynchronous payment handling.
+- The application does not store raw card details. Stripe handles card collection on its hosted Checkout page.
 - Passwords are stored and compared in plain text for legacy compatibility.
 - Several PHP queries use string interpolation rather than prepared statements.
 - The `suspend` field is stored but is not enforced by the current authentication method.
@@ -638,6 +633,19 @@ Known limitations include:
 - The project is not a production-ready airline operations or booking system.
 
 Before real-world use, the application would require a security and reliability review, secure credential handling, parameterized queries, protection of customer/payment data, and modernization of legacy PHP/database conventions.
+
+### Stripe Checkout configuration
+
+Set `STRIPE_SECRET_KEY` in the PHP process environment. Use a `sk_test_...` key for local development and use Stripe's test card `4242 4242 4242 4242` with any future expiry date and CVC.
+
+For the local PHP server, PowerShell can set the key for the current terminal before starting PHP:
+
+```powershell
+$env:STRIPE_SECRET_KEY = "sk_test_your_key"
+& "C:\php-8.4.26\php.exe" -S localhost:8000
+```
+
+The application creates EUR Checkout line items from the Cart, redirects the browser to Stripe, verifies the returned Checkout Session server-side, and then commits the booking. Never commit a Stripe key or place it in source control.
 
 ## Refactor history
 
