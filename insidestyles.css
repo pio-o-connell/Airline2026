@@ -108,6 +108,23 @@ body {
     outline: none;
 }
 
+/* Current page indicator */
+#menu a.active {
+    position: relative;
+    color: var(--deep-teal-green);
+}
+
+#menu a.active::after {
+    content: "";
+    position: absolute;
+    left: 13px;
+    right: 13px;
+    bottom: 2px;
+    height: 2px;
+    background: var(--deep-green);
+    border-radius: 2px;
+}
+
 #menu.old .menu-left,
 #menu.old .menu-right {
     display: flex;

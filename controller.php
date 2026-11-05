@@ -57,7 +57,6 @@ function dispatchRequest()
             }
             break;
 
-        // break;
         case "selectFlight":
             if (empty($_SESSION['route'])) {
                 if (($_SESSION['username'] ?? "Guest") === "Guest") {
@@ -86,8 +85,7 @@ function dispatchRequest()
         case "addFlightToCart":
             handleAddFlightToCart();
             break;
-
-        
+      
         case "showSeatSelection":
             if (($_SESSION['username'] ?? "Guest") === "Guest") {
                 new GuestSeatSelectionView();
@@ -95,18 +93,7 @@ function dispatchRequest()
                 new CustomerSeatSelectionView($hasCookie);
             }
             break;
-
-
-        // case "updateCartSeats":
-        //     $_SESSION['cart']->processSeatSelections();
-
-        //     if (($_SESSION['username'] ?? "Guest") === "Guest") {
-        //         new GuestCheckoutView();
-        //     } else {
-        //         new CustomerPassengerDetailsView($hasCookie);
-        //     }
-        //     break;
-        
+       
         case "updateCartSeats":
             $cart = $_SESSION['cart'] ?? null;
             $valid = ($cart !== null);
@@ -171,18 +158,7 @@ function dispatchRequest()
                 new CustomerCheckoutView($hasCookie);
             }
             break;
-
-        // case "showPassengerDetails":
-        //     new CustomerPassengerDetailsView($hasCookie);
-        //     break;
-        // case "showPassengerDetails":
-        //     if (($_SESSION['username'] ?? "Guest") === "Guest") {
-        //         new GuestCheckoutView();
-        //     } else {
-        //         new CustomerPassengerDetailsView($hasCookie);
-        //     }
-        //     break;
-        
+       
         case "showPassengerDetails":
             $cart = $_SESSION['cart'] ?? null;
 
@@ -223,13 +199,6 @@ function dispatchRequest()
                 new CustomerCheckoutView($hasCookie);
             }
             break;
-
-        // case "showPassengerDetails":
-        //     if (!requireCustomer()) {
-        //         break;
-        //     }
-        //     new CustomerPassengerDetailsView($hasCookie);
-        //     break;
 
         case "registerUser":
             handleUserRegistration($hasCookie);
@@ -506,13 +475,7 @@ function handleFlightSearch($hasCookie)
             new CustomerView($hasCookie);
             echo "<br> Value between 1 and 20";
         } else {
-            // new CustomerFlightResultsView(
-            //     $_POST['route'],
-            //     $_POST['seatCount'],
-            //     $_POST['date'],
-            //     $hasCookie,
-            //     loadFlightResults()
-            // );
+  
             $flights = loadFlightResults();
 
             if ($_SESSION['username'] === "Guest") {
@@ -533,87 +496,6 @@ function handleFlightSearch($hasCookie)
     }
 }
 
-
-// function handleAddFlightToCart()
-// {
-//     $hasCookie = isset($_COOKIE['username']);
-//     $isGuest = (($_SESSION['username'] ?? "Guest") === "Guest");
-
-//     $flightId = (int)($_POST['flightId'] ?? 0);
-//     $passengerCount = (int)($_SESSION['seatCount'] ?? 0);
-
-//     $DBM = new DBManager();
-
-//     // Validate the submitted flight and passenger count.
-//     if ($flightId <= 0 || $passengerCount < 1 || $passengerCount > 20) {
-//         $message = "Invalid flight or passenger quantity.";
-//         $selectedId = 0;
-//     } else {
-
-//         // Retrieve the actual flight details from the database.
-//         $flight = $DBM->getFlightForCart($flightId);
-
-//         if (!$flight) {
-//             $message = "The selected flight could not be found.";
-//             $selectedId = 0;
-
-//         } elseif ((int)$flight['route_id'] !== (int)$_SESSION['route']) {
-//             $message = "The selected flight does not match your search.";
-//             $selectedId = 0;
-
-//         } else {
-
-//             $flightInfo = array(
-//                 'flight_id' => $flightId,
-//                 'route_id' => (int)$flight['route_id'],
-//                 'route' => $_SESSION['route'],
-//                 'flight_code' => $flight['flight_code'],
-//                 'date' => $flight['flight_date'],
-//                 'from' => $flight['source'],
-//                 'to' => $flight['dest'],
-//                 'departs' => $flight['departure_time'],
-//                 'arrives' => $flight['arrival_time'],
-//                 'seatCount' => $passengerCount,
-//                 'unitFare' => (float)$flight['price'],
-//                 'totalFare' => (float)$flight['price'] * $passengerCount,
-//                 'seatSelections' => array()
-//             );
-
-//             // Add the flight or increase its existing passenger quantity.
-//             $added = $_SESSION['cart']->addFlight($flightInfo);
-
-//             if ($added) {
-//                 $message = "Flight added to Cart.";
-//                 $selectedId = $flightId;
-
-//                 $_SESSION['cartAddedFlightIds'] ??= [];
-//                 $_SESSION['cartAddedFlightIds'][$flightId] = true;
-
-//             } else {
-//                 $message = "Unable to add flight. Maximum passenger limit reached.";
-//                 $selectedId = $flightId;
-//             }
-//         }
-//     }
-
-//     // Redisplay the flight results.
-//     $flights = loadFlightResults();
-
-//     if ($isGuest) {
-//         new PublicHomeView($flights, $selectedId);
-//     } else {
-//         new CustomerFlightResultsView(
-//             $_SESSION['route'],
-//             $_SESSION['seatCount'],
-//             $_SESSION['date'],
-//             $hasCookie,
-//             $flights,
-//             $selectedId
-//         );
-//     }
-
-//     echo "<p>" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</p>";
-// }
 
 function handleAddFlightToCart(){
 

@@ -835,26 +835,7 @@
 
             return $this->cartElements[$flightId] ?? null;
         }
-
-        /**
-         * Update passenger details for a flight.
-         */
-
-        // public function updatePassengers($passengers) {
-
-        //     if (empty($this->cartElements) || !is_array($passengers)) {
-        //         return false;
-        //     }
-
-        //     if (count($passengers) !== count($this->bookingPassengers)) {
-        //         return false;
-        //     }
-
-        //     $this->bookingPassengers = array_values($passengers);
-
-        //     return true;
-        // }
-        
+       
         /**
          * Update passenger details for the booking.
          */
@@ -930,30 +911,6 @@
             return true;
         }
 
-
-        /**
-         * Store selected seat numbers for a flight.
-         */
-        // public function updateSeatSelections($flightId, $seatSelections) {
-
-        //     $flightId = (int)$flightId;
-
-        //     if (!isset($this->cartElements[$flightId])) {
-        //         return false;
-        //     }
-
-        //     if (!is_array($seatSelections)) {
-        //         return false;
-        //     }
-
-        //     if (count($seatSelections) !== $this->cartElements[$flightId]['seatCount']) {
-        //         return false;
-        //     }
-
-        //     $this->cartElements[$flightId]['seatSelections'] = $seatSelections;
-
-        //     return true;
-        // }
         /**
          * Store selected seat numbers for a flight.
          *
@@ -1024,78 +981,6 @@
         /**
          * Display Cart contents.
          */
-        // public function displayCart() {
-
-        //     if (empty($this->cartElements)) {
-
-        //         echo '<p>Your Cart is currently empty.</p>';
-        //         echo '<a href="controller.php">Back to search</a>';
-
-        //         return;
-        //     }
-
-        //     foreach ($this->cartElements as $flightId => $flight) {
-
-        //         $passengers = (int)$flight['seatCount'];
-        //         $unitFare = (float)$flight['unitFare'];
-        //         $flightTotal = $unitFare * $passengers;
-
-        //         echo '<div class="cart-item">';
-
-        //         echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
-
-        //         echo '<p>Route: '
-        //             . esc($flight['from'] ?? '') . ' to '
-        //             . esc($flight['to'] ?? '') . '</p>';
-
-        //         echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
-
-        //         echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
-
-        //         echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
-
-        //         echo '<p>Number of passengers: ' . $passengers . '</p>';
-
-        //         echo '<p>Fare per passenger: €'
-        //             . number_format($unitFare, 2) . '</p>';
-
-        //         echo '<p>Flight total: €'
-        //             . number_format($flightTotal, 2) . '</p>';
-
-        //         echo '<h4>Passengers and seats</h4>';
-
-        //         foreach ($this->bookingPassengers as $passenger) {
-
-        //             echo '<p>Passenger '
-        //                 . (int)$passenger['passengerNumber']
-        //                 . ' — ';
-
-        //             echo !empty($passenger['name'])
-        //                 ? esc($passenger['name'])
-        //                 : 'Details pending';
-
-        //             echo ' — Seat: ';
-
-        //             echo !empty($passenger['seatNumber'])
-        //                 ? esc($passenger['seatNumber'])
-        //                 : 'Pending selection';
-
-        //             echo '</p>';
-        //         }
-        //         echo '<a href="controller.php?cmd=removeCartItem&amp;flightId='
-        //             . (int)$flightId . '">Remove flight</a>';
-
-        //         echo '</div>';
-        //     }
-
-        //     echo '<div class="cart-total">';
-        //     echo '<h3>Cart total: €'
-        //         . number_format($this->getGrandTotal(), 2)
-        //         . '</h3>';
-        //     echo '</div>';
-
-        //     echo '<a href="controller.php">Back to search</a>';
-        // }
         
         public function displayCart() {
 
@@ -1115,15 +1000,10 @@
 
                 echo '<div class="cart-item">';
 
-                // echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
                 echo '<div class="cart-item-header">';
 
                 echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
 
-                // echo '<a class="button cart-checkout-button"
-                //     href="controller.php?cmd=showPassengerDetails">
-                //     Continue to Checkout
-                // </a>';
                 echo '<a class="button cart-checkout-button"
                     href="controller.php?cmd=showSeatSelection">
                     Select Seats
@@ -1160,11 +1040,8 @@
                     echo '<p>Seat selection pending.</p>';
                 }
 
-                // echo '<a href="controller.php?cmd=removeCartItem&amp;flightId='
-                //     . (int)$flightId . '">Remove flight</a>';
                 echo '<a class="cart-remove-button" href="controller.php?cmd=removeCartItem&amp;flightId='
                     . (int)$flightId . '">Remove Flight</a>';
-
 
                 echo '</div>';
             }
@@ -1197,17 +1074,6 @@
         }
 
 
-        /**
-         * Temporary compatibility method.
-         * The old 20-seat radio-button system is no longer used.
-         */
-        // public function processSeatSelections() {
-
-        //     // New aircraft seat selection will update the Cart
-        //     // through updateSeatSelections().
-
-        //     return true;
-        // }
 
         /**
          * Validate all selected seats against current database availability.
@@ -1215,56 +1081,6 @@
          * Every passenger must have one unique seat on each flight.
          * A seat must exist on that aircraft and must not already be booked.
          */
-        // public function processSeatSelections() {
-
-        //     if (empty($this->cartElements)) {
-        //         return false;
-        //     }
-
-        //     $db = new DBManager();
-
-        //     foreach ($this->cartElements as $flightId => $flight) {
-
-        //         $passengerCount = (int)$flight['seatCount'];
-        //         $selections = $flight['seatSelections'] ?? array();
-
-        //         // Every passenger must have a selected seat.
-        //         if (!is_array($selections) ||
-        //             count($selections) !== $passengerCount) {
-        //             return false;
-        //         }
-
-        //         // Retrieve the actual aircraft seat availability.
-        //         $seatMap = $db->getSeatMapForFlight($flightId);
-
-        //         if (empty($seatMap)) {
-        //             return false;
-        //         }
-
-        //         $availableSeats = array();
-
-        //         foreach ($seatMap as $seat) {
-
-        //             $seatNumber = (int)$seat['seat_no'];
-
-        //             if ((int)$seat['is_booked'] === 0) {
-        //                 $availableSeats[] = $seatNumber;
-        //             }
-        //         }
-
-        //         // Check that every selected seat exists and is available.
-        //         foreach ($selections as $seatNumber) {
-
-        //             $seatNumber = (int)$seatNumber;
-
-        //             if (!in_array($seatNumber, $availableSeats, true)) {
-        //                 return false;
-        //             }
-        //         }
-        //     }
-
-        //     return true;
-        // }
         public function processSeatSelections() {
 
             if (empty($this->cartElements)) {
@@ -1559,10 +1375,8 @@
             if ($cart) {
                 $cart->displayCart();
 
-                // if (!empty($cart->getCartElements())) {
-                //     echo '<p><a class="button" href="controller.php?cmd=showPassengerDetails">Continue to Checkout</a></p>';
-                // }
-            } else {
+            } 
+            else {
                 echo '<p>Your Cart is currently empty.</p>';
             }
 
@@ -1583,60 +1397,7 @@
             $this->content();
             $this->bottom();
         }
-
-        // public function content() {
-        //     $cart = $_SESSION['cart'] ?? null;
-
-        //     echo '<div id="content">';
-        //     echo '<h1>Checkout – Passenger Details</h1>';
-
-        //     if (!$cart || empty($cart->getCartElements())) {
-        //         echo '<p>Your Cart is empty.</p>';
-        //         echo '<a href="controller.php">Return to flight search</a>';
-        //         echo '</div>';
-        //         return;
-        //     }
-
-        //     $passengers = $cart->getBookingPassengers();
-
-        //     echo '<form action="controller.php" method="post">';
-        //     echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
-
-        //     foreach ($passengers as $index => $passenger) {
-        //         $number = (int)$passenger['passengerNumber'];
-
-        //         echo '<fieldset class="passenger-details">';
-        //         echo '<legend>Passenger ' . $number . '</legend>';
-
-        //         echo '<label for="guest-name-' . $index . '">Full name</label>';
-        //         echo '<input type="text"
-        //             id="guest-name-' . $index . '"
-        //             name="passengers[' . $index . '][name]"
-        //             value="' . esc($passenger['name']) . '"
-        //             required>';
-
-        //         echo '<label for="guest-email-' . $index . '">Email address</label>';
-        //         echo '<input type="email"
-        //             id="guest-email-' . $index . '"
-        //             name="passengers[' . $index . '][email]"
-        //             value="' . esc($passenger['email']) . '"
-        //             required>';
-
-        //         echo '<label for="guest-passport-' . $index . '">Passport number</label>';
-        //         echo '<input type="text"
-        //             id="guest-passport-' . $index . '"
-        //             name="passengers[' . $index . '][passport]"
-        //             value="' . esc($passenger['passport']) . '">';
-
-        //         echo '</fieldset>';
-        //     }
-
-        //     echo '<button type="submit">Save Passenger Details</button>';
-        //     echo '</form>';
-
-        //     echo '</div>';
-        // }
-        
+       
         public function content() {
 
             $cart = $_SESSION['cart'] ?? null;
