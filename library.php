@@ -20,6 +20,33 @@
         return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
     }
 
+
+
+    /**
+     * Get the current command from the request.
+     *
+     * @return string
+     */
+    function airlineCurrentCommand() {
+        return $_GET['cmd'] ?? $_POST['cmd'] ?? '';
+    }
+
+    function renderAirlineNavLink($url, $label, $commands) {
+        $active = in_array(airlineCurrentCommand(), $commands, true);
+
+        echo '<a href="' . esc($url) . '"';
+
+        if ($active) {
+            echo ' class="active" aria-current="page"';
+        }
+
+        echo '>' . esc($label) . '</a>';
+    }
+
+
+
+
+
     class StripeGateway {
 
         private $secretKey;
@@ -135,19 +162,68 @@
             $this->renderCustomerMenu(false);
         }
 
+        // protected function renderCustomerMenu($loggedIn) {
+        //     echo '<nav id="menu" class="old" aria-label="Main navigation">
+        //         <div class="menu-left">
+        //             <a href="controller.php">Home</a>
+        //         </div>
+        //         <div class="menu-right">
+        //             <a href="controller.php?cmd=showCheckout">Cart</a>
+        //             <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
+
+        //     if ($loggedIn) {
+        //         echo '<a href="controller.php?cmd=logout">Logout</a>';
+        //     } else {
+        //         echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
+        //     }
+
+        //     echo '</div></nav>';
+        // }
         protected function renderCustomerMenu($loggedIn) {
+
             echo '<nav id="menu" class="old" aria-label="Main navigation">
-                <div class="menu-left">
-                    <a href="controller.php">Home</a>
-                </div>
-                <div class="menu-right">
-                    <a href="controller.php?cmd=showCheckout">Cart</a>
-                    <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
+                <div class="menu-left">';
+
+            renderAirlineNavLink(
+                'controller.php',
+                'Home',
+                array('', 'showHome', 'searchFlights', 'selectFlight', 'addFlightToCart')
+            );
+
+            echo '</div><div class="menu-right">';
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showCheckout',
+                'Cart',
+                array('showCheckout', 'removeCartItem')
+            );
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showPassengerDetails',
+                'Checkout',
+                array(
+                    'showSeatSelection',
+                    'updateCartSeats',
+                    'showPassengerDetails',
+                    'submitPassengerDetails',
+                    'startStripeCheckout',
+                    'stripeSuccess',
+                    'stripeCancel'
+                )
+            );
 
             if ($loggedIn) {
-                echo '<a href="controller.php?cmd=logout">Logout</a>';
+                renderAirlineNavLink(
+                    'controller.php?cmd=logout',
+                    'Logout',
+                    array()
+                );
             } else {
-                echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
+                renderAirlineNavLink(
+                    'controller.php?cmd=showLogin',
+                    'Login / Register',
+                    array('showLogin', 'showRegistration', 'authenticateUser')
+                );
             }
 
             echo '</div></nav>';
@@ -439,34 +515,122 @@
             $this->renderIdentity();
         }
 
+        // protected function renderCustomerMenu($loggedIn) {
+        //     echo '<nav id="menu" class="old" aria-label="Main navigation">
+        //         <div class="menu-left">
+        //             <a href="controller.php">Home</a>
+        //         </div>
+        //         <div class="menu-right">
+        //             <a href="controller.php?cmd=showCheckout">Cart</a>
+        //             <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
+
+        //     if ($loggedIn) {
+        //         echo '<a href="controller.php?cmd=logout">Logout</a>';
+        //     } else {
+        //         echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
+        //     }
+
+        //     echo '</div></nav>';
+        // }
         protected function renderCustomerMenu($loggedIn) {
+
             echo '<nav id="menu" class="old" aria-label="Main navigation">
-                <div class="menu-left">
-                    <a href="controller.php">Home</a>
-                </div>
-                <div class="menu-right">
-                    <a href="controller.php?cmd=showCheckout">Cart</a>
-                    <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
+                <div class="menu-left">';
+
+            renderAirlineNavLink(
+                'controller.php',
+                'Home',
+                array('', 'showHome', 'searchFlights', 'selectFlight', 'addFlightToCart')
+            );
+
+            echo '</div><div class="menu-right">';
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showCheckout',
+                'Cart',
+                array('showCheckout', 'removeCartItem')
+            );
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showPassengerDetails',
+                'Checkout',
+                array(
+                    'showSeatSelection',
+                    'updateCartSeats',
+                    'showPassengerDetails',
+                    'submitPassengerDetails',
+                    'startStripeCheckout',
+                    'stripeSuccess',
+                    'stripeCancel'
+                )
+            );
 
             if ($loggedIn) {
-                echo '<a href="controller.php?cmd=logout">Logout</a>';
+                renderAirlineNavLink(
+                    'controller.php?cmd=logout',
+                    'Logout',
+                    array()
+                );
             } else {
-                echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
+                renderAirlineNavLink(
+                    'controller.php?cmd=showLogin',
+                    'Login / Register',
+                    array('showLogin', 'showRegistration', 'authenticateUser')
+                );
             }
 
             echo '</div></nav>';
         }
+
     }
 
     abstract class AdminBaseView extends PrivateBaseView {
+        // public function menu($info = false) {
+        //     echo '<nav id="menu" class="old" aria-label="Administrator navigation">
+        //         <a href="controller.php">Public home</a>
+        //         <a href="controller.php?cmd=showAdminDashboard">Routes</a>
+        //         <a href="controller.php?cmd=showAddRoute">Add route</a>
+        //         <a href="controller.php?cmd=showFlightManifest">View manifest</a>
+        //         <a href="controller.php?cmd=logout">Logout</a>
+        //     </nav>';
+        //     $this->renderIdentity();
+        // }
         public function menu($info = false) {
-            echo '<nav id="menu" class="old" aria-label="Administrator navigation">
-                <a href="controller.php">Public home</a>
-                <a href="controller.php?cmd=showAdminDashboard">Routes</a>
-                <a href="controller.php?cmd=showAddRoute">Add route</a>
-                <a href="controller.php?cmd=showFlightManifest">View manifest</a>
-                <a href="controller.php?cmd=logout">Logout</a>
-            </nav>';
+
+            echo '<nav id="menu" class="old" aria-label="Administrator navigation">';
+
+            renderAirlineNavLink(
+                'controller.php',
+                'Public home',
+                array('')
+            );
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showAdminDashboard',
+                'Routes',
+                array('showAdminDashboard')
+            );
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showAddRoute',
+                'Add route',
+                array('showAddRoute')
+            );
+
+            renderAirlineNavLink(
+                'controller.php?cmd=showFlightManifest',
+                'View manifest',
+                array('showFlightManifest')
+            );
+
+            renderAirlineNavLink(
+                'controller.php?cmd=logout',
+                'Logout',
+                array()
+            );
+
+            echo '</nav>';
+
             $this->renderIdentity();
         }
     }
