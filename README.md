@@ -1,6 +1,6 @@
 # Airline2026
 
-Airline2026 restores and develops an original 2014 PHP airline booking application. It preserves the historical server-rendered MVC style while extending the customer booking workflow, Cart handling, aircraft-specific seat selection and administrator route and manifest workflows.
+Airline2026 restores and develops an original 2014 airline booking application, maintaining its traditional server-rendered, database-driven PHP MVC architecture while extending the customer booking workflow, Cart handling, aircraft-specific seat selection, and administrator route and manifest management functionalities.
 
 The original application was developed as part of the **Higher Diploma in Cloud and Mobile with Data Science**. This project is a local restoration and development reference, not a replacement rewrite. Its interface and naming retain many conventions from the 2014 application.
 
