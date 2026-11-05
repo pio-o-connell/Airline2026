@@ -136,6 +136,86 @@
         }
     }
 
+    class FlashMessage
+    {
+        private const SESSION_KEY = '_flash_messages';
+
+        private const TYPES = array(
+            'success',
+            'info',
+            'warning',
+            'error'
+        );
+
+        public static function add($type, $message)
+        {
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                return false;
+            }
+
+            if (!in_array($type, self::TYPES, true)) {
+                $type = 'info';
+            }
+
+            if (!isset($_SESSION[self::SESSION_KEY])) {
+                $_SESSION[self::SESSION_KEY] = array();
+            }
+
+            $_SESSION[self::SESSION_KEY][] = array(
+                'type' => $type,
+                'message' => (string)$message
+            );
+
+            return true;
+        }
+
+        public static function render()
+        {
+            if (
+                session_status() !== PHP_SESSION_ACTIVE ||
+                empty($_SESSION[self::SESSION_KEY])
+            ) {
+                return '';
+            }
+
+            $messages = $_SESSION[self::SESSION_KEY];
+
+            // Flash messages are displayed only once.
+            unset($_SESSION[self::SESSION_KEY]);
+
+            $output = '<section class="flash-messages" aria-label="Notifications">';
+
+            foreach ($messages as $message) {
+                $type = in_array($message['type'], self::TYPES, true)
+                    ? $message['type']
+                    : 'info';
+
+                $role = in_array($type, array('warning', 'error'), true)
+                    ? 'alert'
+                    : 'status';
+
+                $output .= '<div class="flash-message flash-message--'
+                    . $type . '" role="' . $role . '">';
+
+                $output .= '<span class="flash-message__text">'
+                    . htmlspecialchars($message['message'], ENT_QUOTES, 'UTF-8')
+                    . '</span>';
+
+                $output .= '<button type="button" class="flash-message__close"'
+                    . ' aria-label="Dismiss notification">&times;</button>';
+
+                $output .= '</div>';
+            }
+
+            $output .= '</section>';
+
+            return $output;
+        }
+    }
+
+
+
+
     // Shared base view for public pages.
     abstract class PublicBaseView {
         // Shared public-page shell. Concrete views call inherited methods themselves.
@@ -156,6 +236,20 @@
                                 <p class="tagline">Your journey starts here</p>
                             </header>
                     ';
+            echo FlashMessage::render();
+            echo '
+                <script>
+                document.querySelectorAll(".flash-message__close").forEach(function(button) {
+                    button.addEventListener("click", function() {
+                        var message = this.closest(".flash-message");
+
+                        if (message) {
+                            message.remove();
+                        }
+                    });
+                });
+                </script>
+                ';
         }
 
         public function menu($info = false) {
@@ -466,6 +560,7 @@
     // Shared implementation foundation for the separate customer and
     // administrator inner views.
     abstract class PrivateBaseView {
+
         protected function top($info = false, $stylesheet = 'insidestyles.css') {
             echo '
                     <!DOCTYPE html>
@@ -483,6 +578,20 @@
                                 <p class="tagline">Your journey starts here</p>
                             </header>
                     ';
+            echo FlashMessage::render();
+            echo '
+                <script>
+                document.querySelectorAll(".flash-message__close").forEach(function(button) {
+                    button.addEventListener("click", function() {
+                        var message = this.closest(".flash-message");
+
+                        if (message) {
+                            message.remove();
+                        }
+                    });
+                });
+                </script>
+                ';
         }
 
         protected function renderIdentity() {

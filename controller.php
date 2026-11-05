@@ -3,6 +3,8 @@
 include("library.php");
 session_start();
 
+FlashMessage::add('success', 'Flash notification test successful.');
+
 dispatchRequest();
 
 function dispatchRequest()
