@@ -323,9 +323,18 @@
             echo '</div></nav>';
         }
 
+        // protected function renderIdentity() {
+        //     $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
+        //     echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
+        // }
         protected function renderIdentity() {
-            $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
-            echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
+            $username = $_SESSION['username'] ?? 'Guest';
+
+            $class = 'identity--guest';
+
+            echo '<div id="identity" class="identity ' . $class . '">'
+                . htmlspecialchars($username, ENT_QUOTES, 'UTF-8')
+                . '</div>';
         }
 
         protected function bottom() {
@@ -594,11 +603,26 @@
                 ';
         }
 
+        // protected function renderIdentity() {
+        //     $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
+        //     if ($username !== 'Guest') {
+        //         echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
+        //     }
+        // }
         protected function renderIdentity() {
-            $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
-            if ($username !== 'Guest') {
-                echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
+            $username = $_SESSION['username'] ?? 'Guest';
+
+            if ($username === 'Guest') {
+                return;
             }
+
+            $class = ($username === 'rmiller')
+                ? 'identity--admin'
+                : 'identity--customer';
+
+            echo '<div id="identity" class="identity ' . $class . '">'
+                . htmlspecialchars($username, ENT_QUOTES, 'UTF-8')
+                . '</div>';
         }
 
         protected function bottom() {

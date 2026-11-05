@@ -160,7 +160,7 @@ body {
 }
 
 /* Identity strip */
-#identity {
+/* #identity {
     box-sizing: border-box;
     width: 100%;
     padding: 8px 12px;
@@ -169,8 +169,21 @@ body {
     border-bottom: 1px solid #e5e4dc;
     text-align: left;
     font-weight: 600;
+} */
+#identity {
+    display: table;
+    width: auto;
+    max-width: calc(100% - 24px);
+    margin: 5px 12px 5px auto;
+    padding: 4px 10px;
+    background: #f5f4ef;
+    border: 1px solid #e5e4dc;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
 }
-
 /* Main content frame */
 #content {
     float: none;
@@ -1313,3 +1326,52 @@ body:has(#content.seat-selection-page) #content.seat-selection-page {
         width: calc(100% - 24px);
     }
 }
+
+/* Airline2026 identity indicator */
+
+/* .identity {
+    display: inline-block;
+    margin: 10px 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+} */
+ /* .identity {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin: 5px 12px 5px auto;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.3;
+} */
+
+.identity--guest {
+    color: var(--muted-blue-grey);
+    background: rgba(115, 139, 143, 0.12);
+}
+
+.identity--customer {
+    color: var(--deep-green);
+    background: rgba(40, 92, 67, 0.12);
+}
+
+.identity--admin {
+    color: var(--forest-green);
+    background: rgba(59, 77, 50, 0.14);
+}
+
+/* #identity.identity--guest {
+    color: var(--muted-blue-grey);
+}
+
+#identity.identity--customer {
+    color: var(--deep-green);
+}
+
+#identity.identity--admin {
+    color: var(--forest-green);
+} */
