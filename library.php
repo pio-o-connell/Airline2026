@@ -282,15 +282,13 @@
             renderAirlineNavLink(
                 'controller.php?cmd=showCheckout',
                 'Cart',
-                array('showCheckout', 'removeCartItem')
+                array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats')
             );
 
             renderAirlineNavLink(
                 'controller.php?cmd=showPassengerDetails',
                 'Checkout',
                 array(
-                    'showSeatSelection',
-                    'updateCartSeats',
                     'showPassengerDetails',
                     'submitPassengerDetails',
                     'startStripeCheckout',
@@ -652,15 +650,13 @@
             renderAirlineNavLink(
                 'controller.php?cmd=showCheckout',
                 'Cart',
-                array('showCheckout', 'removeCartItem')
+                array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats')
             );
 
             renderAirlineNavLink(
                 'controller.php?cmd=showPassengerDetails',
                 'Checkout',
                 array(
-                    'showSeatSelection',
-                    'updateCartSeats',
                     'showPassengerDetails',
                     'submitPassengerDetails',
                     'startStripeCheckout',
@@ -788,7 +784,7 @@
             echo '<span class="seat-legend selected">Selected</span>';
             echo '</div>';
 
-            echo '<div class="aircraft-seat-map" data-flight-id="'
+            echo '<div class="aircraft-seat-map seat-map-scroll" data-flight-id="'
                 . (int)$flightId . '" data-passenger-count="'
                 . (int)$passengerCount . '">';
 
@@ -878,9 +874,13 @@
             $cart = $_SESSION['cart'] ?? null;
 
             echo '<div id="content" class="seat-selection-page">';
-            echo '<h1>Select Your Seats</h1>';
 
             if (!$cart || empty($cart->getCartElements())) {
+                echo '<div class="seat-selection-heading-row">';
+                echo '<h1>Shopping Cart</h1>';
+                echo '<span class="seat-selection-title">Select Your Seats</span>';
+                echo '<span class="step-indicator">Step 1/2</span>';
+                echo '</div>';
                 echo '<p>Your Cart is empty.</p>';
                 echo '<a href="controller.php">Return to flight search</a>';
                 echo '</div>';
@@ -889,8 +889,15 @@
 
             $db = new DBManager();
 
-            echo '<form action="controller.php" method="post">';
+            echo '<form id="seat-selection-form" action="controller.php" method="post">';
             echo '<input type="hidden" name="cmd" value="updateCartSeats">';
+            echo '<div class="seat-selection-heading-row">';
+            echo '<h1>Shopping Cart</h1>';
+            echo '<span class="seat-selection-title">Select Your Seats</span>';
+            echo '<span class="step-indicator">Step 1/2</span>';
+            echo '<button type="submit" class="seat-save-button" disabled>'
+                . 'Save Seat Selections</button>';
+            echo '</div>';
 
             foreach ($cart->getCartElements() as $flightId => $flight) {
 
@@ -905,13 +912,34 @@
                 );
             }
 
-            echo '<button type="submit">Save Seat Selections</button>';
             echo '</form>';
             echo '</div>';
 
             // Limit selections independently for each flight.
             echo '<script>
-            document.querySelectorAll(".aircraft-seat-map").forEach(function(map) {
+            var seatSaveButton = document.querySelector(".seat-save-button");
+            var seatMaps = document.querySelectorAll(".aircraft-seat-map");
+
+            function updateSeatSaveButton() {
+                var allComplete = true;
+
+                seatMaps.forEach(function(map) {
+                    var limit = parseInt(map.dataset.passengerCount, 10);
+                    var selected = map.querySelectorAll(
+                        "input[type=checkbox]:checked"
+                    );
+
+                    if (selected.length !== limit) {
+                        allComplete = false;
+                    }
+                });
+
+                if (seatSaveButton) {
+                    seatSaveButton.disabled = !allComplete;
+                }
+            }
+
+            seatMaps.forEach(function(map) {
 
                 var limit = parseInt(map.dataset.passengerCount, 10);
                 var checkboxes = map.querySelectorAll(
@@ -935,9 +963,13 @@
                         if (label) {
                             label.classList.toggle("is-selected", this.checked);
                         }
+
+                        updateSeatSaveButton();
                     });
                 });
             });
+
+            updateSeatSaveButton();
             </script>';
         }
     }
@@ -951,7 +983,7 @@
         use SeatSelectionWorkspace;
 
         public function __construct() {
-            $this->top();
+            $this->top(false, 'insidestyles.css');
             $this->menu();
             $this->renderIdentity();
             $this->renderSeatSelectionContent();
@@ -1248,42 +1280,24 @@
                 return;
             }
 
+            echo '<div class="cart-flight-list">';
+
             foreach ($this->cartElements as $flightId => $flight) {
 
                 $passengers = (int)$flight['seatCount'];
                 $unitFare = (float)$flight['unitFare'];
                 $flightTotal = $unitFare * $passengers;
 
-                echo '<div class="cart-item">';
-
-                echo '<div class="cart-item-header">';
-
-                echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
-
-                echo '<a class="button cart-checkout-button"
-                    href="controller.php?cmd=showSeatSelection">
-                    Select Seats
-                </a>';
-
-                echo '</div>';
+                echo '<article class="cart-item cart-flight-card">';
+                echo '<div class="cart-flight-details">';
+                echo '<h3>' . esc($flight['flight_code'] ?? 'Flight')
+                    . ' — ' . esc($flight['aircraft_code'] ?? 'Aircraft') . '</h3>';
                 echo '<p>Route: '
                     . esc($flight['from'] ?? '') . ' to '
                     . esc($flight['to'] ?? '') . '</p>';
-
                 echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
                 echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
                 echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
-
-                echo '<p>Number of passengers: ' . $passengers . '</p>';
-
-                echo '<p>Fare per passenger: €'
-                    . number_format($unitFare, 2) . '</p>';
-
-                echo '<p>Flight total: €'
-                    . number_format($flightTotal, 2) . '</p>';
-
-                // echo '<h4>Seat selection</h4>';
-                // echo '<p>Seat selection pending.</p>';
                 echo '<h4>Seat selection</h4>';
 
                 $selectedSeats = $flight['seatSelections'] ?? array();
@@ -1295,13 +1309,26 @@
                 } else {
                     echo '<p>Seat selection pending.</p>';
                 }
+                echo '</div>';
 
+                echo '<div class="cart-flight-fare">';
+                echo '<p>Number of passengers: ' . $passengers . '</p>';
+                echo '<p>Fare per passenger: €'
+                    . number_format($unitFare, 2) . '</p>';
+                echo '<p>Flight total: €'
+                    . number_format($flightTotal, 2) . '</p>';
+                echo '<a class="button cart-checkout-button"
+                    href="controller.php?cmd=showSeatSelection">
+                    Select Seats
+                </a>';
                 echo '<a class="cart-remove-button" href="controller.php?cmd=removeCartItem&amp;flightId='
                     . (int)$flightId . '">Remove Flight</a>';
-
                 echo '</div>';
+                echo '</article>';
             }
 
+            echo '</div>';
+            echo '<div class="cart-bottom-section">';
             echo '<div class="cart-passengers">';
             echo '<h3>Passengers</h3>';
 
@@ -1326,7 +1353,11 @@
                 . '</h3>';
             echo '</div>';
 
+            echo '<div class="cart-actions">';
+            echo '<a class="button" href="controller.php?cmd=showPassengerDetails">Continue to Checkout</a>';
             echo '<a href="controller.php">Back to search</a>';
+            echo '</div>';
+            echo '</div>';
         }
 
 
@@ -1611,7 +1642,7 @@
     class GuestCartView extends PublicBaseView {
 
         public function __construct() {
-            $this->top();
+            $this->top(false, 'insidestyles.css');
             $this->menu();
             $this->renderIdentity();
             $this->content();
@@ -1619,8 +1650,11 @@
         }
 
         public function content() {
-            echo '<div id="content">';
-            echo '<h1>Your Cart</h1>';
+            echo '<div id="content" class="cart-page">';
+            echo '<div class="cart-heading-row">';
+            echo '<h1>Your Shopping Cart</h1>';
+            echo '<span class="step-indicator">Step 1/2</span>';
+            echo '</div>';
 
             $cart = $_SESSION['cart'] ?? null;
 
@@ -1643,7 +1677,7 @@
     class GuestCheckoutView extends PublicBaseView {
 
         public function __construct() {
-            $this->top();
+            $this->top(false, 'insidestyles.css');
             $this->menu();
             $this->renderIdentity();
             $this->content();
@@ -1655,7 +1689,14 @@
             $cart = $_SESSION['cart'] ?? null;
 
             echo '<div id="content" class="checkout-page">';
+            echo '<div class="checkout-heading-row">';
             echo '<h1>Checkout</h1>';
+            echo '<span class="step-indicator">'
+                . ($cart && $cart->hasCompletePassengerDetails() ? 'Step 2/2' : 'Step 1/2')
+                . '</span>';
+            echo '<button type="submit" form="guest-passenger-details-form" class="checkout-heading-actions">'
+                . 'Save Passenger Details</button>';
+            echo '</div>';
 
             if (!$cart || empty($cart->getCartElements())) {
                 echo '<p>Your Cart is empty.</p>';
@@ -1673,7 +1714,7 @@
             echo '<h2>Passenger Details</h2>';
             echo '<p>Enter the details for each traveller.</p>';
 
-            echo '<form action="controller.php" method="post">';
+            echo '<form id="guest-passenger-details-form" action="controller.php" method="post">';
             echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
 
             foreach ($passengers as $index => $passenger) {
@@ -1707,7 +1748,6 @@
                 echo '</fieldset>';
             }
 
-            echo '<button type="submit">Save Passenger Details</button>';
             echo '</form>';
             echo '</section>';
 
@@ -1859,8 +1899,13 @@
 
             $cart = $_SESSION['cart'] ?? null;
 
-            echo '<div id="content">';
-            echo '<h1>Passenger Details</h1>';
+            echo '<div id="content" class="checkout-page">';
+            echo '<div class="checkout-heading-row">';
+            echo '<h1>Checkout</h1>';
+            echo '<span class="step-indicator">Step 1/2</span>';
+            echo '<button type="submit" form="customer-passenger-details-form" class="checkout-heading-actions">'
+                . 'Save Passenger Details</button>';
+            echo '</div>';
 
             if (!$cart || empty($cart->getCartElements())) {
                 echo '<p>Your Cart is empty.</p>';
@@ -1871,7 +1916,7 @@
 
             $passengers = $cart->getBookingPassengers();
 
-            echo '<form action="controller.php" method="post">';
+            echo '<form id="customer-passenger-details-form" action="controller.php" method="post">';
             echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
 
             foreach ($passengers as $index => $passenger) {
@@ -1901,7 +1946,6 @@
                 echo '</fieldset>';
             }
 
-            echo '<button type="submit">Save Passenger Details</button>';
             echo '</form>';
 
             echo '</div>';
@@ -1921,28 +1965,25 @@
         }
 
         function searchDiv() {
-            echo "<div id=\"content\">
-                        <form action=\"controller.php\" method=\"post\">
-                
-                        <input type=\"hidden\" name=\"cmd\" value=\"updateCartSeats\">
-                        <table>
-                            <tr>
-                            <td> </td>
-                        </tr>";
+            echo '<div id="content" class="cart-page">';
+            echo '<div class="cart-heading-row">';
+            echo '<h1>Your Shopping Cart</h1>';
+            echo '<span class="step-indicator">Step 2/2</span>';
+            echo '</div>';
             $_SESSION['cart']->displayCart();
 
+            echo '<div class="cart-actions">';
+            echo '<a class="button" href="controller.php?cmd=showSeatSelection">Change Seats</a>';
             if ($_SESSION['cart']->hasCompletePassengerDetails()
                 && $_SESSION['cart']->processSeatSelections()) {
-                echo '<button type="submit" name="cmd" value="startStripeCheckout">'
+                echo '<form action="controller.php" method="post" class="payment-form">';
+                echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
+                echo '<button type="submit">'
                     . 'Pay securely with Stripe</button>';
+                echo '</form>';
             }
-
-            echo"   <tr>
-                <td><input type=\"submit\" value=\"Seat Changes\"></td>
-                    </tr>
-                </div>
-                </form>
-                ";
+            echo '</div>';
+            echo '</div>';
         }
     }
 
@@ -2198,9 +2239,10 @@
         {
             $sql = "SELECT f.flight_id, f.flight_code, f.flight_date,
                         f.departure_time, f.arrival_time, f.route_id,
-                        r.source, r.dest, r.price
+                        r.source, r.dest, r.price, a.aircraft_code
                     FROM flights f
                     JOIN routes r ON r.id = f.route_id
+                    JOIN aircraft a ON a.aircraft_id = f.aircraft_id
                     WHERE f.flight_id = :flight_id";
 
             $stmt = $this->db->prepare($sql);

@@ -926,6 +926,8 @@ a.button {
 .seat-map-panel,
 .seat-selection-summary {
     min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     padding: 20px;
     border: 1px solid var(--sage-grey);
     border-radius: 8px;
@@ -1001,7 +1003,7 @@ a.button {
 
 .aircraft-seat-map {
     display: block;
-    width: 480px;
+    width: min(100%, 560px);
     min-width: 0;
     max-width: 100%;
     margin: 0 auto;
@@ -1009,6 +1011,7 @@ a.button {
     border: 2px solid var(--sage-grey);
     border-radius: 48% 48% 16px 16px / 12% 12% 16px 16px;
     background: #fff;
+    overflow-x: auto;
 }
 
 .aircraft-front,
@@ -1312,3 +1315,303 @@ body:has(#content.seat-selection-page) #content.seat-selection-page {
     background: rgba(59, 77, 50, 0.14);
 }
 
+/* =====================================
+   Cart, seat selection and checkout frame
+   ===================================== */
+
+body:has(#content.cart-page),
+body:has(#content.seat-selection-page),
+body:has(#content.checkout-page) {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 28px 16px;
+}
+
+body:has(#content.cart-page) #main.old,
+body:has(#content.seat-selection-page) #main.old,
+body:has(#content.checkout-page) #main.old {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: calc(100dvh - 56px);
+}
+
+body:has(#content.cart-page) #content,
+body:has(#content.seat-selection-page) #content,
+body:has(#content.checkout-page) #content {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+/* Cart */
+
+.cart-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.cart-page > h1 {
+    flex: 0 0 auto;
+}
+
+.cart-heading-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.cart-heading-row h1 {
+    margin: 0;
+}
+
+.cart-heading-row .step-indicator {
+    grid-column: 2;
+}
+
+.cart-flight-list {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.cart-flight-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(190px, 250px);
+    gap: 24px;
+    margin: 0 0 16px;
+}
+
+.cart-flight-details,
+.cart-flight-fare {
+    min-width: 0;
+}
+
+.cart-flight-details h3 {
+    margin-top: 0;
+}
+
+.cart-flight-details h4 {
+    margin-bottom: 4px;
+    color: var(--deep-green);
+}
+
+.cart-flight-fare {
+    align-self: start;
+    padding-left: 20px;
+    border-left: 1px solid var(--sage-grey);
+}
+
+.cart-flight-fare p {
+    margin: 6px 0;
+}
+
+.cart-flight-fare .cart-checkout-button,
+.cart-flight-fare .cart-remove-button {
+    margin: 12px 8px 0 0;
+}
+
+.cart-bottom-section {
+    flex: 0 0 auto;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 2px solid var(--sage-grey);
+}
+
+.cart-passengers {
+    margin: 0;
+}
+
+.cart-passengers h3 {
+    margin-top: 0;
+}
+
+.cart-passengers p {
+    margin: 4px 0;
+}
+
+.cart-total {
+    margin: 14px 0;
+}
+
+.cart-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.cart-actions .button {
+    padding: 8px 14px;
+    border-radius: 4px;
+    background: var(--deep-green);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Seat selection */
+
+.seat-selection-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.seat-selection-heading-row,
+.checkout-heading-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 0 0 auto;
+}
+
+.seat-selection-heading-row h1,
+.checkout-heading-row h1 {
+    margin: 0;
+}
+
+.seat-selection-heading-row h1 {
+    flex: 0 0 auto;
+}
+
+.seat-selection-title {
+    color: var(--deep-green);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.seat-selection-heading-row .step-indicator {
+    margin-left: auto;
+}
+
+.step-indicator {
+    color: var(--muted-grey);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.seat-selection-page > form {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.seat-map-panel {
+    min-height: 0;
+}
+
+.seat-map-scroll {
+    max-height: min(58vh, 620px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.seat-save-button {
+    justify-self: end;
+}
+
+.seat-save-button:disabled {
+    border-color: var(--sage-grey);
+    background: #e8ebe7;
+    color: var(--muted-grey);
+    cursor: not-allowed;
+}
+
+/* Passenger details checkout */
+
+.checkout-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.checkout-heading-actions {
+    margin-left: auto;
+}
+
+.checkout-heading-row .step-indicator {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.checkout-layout {
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.checkout-details {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+@media (max-width: 700px) {
+    body:has(#content.cart-page) #main.old,
+    body:has(#content.seat-selection-page) #main.old,
+    body:has(#content.checkout-page) #main.old {
+        height: auto;
+        min-height: 100dvh;
+    }
+
+    body:has(#content.cart-page),
+    body:has(#content.seat-selection-page),
+    body:has(#content.checkout-page) {
+        overflow: auto;
+    }
+
+    .cart-page,
+    .seat-selection-page,
+    .checkout-page {
+        display: block;
+    }
+
+    .cart-flight-list {
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    .cart-flight-card {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .cart-flight-fare {
+        padding: 14px 0 0;
+        border-top: 1px solid var(--sage-grey);
+        border-left: 0;
+    }
+
+    .seat-selection-page > form {
+        display: block;
+    }
+
+    .seat-map-scroll {
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .seat-selection-heading-row,
+    .checkout-heading-row {
+        flex-wrap: wrap;
+    }
+
+    .seat-selection-heading-row .step-indicator,
+    .checkout-heading-row .step-indicator {
+        margin-left: auto;
+        margin-right: 0;
+    }
+
+    .checkout-heading-actions {
+        flex-basis: auto;
+        margin-left: 0;
+    }
+
+    .checkout-layout {
+        display: block;
+    }
+
+    .checkout-details {
+        overflow: visible;
+    }
+}

@@ -128,12 +128,8 @@ function dispatchRequest()
                 break;
             }
 
-            if (($_SESSION['username'] ?? "Guest") === "Guest") {
-                new GuestCheckoutView();
-            } else {
-                new CustomerPassengerDetailsView($hasCookie);
-            }
-            break;
+            header('Location: controller.php?cmd=showPassengerDetails');
+            exit();
 
 
         case "submitPassengerDetails":
@@ -525,6 +521,7 @@ function handleAddFlightToCart(){
                 'route_id' => (int)$flight['route_id'],
                 'route' => $_SESSION['route'],
                 'flight_code' => $flight['flight_code'],
+                'aircraft_code' => $flight['aircraft_code'],
                 'date' => $flight['flight_date'],
                 'from' => $flight['source'],
                 'to' => $flight['dest'],

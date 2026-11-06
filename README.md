@@ -10,12 +10,19 @@ This repository was developed as a learning project for the **Higher Diploma in 
 - It is not intended for production deployment or real-world booking operations.
 - The codebase demonstrates legacy web application patterns and is best treated as an educational reference.
 
-<img src="assets/Images/newHome.jpg" alt="Airline2026 home screen" width="80%">
+<img src="assets/Images/guest/home-search.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/guest/home-booked.jpg" alt="Airline2026 home screen" width="40%">
 
-<img src="assets/Images/newCart.jpg" alt="Airline2026 Cart screen" width="40%">
-<img src="assets/Images/newCheckout.jpg" alt="Airline2026 Checkout screen" width="40%">
-<img src="assets/Images/seats-choice.jpg" alt="Airline2026 seat selection screen" width="40%">
-<img src="assets/Images/checkout-payment.jpg" alt="Airline2026 seat selection screen" width="40%">
+<img src="assets/Images/guest/Cart-one-of-two.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/guest/cart-two-of-two.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/guest/cart-multiple-one-of-two.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/guest/cart-two-of-two-seat-selected.jpg" alt="Airline2026 home screen" width="40%">
+
+<img src="assets/Images/guest/checkout-one-of-two.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/guest/checkout-two-of-two.jpg" alt="Airline2026 home screen" width="40%">
+
+<img src="assets/Images/guest/checkout-multiple-ojne-of-two.jpg" alt="Airline2026 home screen" width="40%">
+
 
 ## Technology
 
