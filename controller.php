@@ -3,8 +3,6 @@
 include("library.php");
 session_start();
 
-FlashMessage::add('success', 'Flash notification test successful.');
-
 dispatchRequest();
 
 function dispatchRequest()
@@ -120,9 +118,7 @@ function dispatchRequest()
             }
 
             if (!$valid) {
-                echo '<p class="seat-map-error">'
-                    . 'Please select the required number of available seats for every flight.'
-                    . '</p>';
+                FlashMessage::add('warning', 'Please select the required number of available seats for every flight.');
 
                 if (($_SESSION['username'] ?? "Guest") === "Guest") {
                     new GuestSeatSelectionView();
@@ -153,7 +149,7 @@ function dispatchRequest()
             break;
 
         case "stripeCancel":
-            echo '<p>Payment was cancelled. Your Cart has been retained.</p>';
+            FlashMessage::add('info', 'Payment was cancelled. Your Cart has been retained.');
             if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
                 new GuestCheckoutView();
             } else {
@@ -329,8 +325,7 @@ function dispatchRequest()
     }
 }
 
-function requireAdministrator()
-{
+function requireAdministrator(){
     if (
         isset($_SESSION['username'])
         && $_SESSION['username'] === "rmiller"
@@ -342,8 +337,7 @@ function requireAdministrator()
     return false;
 }
 
-function requireCustomer()
-{
+function requireCustomer(){
     if (
         isset($_SESSION['username'])
         && $_SESSION['username'] !== "Guest"
@@ -356,8 +350,7 @@ function requireCustomer()
     return false;
 }
 
-function isValidDate($date, $format = 'd-m-Y H:i:s')
-{
+function isValidDate($date, $format = 'd-m-Y H:i:s'){
     $d = DateTime::createFromFormat($format, $date);
 
     return $d && $d->format($format) == $date;
@@ -366,8 +359,7 @@ function isValidDate($date, $format = 'd-m-Y H:i:s')
 /**
  * Calculate flight duration using airport time zones.
  */
-function calculateDuration($date, $depart, $arrive, $fromCity, $toCity)
-{
+function calculateDuration($date, $depart, $arrive, $fromCity, $toCity){
     try {
         $tz   = AIRPORT_TIMEZONES;
         $from = isset($tz[strtolower($fromCity)]) ? $tz[strtolower($fromCity)] : 'UTC';
@@ -391,8 +383,7 @@ function calculateDuration($date, $depart, $arrive, $fromCity, $toCity)
 /**
  * Turn raw DB rows into the array structure the views expect.
  */
-function prepareFlightResults($rows, $seatCount)
-{
+function prepareFlightResults($rows, $seatCount){
     $out = array();
     foreach ($rows as $r) {
         $out[] = array(
@@ -423,8 +414,7 @@ function prepareFlightResults($rows, $seatCount)
  * Load flights for the current search (±2 days around the chosen date).
  * Returns null when no search has been performed yet.
  */
-function loadFlightResults()
-{
+function loadFlightResults(){
     if (empty($_SESSION['route']) || empty($_SESSION['date']) || empty($_SESSION['seatCount'])) {
         return null; // not searched yet
     }
@@ -450,8 +440,7 @@ function loadFlightResults()
     return prepareFlightResults($rows, $_SESSION['seatCount']);
 }
 
-function handleFlightSearch($hasCookie)
-{
+function handleFlightSearch($hasCookie){
     $_SESSION['route']     = $_POST['route'];
     $_SESSION['seatCount'] = $_POST['seatCount'];
     $_SESSION['date']      = $_POST['date'];
@@ -465,17 +454,17 @@ function handleFlightSearch($hasCookie)
         $is_valid = date($date_format, $time) == $input;
 
         if (!$is_valid) {
+            FlashMessage::add('error', "Valid Dates e.g. '01-Jan-2014' only.");
             new CustomerView($hasCookie);
-            echo "<br> Valid Dates e.g.'01-Jan-2014'only";
         } elseif (!is_numeric($_POST['seatCount'])) {
+            FlashMessage::add('error', 'Not numeric value entered.');
             new CustomerView($hasCookie);
-            echo "<br> Not numeric value entered";
         } elseif (
             !(($_POST['seatCount'] > 0)
             && ($_POST['seatCount'] < 21))
         ) {
+            FlashMessage::add('error', 'Value between 1 and 20.');
             new CustomerView($hasCookie);
-            echo "<br> Value between 1 and 20";
         } else {
   
             $flights = loadFlightResults();
@@ -493,8 +482,8 @@ function handleFlightSearch($hasCookie)
 }
         }
     } catch (Exception $e) {
+        FlashMessage::add('error', "Valid Dates e.g. '01-Jan-2014' only.");
         new CustomerView($hasCookie);
-        echo "<br> Valid Dates e.g.'01-Jan-2014'only";
     }
 }
 
@@ -511,20 +500,23 @@ function handleAddFlightToCart(){
 
     // Validate the submitted flight and passenger count.
     if ($flightId <= 0 || $passengerCount < 1 || $passengerCount > 20) {
-        $message = "Invalid flight or passenger quantity.";
+        $message = 'Invalid flight or passenger quantity.';
         $selectedId = 0;
+        FlashMessage::add('error', $message);
     } else {
 
         // Retrieve the actual flight details from the database.
         $flight = $DBM->getFlightForCart($flightId);
 
         if (!$flight) {
-            $message = "The selected flight could not be found.";
+            $message = 'The selected flight could not be found.';
             $selectedId = 0;
+            FlashMessage::add('error', $message);
 
         } elseif ((int)$flight['route_id'] !== (int)$_SESSION['route']) {
-            $message = "The selected flight does not match your search.";
+            $message = 'The selected flight does not match your search.';
             $selectedId = 0;
+            FlashMessage::add('warning', $message);
 
         } else {
 
@@ -548,15 +540,17 @@ function handleAddFlightToCart(){
             $added = $_SESSION['cart']->addFlight($flightInfo);
 
             if ($added) {
-                $message = "Flight added to Cart.";
+                $message = 'Flight added to Cart.';
                 $selectedId = $flightId;
+                FlashMessage::add('success', $message);
 
                 $_SESSION['cartAddedFlightIds'] ??= [];
                 $_SESSION['cartAddedFlightIds'][$flightId] = true;
 
             } else {
-                $message = "Unable to add flight. Maximum passenger limit reached.";
+                $message = 'Unable to add flight. Maximum passenger limit reached.';
                 $selectedId = $flightId;
+                FlashMessage::add('warning', $message);
             }
         }
     }
@@ -576,47 +570,32 @@ function handleAddFlightToCart(){
             $selectedId
         );
     }
-
-    echo "<p>" . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . "</p>";
 }
 
-
-
-
-
-function handleUserRegistration(&$hasCookie)
-{
+function handleUserRegistration(&$hasCookie){
     $DBM = new DBManager();
 
     return $DBM->registerUser($hasCookie);
 }
 
-function handleRoutePriceUpdate($value, $index)
-{
+function handleRoutePriceUpdate($value, $index){
     $DBM = new DBManager();
 
     $DBM->updateRoutePrice($value, $index);
 }
 
-function handleRouteDeletion()
-{
+function handleRouteDeletion(){
     $DBM = new DBManager();
 
     $DBM->deleteSelectedRoutes();
 }
 
-function handleRouteCreation(
-    $source,
-    $destination,
-    $operationalFrom,
-    $operationalTo,
-    $price
-) {
+function handleRouteCreation($source,$destination,$operationalFrom,$operationalTo,$price){
     $DBM = new DBManager();
     $count = $DBM->countRoutes();
 
     if ($count > 4) {
-        echo "Max. number of routes entered";
+        FlashMessage::add('warning', 'Max. number of routes entered.');
         return;
     }
 
@@ -631,33 +610,33 @@ function handleRouteCreation(
             $toDate,
             $price
         );
-    } catch (Exception $e) {
-        echo "Date entered in incorrect format e.g. 01-Jan-2014";
+        } 
+        catch (Exception $e) {
+            FlashMessage::add('error', 'Date entered in incorrect format e.g. 01-Jan-2014');
 
-        new AdminAddRouteView(1);
-    }
+            new AdminAddRouteView(1);
+        }
 }
 
 
-function handlePassengerDetailsSubmission()
-{
+function handlePassengerDetailsSubmission(){
     if (
         !isset($_POST['passengers']) ||
         !is_array($_POST['passengers'])
     ) {
-        echo '<p>No passenger details were submitted.</p>';
+        FlashMessage::add('warning', 'No passenger details were submitted.');
         return;
     }
 
     $cart = $_SESSION['cart'] ?? null;
 
     if (!$cart) {
-        echo '<p>Your Cart is empty.</p>';
+        FlashMessage::add('warning', 'Your Cart is empty.');
         return;
     }
 
     if (!$cart->updatePassengers($_POST['passengers'])) {
-        echo '<p>Unable to update passenger details.</p>';
+        FlashMessage::add('error', 'Unable to update passenger details.');
         return;
     }
 
@@ -668,14 +647,13 @@ function handlePassengerDetailsSubmission()
     }
 }
 
-function handleStripeCheckout()
-{
+function handleStripeCheckout(){
     $cart = $_SESSION['cart'] ?? null;
 
     if (!$cart || empty($cart->getCartElements())
         || !$cart->hasCompletePassengerDetails()
         || !$cart->processSeatSelections()) {
-        echo '<p>Complete passenger details and seat selection before payment.</p>';
+        FlashMessage::add('warning', 'Complete passenger details and seat selection before payment.');
         if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
             new GuestCheckoutView();
         } else {
@@ -694,7 +672,8 @@ function handleStripeCheckout()
         header('Location: ' . $session['url']);
         exit();
     } catch (Throwable $e) {
-        echo '<p>Unable to start payment: ' . esc($e->getMessage()) . '</p>';
+        error_log('Stripe checkout failed: ' . $e->getMessage());
+        FlashMessage::add('error', 'Unable to start payment. Please try again later.');
         if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
             new GuestCheckoutView();
         } else {
@@ -703,8 +682,7 @@ function handleStripeCheckout()
     }
 }
 
-function handleStripeSuccess()
-{
+function handleStripeSuccess(){
     $sessionId = trim((string)($_GET['session_id'] ?? ''));
 
     try {
@@ -742,22 +720,24 @@ function handleStripeSuccess()
         unset($_SESSION['stripe_checkout_session_id']);
         new BookingConfirmationView($result['reference']);
     } catch (Throwable $e) {
-        echo '<p>Payment was received, but booking confirmation failed: '
-            . esc($e->getMessage())
-            . '</p>';
-        echo '<p>Your Cart has been retained. Please contact support before retrying payment.</p>';
+        error_log('Stripe booking confirmation failed: ' . $e->getMessage());
+        FlashMessage::add('error', 'Payment was received, but booking confirmation failed.');
+        FlashMessage::add('warning', 'Your Cart has been retained. Please contact support before retrying payment.');
+        if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+            new GuestCheckoutView();
+        } else {
+            new CustomerCheckoutView(true);
+        }
     }
 }
 
-function handleFlightManifestRequest($hasCookie)
-{
+function handleFlightManifestRequest($hasCookie){
     echo "<br> View Manifest";
 
     new AdminFlightManifestView($hasCookie);
 }
 
-function handleUserAuthentication()
-{
+function handleUserAuthentication(){
     $DBM = new DBManager();
 
     $result = $DBM->authenticateUser(
@@ -790,7 +770,7 @@ function handleUserAuthentication()
         new CustomerView(true);
 
     } else {
-        echo "<br> invalid login <br>";
+        FlashMessage::add('error', 'Invalid login.');
 
         $_SESSION['username'] = "Guest";
 
@@ -798,22 +778,19 @@ function handleUserAuthentication()
     }
 }
 
-function handleSeatOccupancyRequest($date)
-{
+function handleSeatOccupancyRequest($date){
     $DBM = new DBManager();
 
     return $DBM->displaySeatOccupancy($date);
 }
 
-function handleCartProcessing()
-{
+function handleCartProcessing(){
     $DBM = new DBManager();
 
     return $DBM->processCart();
 }
 
-function handleFlightDetailsRequest($date, $route)
-{
+function handleFlightDetailsRequest($date, $route){
     $DBM = new DBManager();
 
     return $DBM->displayFlightManifestDetails($date, $route);

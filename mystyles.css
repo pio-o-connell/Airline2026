@@ -160,16 +160,7 @@ body {
 }
 
 /* Identity strip */
-/* #identity {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 8px 12px;
-    background: #f5f4ef;
-    color: #386747;
-    border-bottom: 1px solid #e5e4dc;
-    text-align: left;
-    font-weight: 600;
-} */
+
 #identity {
     display: table;
     width: auto;
@@ -1009,15 +1000,6 @@ a.button {
 }
 
 /* Aircraft outline */
-/* .aircraft-seat-map {
-    min-width: 480px;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 22px 16px;
-    border: 2px solid var(--sage-grey);
-    border-radius: 48% 48% 16px 16px / 12% 12% 16px 16px;
-    background: #fff;
-} */
 
 .aircraft-seat-map {
     display: block;
@@ -1182,12 +1164,7 @@ a.button {
    ===================================== */
 
 /* Restrict viewport scrolling to seat-selection pages */
-/* body:has(#content.seat-selection-page) {
-    height: 100vh;
-    height: 100dvh;
-    padding: 0;
-    overflow: hidden;
-} */
+
 body:has(#content.seat-selection-page) {
     height: 100vh;
     height: 100dvh;
@@ -1197,15 +1174,7 @@ body:has(#content.seat-selection-page) {
 } 
 
 /* Make the outer page a fixed-height flex container */
-/* body:has(#content.seat-selection-page) #main.old {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100dvh;
-    margin: 0 auto;
-    overflow: hidden;
-} */
+
  body:has(#content.seat-selection-page) #main.old {
     display: flex;
     flex-direction: column;
@@ -1329,14 +1298,6 @@ body:has(#content.seat-selection-page) #content.seat-selection-page {
 
 /* Airline2026 identity indicator */
 
-/* .identity {
-    display: inline-block;
-    margin: 10px 0;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-} */
  .identity {
     display: inline-flex;
     align-items: center;
@@ -1364,14 +1325,4 @@ body:has(#content.seat-selection-page) #content.seat-selection-page {
     background: rgba(59, 77, 50, 0.14);
 }
 
-/* #identity.identity--guest {
-    color: var(--muted-blue-grey);
-}
 
-#identity.identity--customer {
-    color: var(--deep-green);
-}
-
-#identity.identity--admin {
-    color: var(--forest-green);
-} */

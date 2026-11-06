@@ -44,9 +44,6 @@
     }
 
 
-
-
-
     class StripeGateway {
 
         private $secretKey;
@@ -57,7 +54,7 @@
 
         public function createCheckoutSession(Cart $cart, $successUrl, $cancelUrl) {
             if (!$this->secretKey) {
-                throw new RuntimeException('Stripe is not configured. Set STRIPE_SECRET_KEY before checkout.');
+                throw new RuntimeException('Stripe payment is temporarily unavailable.');
             }
 
             $fields = array(
@@ -90,7 +87,7 @@
 
         public function retrieveCheckoutSession($sessionId) {
             if (!$this->secretKey) {
-                throw new RuntimeException('Stripe is not configured. Set STRIPE_SECRET_KEY before checkout.');
+                throw new RuntimeException('Stripe payment is temporarily unavailable.');
             }
 
             if (!preg_match('/^cs_[A-Za-z0-9_]+$/', $sessionId)) {
@@ -102,7 +99,7 @@
 
         private function request($method, $path, $fields = array()) {
             if (!function_exists('curl_init')) {
-                throw new RuntimeException('The PHP cURL extension is required for Stripe checkout.');
+                throw new RuntimeException('Stripe payment is temporarily unavailable.');
             }
 
             $curl = curl_init('https://api.stripe.com' . $path);
@@ -123,21 +120,19 @@
             curl_close($curl);
 
             if ($body === false || $error) {
-                throw new RuntimeException('Stripe request failed: ' . $error);
+                throw new RuntimeException('Stripe payment is temporarily unavailable.');
             }
 
             $response = json_decode($body, true);
             if ($status < 200 || $status >= 300 || !is_array($response)) {
-                $message = $response['error']['message'] ?? 'Stripe returned an unexpected response.';
-                throw new RuntimeException($message);
+                throw new RuntimeException('Stripe payment is temporarily unavailable.');
             }
 
             return $response;
         }
     }
 
-    class FlashMessage
-    {
+    class FlashMessage{
         private const SESSION_KEY = '_flash_messages';
 
         private const TYPES = array(
@@ -212,8 +207,6 @@
             return $output;
         }
     }
-
-
 
 
     // Shared base view for public pages.
@@ -603,12 +596,7 @@
                 ';
         }
 
-        // protected function renderIdentity() {
-        //     $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
-        //     if ($username !== 'Guest') {
-        //         echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
-        //     }
-        // }
+
         protected function renderIdentity() {
             $username = $_SESSION['username'] ?? 'Guest';
 
@@ -648,23 +636,6 @@
             $this->renderIdentity();
         }
 
-        // protected function renderCustomerMenu($loggedIn) {
-        //     echo '<nav id="menu" class="old" aria-label="Main navigation">
-        //         <div class="menu-left">
-        //             <a href="controller.php">Home</a>
-        //         </div>
-        //         <div class="menu-right">
-        //             <a href="controller.php?cmd=showCheckout">Cart</a>
-        //             <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
-
-        //     if ($loggedIn) {
-        //         echo '<a href="controller.php?cmd=logout">Logout</a>';
-        //     } else {
-        //         echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
-        //     }
-
-        //     echo '</div></nav>';
-        // }
         protected function renderCustomerMenu($loggedIn) {
 
             echo '<nav id="menu" class="old" aria-label="Main navigation">
@@ -718,16 +689,7 @@
     }
 
     abstract class AdminBaseView extends PrivateBaseView {
-        // public function menu($info = false) {
-        //     echo '<nav id="menu" class="old" aria-label="Administrator navigation">
-        //         <a href="controller.php">Public home</a>
-        //         <a href="controller.php?cmd=showAdminDashboard">Routes</a>
-        //         <a href="controller.php?cmd=showAddRoute">Add route</a>
-        //         <a href="controller.php?cmd=showFlightManifest">View manifest</a>
-        //         <a href="controller.php?cmd=logout">Logout</a>
-        //     </nav>';
-        //     $this->renderIdentity();
-        // }
+
         public function menu($info = false) {
 
             echo '<nav id="menu" class="old" aria-label="Administrator navigation">';
@@ -1012,9 +974,6 @@
             $this->bottom();
         }
     }
-
-
-
 
     /**
      * Cart
@@ -1556,9 +1515,6 @@
         }
     }
 
-
-
-
     // Renders the customer and administrator login form.
     class LoginView extends PublicBaseView {
 
@@ -1648,8 +1604,7 @@
                 ";
         }
     }
-
-    
+ 
     /**
      * Displays the session Cart to a Guest.
      */
@@ -1842,10 +1797,6 @@
             }
     }
 
-
-
-
-
     // Renders the flight search form (logged-in customer).
     class CustomerView extends CustomerBaseView {
         use FlightWorkspace;
@@ -1994,8 +1945,6 @@
                 ";
         }
     }
-
-
 
     // Renders the administrator route-management page.
     class AdminRoutesView extends AdminBaseView {
@@ -2185,8 +2134,6 @@
             parent::bottom();
         }
     }
-
-
 
     /**
      * Manages the database connection and provides methods for user authentication,
