@@ -1273,8 +1273,6 @@
             return true;
         }
 
-        
-
         /**
          * Calculate the total value of the Cart.
          */
@@ -1341,10 +1339,10 @@
                     . number_format($unitFare, 2) . '</p>';
                 echo '<p>Flight total: €'
                     . number_format($flightTotal, 2) . '</p>';
-                echo '<a class="button cart-checkout-button"
-                    href="controller.php?cmd=showSeatSelection">
-                    Select Seats
-                </a>';
+                // echo '<a class="button cart-checkout-button"
+                //     href="controller.php?cmd=showSeatSelection">
+                //     Select Seats
+                // </a>';
                 echo '<a class="cart-remove-button" href="controller.php?cmd=removeCartItem&amp;flightId='
                     . (int)$flightId . '">Remove Flight</a>';
                 echo '</div>';
@@ -1379,7 +1377,7 @@
 
             echo '<div class="cart-actions">';
             echo '<a class="button" href="controller.php?cmd=showPassengerDetails">Continue to Checkout</a>';
-            echo '<a href="controller.php">Back to search</a>';
+            // echo '<a href="controller.php">Back to search</a>';
             echo '</div>';
             echo '</div>';
         }
@@ -1675,12 +1673,26 @@
 
         public function content() {
             echo '<div id="content" class="cart-page">';
+
+            // echo '<div class="cart-heading-row">';
+            // echo '<h1>Your Shopping Cart</h1>';
+            // echo '<span class="step-indicator">Step 1/2</span>';
+            // echo '</div>';
+            $cart = $_SESSION['cart'] ?? null;
             echo '<div class="cart-heading-row">';
             echo '<h1>Your Shopping Cart</h1>';
+
+            if ($cart && !empty($cart->getCartElements())) {
+                echo '<a class="button cart-select-seats-button"
+                    href="controller.php?cmd=showSeatSelection">
+                    Select Seats
+                </a>';
+            }
+
             echo '<span class="step-indicator">Step 1/2</span>';
             echo '</div>';
 
-            $cart = $_SESSION['cart'] ?? null;
+     //       $cart = $_SESSION['cart'] ?? null;
 
             if ($cart) {
                 $cart->displayCart();
@@ -1709,7 +1721,7 @@
                 . '</span>';
             echo '<button type="submit" form="' . $formId
                 . '" class="checkout-heading-actions">'
-                . 'Save Passenger Details</button>';
+                . 'Continue to payment</button>';
             echo '</div>';
 
             if (!$cart || empty($cart->getCartElements())) {
@@ -1782,10 +1794,10 @@
             echo '<div class="checkout-total"><h3>Total: €'
                 . number_format($grandTotal, 2) . '</h3></div>';
             echo '<div class="checkout-actions">';
-            echo '<a class="button" href="controller.php?cmd=showCheckout">'
-                . 'Return to Cart</a> ';
-            echo '<a class="button" href="controller.php?cmd=showSeatSelection">'
-                . 'Change Seats</a>';
+            // echo '<a class="button" href="controller.php?cmd=showCheckout">'
+            //     . 'Return to Cart</a> ';
+            // echo '<a class="button" href="controller.php?cmd=showSeatSelection">'
+            //     . 'Change Seats</a>';
 
             if ($cart->hasCompletePassengerDetails()
                 && $cart->processSeatSelections()) {
@@ -1924,27 +1936,69 @@
             $this->bottom();
         }
 
+        // function searchDiv() {
+        //     echo '<div id="content" class="cart-page">';
+        //     echo '<div class="cart-heading-row">';
+        //     echo '<h1>Your Shopping Cart</h1>';
+        //     echo '<span class="step-indicator">Step 2/2</span>';
+        //     echo '</div>';
+        //     $_SESSION['cart']->displayCart();
+
+        //     echo '<div class="cart-actions">';
+        //     echo '<a class="button" href="controller.php?cmd=showSeatSelection">Change Seats</a>';
+        //     if ($_SESSION['cart']->hasCompletePassengerDetails()
+        //         && $_SESSION['cart']->processSeatSelections()) {
+        //         echo '<form action="controller.php" method="post" class="payment-form">';
+        //         echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
+        //         echo '<button type="submit">'
+        //             . 'Pay securely with Stripe</button>';
+        //         echo '</form>';
+        //     }
+        //     echo '</div>';
+        //     echo '</div>';
+        // }
+        
         function searchDiv() {
+            $cart = $_SESSION['cart'] ?? null;
+
             echo '<div id="content" class="cart-page">';
+
             echo '<div class="cart-heading-row">';
             echo '<h1>Your Shopping Cart</h1>';
+
+            if ($cart && !empty($cart->getCartElements())) {
+                echo '<a class="button cart-select-seats-button"
+                    href="controller.php?cmd=showSeatSelection">
+                    Select Seats
+                </a>';
+            }
+
             echo '<span class="step-indicator">Step 2/2</span>';
             echo '</div>';
-            $_SESSION['cart']->displayCart();
 
-            echo '<div class="cart-actions">';
-            echo '<a class="button" href="controller.php?cmd=showSeatSelection">Change Seats</a>';
-            if ($_SESSION['cart']->hasCompletePassengerDetails()
-                && $_SESSION['cart']->processSeatSelections()) {
-                echo '<form action="controller.php" method="post" class="payment-form">';
-                echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
-                echo '<button type="submit">'
-                    . 'Pay securely with Stripe</button>';
-                echo '</form>';
+            if ($cart && !empty($cart->getCartElements())) {
+                $cart->displayCart();
+
+                echo '<div class="cart-actions">';
+
+                if (
+                    $cart->hasCompletePassengerDetails()
+                    && $cart->processSeatSelections()
+                ) {
+                    echo '<form action="controller.php" method="post" class="payment-form">';
+                    echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
+                    echo '<button type="submit">Pay securely with Stripe</button>';
+                    echo '</form>';
+                }
+
+                echo '</div>';
+            } else {
+                echo '<p>Your Cart is currently empty.</p>';
             }
-            echo '</div>';
+
             echo '</div>';
         }
+
     }
 
     // Renders the administrator route-management page.

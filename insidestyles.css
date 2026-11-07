@@ -1617,3 +1617,30 @@ body:has(#content.checkout-page) #content {
         overflow: visible;
     }
 }
+
+/* Cart heading and single seat-selection action */
+.cart-heading-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.cart-heading-row h1 {
+    margin: 0;
+}
+
+.cart-select-seats-button {
+    white-space: nowrap;
+}
+
+.cart-heading-row .step-indicator {
+    margin-left: auto;
+}
+
+@media (max-width: 600px) {
+    .cart-heading-row .step-indicator {
+        margin-left: 0;
+    }
+}
