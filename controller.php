@@ -9,6 +9,22 @@ function dispatchRequest()
 {
     $cmd = "";
 
+    if (!isset($_SESSION['username'])) {
+        $_SESSION['username'] = "Guest";
+    }
+
+    if (($_SESSION['username'] ?? "Guest") === "Guest"
+        && isset($_SESSION['booking_owner'])) {
+        $_SESSION['cart'] = new Cart();
+        unset($_SESSION['booking_owner']);
+    }
+
+    if (($_SESSION['username'] ?? "Guest") !== "Guest"
+        && ($_SESSION['username'] ?? "Guest") !== "rmiller"
+        && !isset($_SESSION['booking_owner'])) {
+        $_SESSION['booking_owner'] = $_SESSION['username'];
+    }
+
     $hasCookie = isset($_SESSION['username'])
         && $_SESSION['username'] !== "Guest";
 
@@ -24,16 +40,12 @@ function dispatchRequest()
 
     switch ($cmd) {
         case "":
-            if (!isset($_SESSION['username'])) {
-                $_SESSION['username'] = "Guest";
-            }
-
             if ($_SESSION['username'] === "Guest") {
                 new PublicHomeView();
             } elseif ($_SESSION['username'] === "rmiller") {
                 new AdminView();
             } else {
-                new CustomerView($hasCookie);
+                new CustomerHomeView($hasCookie);
             }
             break;
 
@@ -53,7 +65,7 @@ function dispatchRequest()
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 handleFlightSearch($hasCookie);
             } else {
-                new CustomerView($hasCookie);
+                new CustomerHomeView($hasCookie);
             }
             break;
 
@@ -62,7 +74,7 @@ function dispatchRequest()
                 if (($_SESSION['username'] ?? "Guest") === "Guest") {
                     new PublicHomeView();
                 } else {
-                    new CustomerView($hasCookie);
+                    new CustomerHomeView($hasCookie);
                 }
                 break;
             }
@@ -149,7 +161,7 @@ function dispatchRequest()
             if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
                 new GuestCheckoutView();
             } else {
-                new CustomerCheckoutView($hasCookie);
+                new CustomerCartView($hasCookie);
             }
             break;
        
@@ -165,7 +177,7 @@ function dispatchRequest()
             } elseif (($_SESSION['username'] ?? "Guest") === "Guest") {
                 new GuestCheckoutView();
             } else {
-                new CustomerPassengerDetailsView($hasCookie);
+                new CustomerCheckoutView($hasCookie);
             }
             break;
 
@@ -174,7 +186,7 @@ function dispatchRequest()
             if (($_SESSION['username'] ?? "Guest") === "Guest") {
                 new GuestCartView();
             } else {
-                new CustomerCheckoutView($hasCookie);
+                new CustomerCartView($hasCookie);
             }
             break;
 
@@ -184,19 +196,23 @@ function dispatchRequest()
 
             if ($flightId > 0) {
                 $_SESSION['cart']->removeFlight($flightId);
-                unset($_SESSION['cartAddedFlightIds'][$flightId]);
             }
 
             if (($_SESSION['username'] ?? "Guest") === "Guest") {
                 new GuestCartView();
             } else {
-                new CustomerCheckoutView($hasCookie);
+                new CustomerCartView($hasCookie);
             }
             break;
 
         case "registerUser":
+            $guestCart = ($_SESSION['username'] ?? 'Guest') === 'Guest'
+                ? ($_SESSION['cart'] ?? new Cart())
+                : null;
             handleUserRegistration($hasCookie);
-            new CustomerView($hasCookie);
+            session_regenerate_id(true);
+            restoreCustomerBookingState($_SESSION['username'], $guestCart);
+            resumeAuthenticatedBooking();
             break;
 
         case "showEditRoute":
@@ -296,6 +312,15 @@ function dispatchRequest()
             break;
 
         case "logout":
+            $username = $_SESSION['username'] ?? 'Guest';
+            if ($username !== 'Guest' && $username !== 'rmiller') {
+                $db = new DBManager();
+                $db->saveCustomerBookingState(
+                    $username,
+                    $_SESSION['cart'] ?? new Cart()
+                );
+            }
+
             if (isset($_COOKIE['username'])) {
                 setcookie(
                     'username',
@@ -308,6 +333,8 @@ function dispatchRequest()
             }
 
             $_SESSION['username'] = "Guest";
+            $_SESSION['cart'] = new Cart();
+            unset($_SESSION['booking_owner']);
 
             unset(
                 $_SESSION['route'],
@@ -319,6 +346,57 @@ function dispatchRequest()
             new PublicHomeView();
             break;
     }
+}
+
+function restoreCustomerBookingState($username, $guestCart = null){
+    $db = new DBManager();
+    $savedCart = $db->loadCustomerBookingState($username);
+
+    if ($savedCart && !empty($savedCart->getCartElements())) {
+        if ($guestCart instanceof Cart
+            && !empty($guestCart->getCartElements())) {
+            FlashMessage::add(
+                'info',
+                'Your saved account booking was restored. The temporary guest Cart was not merged.'
+            );
+        }
+        $_SESSION['cart'] = $savedCart;
+    } elseif ($guestCart instanceof Cart
+        && !empty($guestCart->getCartElements())) {
+        $_SESSION['cart'] = $guestCart;
+        $db->saveCustomerBookingState($username, $guestCart);
+    } else {
+        $_SESSION['cart'] = new Cart();
+    }
+
+    $_SESSION['booking_owner'] = $username;
+}
+
+function resumeAuthenticatedBooking(){
+    $returnCommand = $_SESSION['booking_return_command'] ?? '';
+    unset($_SESSION['booking_return_command']);
+
+    if ($returnCommand === 'showPassengerDetails') {
+        new CustomerCheckoutView(true);
+        return;
+    }
+
+    if ($returnCommand === 'showCheckout') {
+        new CustomerCartView(true);
+        return;
+    }
+
+    $cart = $_SESSION['cart'] ?? null;
+    if ($cart instanceof Cart && !empty($cart->getCartElements())) {
+        if ($cart->hasCompletePassengerDetails()) {
+            new CustomerCheckoutView(true);
+        } else {
+            new CustomerCartView(true);
+        }
+        return;
+    }
+
+    new CustomerHomeView(true);
 }
 
 function requireAdministrator(){
@@ -451,16 +529,16 @@ function handleFlightSearch($hasCookie){
 
         if (!$is_valid) {
             FlashMessage::add('error', "Valid Dates e.g. '01-Jan-2014' only.");
-            new CustomerView($hasCookie);
+            new CustomerHomeView($hasCookie);
         } elseif (!is_numeric($_POST['seatCount'])) {
             FlashMessage::add('error', 'Not numeric value entered.');
-            new CustomerView($hasCookie);
+            new CustomerHomeView($hasCookie);
         } elseif (
             !(($_POST['seatCount'] > 0)
             && ($_POST['seatCount'] < 21))
         ) {
             FlashMessage::add('error', 'Value between 1 and 20.');
-            new CustomerView($hasCookie);
+            new CustomerHomeView($hasCookie);
         } else {
   
             $flights = loadFlightResults();
@@ -479,7 +557,7 @@ function handleFlightSearch($hasCookie){
         }
     } catch (Exception $e) {
         FlashMessage::add('error', "Valid Dates e.g. '01-Jan-2014' only.");
-        new CustomerView($hasCookie);
+        new CustomerHomeView($hasCookie);
     }
 }
 
@@ -540,9 +618,6 @@ function handleAddFlightToCart(){
                 $message = 'Flight added to Cart.';
                 $selectedId = $flightId;
                 FlashMessage::add('success', $message);
-
-                $_SESSION['cartAddedFlightIds'] ??= [];
-                $_SESSION['cartAddedFlightIds'][$flightId] = true;
 
             } else {
                 $message = 'Unable to add flight. Maximum passenger limit reached.';
@@ -647,6 +722,13 @@ function handlePassengerDetailsSubmission(){
 function handleStripeCheckout(){
     $cart = $_SESSION['cart'] ?? null;
 
+    if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+        $_SESSION['booking_return_command'] = 'showCheckout';
+        FlashMessage::add('info', 'Please log in or register before continuing to payment.');
+        new GuestCheckoutView();
+        return;
+    }
+
     if (!$cart || empty($cart->getCartElements())
         || !$cart->hasCompletePassengerDetails()
         || !$cart->processSeatSelections()) {
@@ -695,6 +777,9 @@ function handleStripeSuccess(){
         $existing = $db->getBookingByPaymentSession($sessionId);
         if ($existing) {
             $_SESSION['cart'] = new Cart();
+            if (($_SESSION['username'] ?? 'Guest') !== 'Guest') {
+                $db->deleteCustomerBookingState($_SESSION['username']);
+            }
             new BookingConfirmationView($existing['booking_reference']);
             return;
         }
@@ -715,6 +800,9 @@ function handleStripeSuccess(){
 
         $_SESSION['cart'] = new Cart();
         unset($_SESSION['stripe_checkout_session_id']);
+        if (($_SESSION['username'] ?? 'Guest') !== 'Guest') {
+            $db->deleteCustomerBookingState($_SESSION['username']);
+        }
         new BookingConfirmationView($result['reference']);
     } catch (Throwable $e) {
         error_log('Stripe booking confirmation failed: ' . $e->getMessage());
@@ -735,6 +823,9 @@ function handleFlightManifestRequest($hasCookie){
 }
 
 function handleUserAuthentication(){
+    $guestCart = ($_SESSION['username'] ?? 'Guest') === 'Guest'
+        ? ($_SESSION['cart'] ?? new Cart())
+        : null;
     $DBM = new DBManager();
 
     $result = $DBM->authenticateUser(
@@ -751,6 +842,8 @@ function handleUserAuthentication(){
         );
 
         $_SESSION['username'] = "rmiller";
+        $_SESSION['cart'] = new Cart();
+        unset($_SESSION['booking_owner']);
 
         new AdminView();
 
@@ -762,9 +855,10 @@ function handleUserAuthentication(){
             '/'
         );
 
+        session_regenerate_id(true);
         $_SESSION['username'] = $_POST['username'];
-
-        new CustomerView(true);
+        restoreCustomerBookingState($_SESSION['username'], $guestCart);
+        resumeAuthenticatedBooking();
 
     } else {
         FlashMessage::add('error', 'Invalid login.');

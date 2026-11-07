@@ -62,6 +62,8 @@ Current search-interface features include:
 
 The current search uses the dated flight information available in the database. Round Trip and Multi-City are not yet implemented as complete booking journeys.
 
+`GuestCheckoutView` and `CustomerCheckoutView` remain separate view classes but use the shared `CheckoutWorkspace` renderer for equivalent passenger forms, flight/seat summaries, totals, progress indicators and navigation. Guest checkout shows authentication actions before payment; authenticated customer checkout shows the payment action directly when the Cart is valid.
+
 ### Cart
 
 The legacy Cart has been replaced with a session-based `Cart` class.
@@ -183,9 +185,9 @@ The intended guest and customer journey is:
 
 **Search Flights → Select Flight(s) → Add to Cart → Review Cart → Seat Selection → Passenger Details → Checkout → Payment → Payment Verification → Create Booking → Confirmation.**
 
-The guest can progress through flight search, Cart handling and seat selection without authentication.
+The guest can progress through flight search, Cart handling, seat selection and passenger details without authentication.
 
-Guests can complete payment without logging in. Authenticated customers can use the same flow, with their booking linked to their customer account.
+Guests must log in or register before payment. The temporary guest Cart and booking details are transferred to the authenticated session unless that account already has saved booking state, in which case the account state takes precedence. Customer booking state is saved by account when logging out and restored on the next login.
 
 The remaining work includes:
 
@@ -486,11 +488,11 @@ PublicBaseView (abstract)
 
 PrivateBaseView (abstract, standalone)
 ├── CustomerBaseView (abstract)
-│   ├── CustomerView
+│   ├── CustomerHomeView
 │   │   └── CustomerFlightResultsView
 │   ├── CustomerSeatSelectionView
-│   ├── CustomerPassengerDetailsView
-│   └── CustomerCheckoutView
+│   ├── CustomerCheckoutView
+│   └── CustomerCartView
 └── AdminBaseView (abstract)
     ├── AdminRoutesView
     │   └── AdminView
@@ -501,7 +503,7 @@ PrivateBaseView (abstract, standalone)
 
 `GuestSeatSelectionView` extends `PublicBaseView`.
 
-`CustomerSeatSelectionView`, `CustomerPassengerDetailsView` and `CustomerCheckoutView` belong to the customer hierarchy.
+`CustomerSeatSelectionView`, `CustomerCheckoutView` and `CustomerCartView` belong to the customer hierarchy.
 
 `AdminView` is a thin subclass of `AdminRoutesView`.
 
@@ -582,7 +584,7 @@ Booking persistence runs in a MySQL transaction. It revalidates every selected s
 | Client-side passenger-count selection limit | Implemented |
 | Server-side seat-selection validation | Implemented |
 | Passenger-details view | Implemented for guests and customers |
-| Guest checkout without login | Implemented; the Cart is retained in the session |
+| Guest passenger details before login | Implemented; the Cart and booking state are retained in the session |
 | Stripe Checkout payment | Implemented through the Stripe HTTP API |
 | Payment verification | Implemented on the server when Stripe redirects back |
 | Transactional booking completion | Implemented using `booking`, `booking_flights` and `passangers` |
@@ -626,6 +628,7 @@ The enhancements preserve:
 - The legacy `passangers` table spelling for compatibility.
 - The established Airline2026 colour palette and typography.
 - The session-backed Cart design.
+- Account-scoped draft booking state used to restore customer Carts after logout and login.
 
 The seat-map work extends the existing application. It does not introduce a separate JavaScript framework or replace the original backend architecture.
 
@@ -668,10 +671,10 @@ In 2026 the view classes were renamed for clarity and the private view tree was 
 | 2014 class name | Current class name |
 |---|---|
 | `AuthenticatedBaseView` | `PrivateBaseView` |
-| `FlightSearchView` | `CustomerView` |
+| `FlightSearchView` | `CustomerHomeView` |
 | `FlightSearchResultsView` | `CustomerFlightResultsView` |
-| `PassengerDetailsView` | `CustomerPassengerDetailsView` |
-| `CheckoutView` | `CustomerCheckoutView` |
+| `PassengerDetailsView` | `CustomerCheckoutView` |
+| `CheckoutView` | `CustomerCartView` |
 | `InnerAdminView` | `AdminView` |
 | `EditRouteView` | `AdminEditRouteView` |
 | `AddRouteView` | `AdminAddRouteView` |

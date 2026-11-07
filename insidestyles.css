@@ -1341,6 +1341,8 @@ body:has(#content.seat-selection-page) #content,
 body:has(#content.checkout-page) #content {
     flex: 1 1 0;
     min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Cart */

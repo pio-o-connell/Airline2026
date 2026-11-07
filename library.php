@@ -343,7 +343,7 @@
 
     /**
      * Shared flight search / results / details UI used by both
-     * PublicHomeView (guest) and CustomerView (logged-in).
+     * PublicHomeView (guest) and CustomerHomeView (logged-in).
      */
     trait FlightWorkspace {
     
@@ -505,7 +505,9 @@
             } else {
                 $flightId = (int)$selected['flight_id'];
 
-                $isInCart = isset($_SESSION['cartAddedFlightIds'][$flightId]);
+                $cart = $_SESSION['cart'] ?? null;
+                $isInCart = $cart instanceof Cart
+                    && $cart->getFlight($flightId) !== null;
 
                 if ($isInCart) {
                     echo '<span class="cart-status-pill">Booked</span>';
@@ -894,7 +896,7 @@
             echo '<div class="seat-selection-heading-row">';
             echo '<h1>Shopping Cart</h1>';
             echo '<span class="seat-selection-title">Select Your Seats</span>';
-            echo '<span class="step-indicator">Step 1/2</span>';
+            echo '<span class="step-indicator">Step 2/2</span>';
             echo '<button type="submit" class="seat-save-button" disabled>'
                 . 'Save Seat Selections</button>';
             echo '</div>';
@@ -1038,6 +1040,28 @@
          */
         public function getCartElements() {
             return $this->cartElements;
+        }
+
+        public function exportBookingState() {
+            return array(
+                'cartElements' => $this->cartElements,
+                'bookingPassengers' => $this->bookingPassengers
+            );
+        }
+
+        public static function fromBookingState($state) {
+            if (!is_array($state)
+                || !isset($state['cartElements'], $state['bookingPassengers'])
+                || !is_array($state['cartElements'])
+                || !is_array($state['bookingPassengers'])) {
+                return null;
+            }
+
+            $cart = new self();
+            $cart->cartElements = $state['cartElements'];
+            $cart->bookingPassengers = $state['bookingPassengers'];
+
+            return $cart;
         }
 
 
@@ -1670,23 +1694,12 @@
         }
     }
 
-    /**
-     * Guest checkout: passenger details can be entered
-     * without requiring authentication.
-     */
-    class GuestCheckoutView extends PublicBaseView {
+    trait CheckoutWorkspace {
 
-        public function __construct() {
-            $this->top(false, 'insidestyles.css');
-            $this->menu();
-            $this->renderIdentity();
-            $this->content();
-            $this->bottom();
-        }
-       
-        public function content() {
-
+        protected function renderCheckoutContent($isGuest) {
             $cart = $_SESSION['cart'] ?? null;
+            $prefix = $isGuest ? 'guest-' : 'customer-';
+            $formId = $prefix . 'passenger-details-form';
 
             echo '<div id="content" class="checkout-page">';
             echo '<div class="checkout-heading-row">';
@@ -1694,7 +1707,8 @@
             echo '<span class="step-indicator">'
                 . ($cart && $cart->hasCompletePassengerDetails() ? 'Step 2/2' : 'Step 1/2')
                 . '</span>';
-            echo '<button type="submit" form="guest-passenger-details-form" class="checkout-heading-actions">'
+            echo '<button type="submit" form="' . $formId
+                . '" class="checkout-heading-actions">'
                 . 'Save Passenger Details</button>';
             echo '</div>';
 
@@ -1705,111 +1719,112 @@
                 return;
             }
 
-            $passengers = $cart->getBookingPassengers();
+            if ($isGuest) {
+                $_SESSION['booking_return_command'] = 'showPassengerDetails';
+            }
 
             echo '<div class="checkout-layout">';
-
-            // LEFT: Passenger details
             echo '<section class="checkout-details">';
             echo '<h2>Passenger Details</h2>';
             echo '<p>Enter the details for each traveller.</p>';
-
-            echo '<form id="guest-passenger-details-form" action="controller.php" method="post">';
+            echo '<form id="' . $formId . '" action="controller.php" method="post">';
             echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
 
-            foreach ($passengers as $index => $passenger) {
-
-                // $number = (int)$passenger['passengerNumber'];
+            foreach ($cart->getBookingPassengers() as $index => $passenger) {
                 $number = (int)($passenger['passengerNumber'] ?? ($index + 1));
 
                 echo '<fieldset class="passenger-details">';
                 echo '<legend>Passenger ' . $number . '</legend>';
-
-                echo '<label for="guest-name-' . $index . '">Full name</label>';
-                echo '<input type="text"
-                    id="guest-name-' . $index . '"
-                    name="passengers[' . $index . '][name]"
-                    value="' . esc($passenger['name'] ?? '') . '"
-                    required>';
-
-                echo '<label for="guest-email-' . $index . '">Email address</label>';
-                echo '<input type="email"
-                    id="guest-email-' . $index . '"
-                    name="passengers[' . $index . '][email]"
-                    value="' . esc($passenger['email'] ?? '') . '"
-                    required>';
-
-                echo '<label for="guest-passport-' . $index . '">Passport number</label>';
-                echo '<input type="text"
-                    id="guest-passport-' . $index . '"
-                    name="passengers[' . $index . '][passport]"
-                    value="' . esc($passenger['passport'] ?? '') . '">';
-
+                echo '<label for="' . $prefix . 'name-' . $index . '">Full name</label>';
+                echo '<input type="text" id="' . $prefix . 'name-' . $index
+                    . '" name="passengers[' . $index . '][name]" value="'
+                    . esc($passenger['name'] ?? '') . '" required>';
+                echo '<label for="' . $prefix . 'email-' . $index . '">Email address</label>';
+                echo '<input type="email" id="' . $prefix . 'email-' . $index
+                    . '" name="passengers[' . $index . '][email]" value="'
+                    . esc($passenger['email'] ?? '') . '" required>';
+                echo '<label for="' . $prefix . 'passport-' . $index . '">Passport number</label>';
+                echo '<input type="text" id="' . $prefix . 'passport-' . $index
+                    . '" name="passengers[' . $index . '][passport]" value="'
+                    . esc($passenger['passport'] ?? '') . '">';
                 echo '</fieldset>';
             }
 
             echo '</form>';
             echo '</section>';
-
-            // RIGHT: Booking summary
             echo '<aside class="checkout-summary">';
             echo '<h2>Booking Summary</h2>';
-
             $grandTotal = 0;
 
             foreach ($cart->getCartElements() as $flight) {
-
                 $seatCount = (int)$flight['seatCount'];
                 $unitFare = (float)$flight['unitFare'];
                 $flightTotal = $seatCount * $unitFare;
-
                 $grandTotal += $flightTotal;
 
                 echo '<div class="checkout-flight">';
-
                 echo '<h3>' . esc($flight['flight_code'] ?? 'Flight') . '</h3>';
-
-                echo '<p><strong>'
-                    . esc($flight['from'] ?? '')
-                    . ' → '
-                    . esc($flight['to'] ?? '')
-                    . '</strong></p>';
-
+                echo '<p><strong>' . esc($flight['from'] ?? '') . ' → '
+                    . esc($flight['to'] ?? '') . '</strong></p>';
                 echo '<p>Date: ' . esc($flight['date'] ?? '') . '</p>';
-
                 echo '<p>Departure: ' . esc($flight['departs'] ?? '') . '</p>';
-
                 echo '<p>Arrival: ' . esc($flight['arrives'] ?? '') . '</p>';
-
                 echo '<p>Passengers: ' . $seatCount . '</p>';
-
-                echo '<p>Fare per passenger: €'
-                    . number_format($unitFare, 2) . '</p>';
-
-                echo '<p>Flight total: €'
-                    . number_format($flightTotal, 2) . '</p>';
-
+                $selectedSeats = $flight['seatSelections'] ?? array();
+                echo '<p>Seats: ' . (count($selectedSeats) === $seatCount
+                    ? esc(implode(', ', $selectedSeats))
+                    : 'Selection pending.') . '</p>';
+                echo '<p>Fare per passenger: €' . number_format($unitFare, 2) . '</p>';
+                echo '<p>Flight total: €' . number_format($flightTotal, 2) . '</p>';
                 echo '</div>';
             }
 
-            echo '<div class="checkout-total">';
-            echo '<h3>Total: €' . number_format($grandTotal, 2) . '</h3>';
-            echo '</div>';
-
-            echo '<a href="controller.php?cmd=showCheckout">Return to Cart</a>';
+            echo '<div class="checkout-total"><h3>Total: €'
+                . number_format($grandTotal, 2) . '</h3></div>';
+            echo '<div class="checkout-actions">';
+            echo '<a class="button" href="controller.php?cmd=showCheckout">'
+                . 'Return to Cart</a> ';
+            echo '<a class="button" href="controller.php?cmd=showSeatSelection">'
+                . 'Change Seats</a>';
 
             if ($cart->hasCompletePassengerDetails()
                 && $cart->processSeatSelections()) {
-                echo '<form action="controller.php" method="post" class="payment-form">';
-                echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
-                echo '<button type="submit">Pay securely with Stripe</button>';
-                echo '</form>';
+                if ($isGuest) {
+                    echo '<div class="checkout-authentication">';
+                    echo '<p>Log in or register to continue to payment.</p>';
+                    echo '<a class="button" href="controller.php?cmd=showLogin">'
+                        . 'Log in to continue</a> ';
+                    echo '<a class="button" href="controller.php?cmd=showRegistration">'
+                        . 'Register to continue</a>';
+                    echo '</div>';
+                } else {
+                    echo '<form action="controller.php" method="post" class="payment-form">';
+                    echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
+                    echo '<button type="submit">Pay securely with Stripe</button>';
+                    echo '</form>';
+                }
             }
 
+            echo '</div>';
             echo '</aside>';
+            echo '</div>';
+            echo '</div>';
+        }
+    }
 
-            echo '</div>'; // checkout-layout
-            echo '</div>'; // content
+    /**
+     * Guest checkout: passenger details can be entered before
+     * authentication is required for payment.
+     */
+    class GuestCheckoutView extends PublicBaseView {
+        use CheckoutWorkspace;
+
+        public function __construct() {
+            $this->top(false, 'insidestyles.css');
+            $this->menu();
+            $this->renderIdentity();
+            $this->renderCheckoutContent(true);
+            $this->bottom();
         }
     }
 
@@ -1838,7 +1853,7 @@
     }
 
     // Renders the flight search form (logged-in customer).
-    class CustomerView extends CustomerBaseView {
+    class CustomerHomeView extends CustomerBaseView {
         use FlightWorkspace;
 
         protected $flights = null;
@@ -1872,7 +1887,7 @@
      * Displays flight-search results for a selected route, ticket quantity
      * and travel date. Uses the new FlightWorkspace layout.
      */
-    class CustomerFlightResultsView extends CustomerView {
+    class CustomerFlightResultsView extends CustomerHomeView {
 
         public function __construct($route, $seatCount, $date, $info, $flights = null, $selectedId = null) {
             $_SESSION['route']     = $route;
@@ -1886,76 +1901,21 @@
     /**
     * Displays passenger details for the current booking.
     */
-    class CustomerPassengerDetailsView extends CustomerView {
+    class CustomerCheckoutView extends CustomerHomeView {
+        use CheckoutWorkspace;
 
         public function __construct($hasCookie) {
             $this->top($hasCookie);
             $this->menu($hasCookie);
-            $this->getUserdetails($hasCookie);
+            $this->renderCheckoutContent(false);
             $this->bottom();
-        }
-
-        public function getUserdetails($hasCookie) {
-
-            $cart = $_SESSION['cart'] ?? null;
-
-            echo '<div id="content" class="checkout-page">';
-            echo '<div class="checkout-heading-row">';
-            echo '<h1>Checkout</h1>';
-            echo '<span class="step-indicator">Step 1/2</span>';
-            echo '<button type="submit" form="customer-passenger-details-form" class="checkout-heading-actions">'
-                . 'Save Passenger Details</button>';
-            echo '</div>';
-
-            if (!$cart || empty($cart->getCartElements())) {
-                echo '<p>Your Cart is empty.</p>';
-                echo '<a href="controller.php">Return to flight search</a>';
-                echo '</div>';
-                return;
-            }
-
-            $passengers = $cart->getBookingPassengers();
-
-            echo '<form id="customer-passenger-details-form" action="controller.php" method="post">';
-            echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
-
-            foreach ($passengers as $index => $passenger) {
-
-                $number = (int)$passenger['passengerNumber'];
-
-                echo '<fieldset class="passenger-details">';
-                echo '<legend>Passenger ' . $number . '</legend>';
-
-                echo '<label for="name-' . $index . '">Full name</label>';
-                echo '<input type="text"
-                    id="name-' . $index . '"
-                    name="passengers[' . $index . '][name]"
-                    required>';
-
-                echo '<label for="email-' . $index . '">Email address</label>';
-                echo '<input type="email"
-                    id="email-' . $index . '"
-                    name="passengers[' . $index . '][email]"
-                    required>';
-
-                echo '<label for="passport-' . $index . '">Passport number</label>';
-                echo '<input type="text"
-                    id="passport-' . $index . '"
-                    name="passengers[' . $index . '][passport]">';
-
-                echo '</fieldset>';
-            }
-
-            echo '</form>';
-
-            echo '</div>';
         }
     }
    
     /**
      * Displays the checkout page.
      */
-    class CustomerCheckoutView extends CustomerView {
+    class CustomerCartView extends CustomerHomeView {
 
         public function __construct($info) {
             $this->top($info);
@@ -2193,6 +2153,17 @@
                 $this->db = new PDO($address, $username, $password, array(
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
                 ));
+                $this->db->exec(
+                    'CREATE TABLE IF NOT EXISTS customer_booking_state (
+                        user_id INT NOT NULL PRIMARY KEY,
+                        state_json LONGTEXT NOT NULL,
+                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                            ON UPDATE CURRENT_TIMESTAMP,
+                        CONSTRAINT fk_customer_booking_state_user
+                            FOREIGN KEY (user_id) REFERENCES user(id)
+                            ON DELETE CASCADE
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+                );
             } catch (PDOException $e) {
                 $error_message = $e->getMessage();
                 echo $error_message;
@@ -2202,6 +2173,66 @@
 
         public function getConnection() {
             return $this->db;
+        }
+
+        public function loadCustomerBookingState($username) {
+            $stmt = $this->db->prepare(
+                'SELECT s.state_json
+                 FROM customer_booking_state s
+                 JOIN user u ON u.id = s.user_id
+                 WHERE u.username = :username'
+            );
+            $stmt->execute(array(':username' => $username));
+            $json = $stmt->fetchColumn();
+
+            if ($json === false) {
+                return null;
+            }
+
+            $state = json_decode($json, true);
+            return Cart::fromBookingState($state);
+        }
+
+        public function saveCustomerBookingState($username, Cart $cart) {
+            $userId = $this->getCustomerId($username);
+            if (!$userId) {
+                return false;
+            }
+
+            $state = $cart->exportBookingState();
+            if (empty($state['cartElements'])) {
+                return $this->deleteCustomerBookingState($username);
+            }
+
+            $stmt = $this->db->prepare(
+                'INSERT INTO customer_booking_state (user_id, state_json)
+                 VALUES (:user_id, :state_json)
+                 ON DUPLICATE KEY UPDATE
+                    state_json = VALUES(state_json),
+                    updated_at = CURRENT_TIMESTAMP'
+            );
+            return $stmt->execute(array(
+                ':user_id' => $userId,
+                ':state_json' => json_encode($state, JSON_THROW_ON_ERROR)
+            ));
+        }
+
+        public function deleteCustomerBookingState($username) {
+            $stmt = $this->db->prepare(
+                'DELETE s FROM customer_booking_state s
+                 JOIN user u ON u.id = s.user_id
+                 WHERE u.username = :username'
+            );
+            return $stmt->execute(array(':username' => $username));
+        }
+
+        private function getCustomerId($username) {
+            $stmt = $this->db->prepare(
+                'SELECT id FROM user WHERE username = :username'
+            );
+            $stmt->execute(array(':username' => $username));
+            $id = $stmt->fetchColumn();
+            return $id === false ? null : (int)$id;
         }
 
         public function getBookingByPaymentSession($paymentSessionId) {

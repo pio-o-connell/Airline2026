@@ -41,6 +41,16 @@ CREATE TABLE `user` (
   UNIQUE KEY `uq_user_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE `customer_booking_state` (
+  `user_id` int(11) NOT NULL,
+  `state_json` longtext NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`),
+  CONSTRAINT `fk_customer_booking_state_user`
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+    ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE `aircraft` (
   `aircraft_id` int(11) NOT NULL AUTO_INCREMENT,
   `aircraft_code` varchar(12) NOT NULL,
