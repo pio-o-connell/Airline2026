@@ -879,8 +879,10 @@
 
             if (!$cart || empty($cart->getCartElements())) {
                 echo '<div class="seat-selection-heading-row">';
-                echo '<h1>Shopping Cart</h1>';
+                echo '<div class="workflow-heading">';
+                echo '<h1>Your Shopping Cart</h1>';
                 echo '<span class="seat-selection-title">Select Your Seats</span>';
+                echo '</div>';
                 echo '<span class="step-indicator">Step 1/2</span>';
                 echo '</div>';
                 echo '<p>Your Cart is empty.</p>';
@@ -894,11 +896,13 @@
             echo '<form id="seat-selection-form" action="controller.php" method="post">';
             echo '<input type="hidden" name="cmd" value="updateCartSeats">';
             echo '<div class="seat-selection-heading-row">';
-            echo '<h1>Shopping Cart</h1>';
+            echo '<div class="workflow-heading">';
+            echo '<h1>Your Shopping Cart</h1>';
             echo '<span class="seat-selection-title">Select Your Seats</span>';
+            echo '</div>';
             echo '<span class="step-indicator">Step 2/2</span>';
             echo '<button type="submit" class="seat-save-button" disabled>'
-                . 'Save Seat Selections</button>';
+                . 'Enter Passenger Details</button>';
             echo '</div>';
 
             foreach ($cart->getCartElements() as $flightId => $flight) {
@@ -1375,10 +1379,7 @@
                 . '</h3>';
             echo '</div>';
 
-            echo '<div class="cart-actions">';
-            echo '<a class="button" href="controller.php?cmd=showPassengerDetails">Continue to Checkout</a>';
-            // echo '<a href="controller.php">Back to search</a>';
-            echo '</div>';
+
             echo '</div>';
         }
 
@@ -1680,7 +1681,10 @@
             // echo '</div>';
             $cart = $_SESSION['cart'] ?? null;
             echo '<div class="cart-heading-row">';
+            echo '<div class="workflow-heading">';
             echo '<h1>Your Shopping Cart</h1>';
+            echo '<span class="seat-selection-title">Details</span>';
+            echo '</div>';
 
             if ($cart && !empty($cart->getCartElements())) {
                 echo '<a class="button cart-select-seats-button"
@@ -1712,16 +1716,24 @@
             $cart = $_SESSION['cart'] ?? null;
             $prefix = $isGuest ? 'guest-' : 'customer-';
             $formId = $prefix . 'passenger-details-form';
+            $hasPassengerDetails = $cart && $cart->hasCompletePassengerDetails();
 
             echo '<div id="content" class="checkout-page">';
             echo '<div class="checkout-heading-row">';
+            echo '<div class="workflow-heading">';
             echo '<h1>Checkout</h1>';
-            echo '<span class="step-indicator">'
-                . ($cart && $cart->hasCompletePassengerDetails() ? 'Step 2/2' : 'Step 1/2')
+            echo '<span class="seat-selection-title">'
+                . ($hasPassengerDetails ? 'Payment' : 'Passenger Details')
                 . '</span>';
-            echo '<button type="submit" form="' . $formId
-                . '" class="checkout-heading-actions">'
-                . 'Continue to payment</button>';
+            echo '</div>';
+            echo '<span class="step-indicator">'
+                . ($hasPassengerDetails ? 'Step 2/2' : 'Step 1/2')
+                . '</span>';
+            if (!$hasPassengerDetails) {
+                echo '<button type="submit" form="' . $formId
+                    . '" class="checkout-heading-actions" disabled>'
+                    . 'Continue to payment</button>';
+            }
             echo '</div>';
 
             if (!$cart || empty($cart->getCartElements())) {
@@ -1737,7 +1749,6 @@
 
             echo '<div class="checkout-layout">';
             echo '<section class="checkout-details">';
-            echo '<h2>Passenger Details</h2>';
             echo '<p>Enter the details for each traveller.</p>';
             echo '<form id="' . $formId . '" action="controller.php" method="post">';
             echo '<input type="hidden" name="cmd" value="submitPassengerDetails">';
@@ -1750,15 +1761,15 @@
                 echo '<label for="' . $prefix . 'name-' . $index . '">Full name</label>';
                 echo '<input type="text" id="' . $prefix . 'name-' . $index
                     . '" name="passengers[' . $index . '][name]" value="'
-                    . esc($passenger['name'] ?? '') . '" required>';
+                    . esc($passenger['name'] ?? '') . '" maxlength="20" required>';
                 echo '<label for="' . $prefix . 'email-' . $index . '">Email address</label>';
                 echo '<input type="email" id="' . $prefix . 'email-' . $index
                     . '" name="passengers[' . $index . '][email]" value="'
-                    . esc($passenger['email'] ?? '') . '" required>';
+                    . esc($passenger['email'] ?? '') . '" maxlength="40" required>';
                 echo '<label for="' . $prefix . 'passport-' . $index . '">Passport number</label>';
                 echo '<input type="text" id="' . $prefix . 'passport-' . $index
                     . '" name="passengers[' . $index . '][passport]" value="'
-                    . esc($passenger['passport'] ?? '') . '">';
+                    . esc($passenger['passport'] ?? '') . '" maxlength="10">';
                 echo '</fieldset>';
             }
 
@@ -1821,6 +1832,25 @@
             echo '</aside>';
             echo '</div>';
             echo '</div>';
+            if (!$hasPassengerDetails) {
+                echo '<script>
+                (function() {
+                    var form = document.getElementById("' . $formId . '");
+                    var button = document.querySelector(".checkout-heading-actions");
+                    if (!form || !button) {
+                        return;
+                    }
+
+                    function updateContinueButton() {
+                        button.disabled = !form.checkValidity();
+                    }
+
+                    form.addEventListener("input", updateContinueButton);
+                    form.addEventListener("change", updateContinueButton);
+                    updateContinueButton();
+                })();
+                </script>';
+            }
         }
     }
 
@@ -1935,29 +1965,7 @@
             $this->searchDiv();
             $this->bottom();
         }
-
-        // function searchDiv() {
-        //     echo '<div id="content" class="cart-page">';
-        //     echo '<div class="cart-heading-row">';
-        //     echo '<h1>Your Shopping Cart</h1>';
-        //     echo '<span class="step-indicator">Step 2/2</span>';
-        //     echo '</div>';
-        //     $_SESSION['cart']->displayCart();
-
-        //     echo '<div class="cart-actions">';
-        //     echo '<a class="button" href="controller.php?cmd=showSeatSelection">Change Seats</a>';
-        //     if ($_SESSION['cart']->hasCompletePassengerDetails()
-        //         && $_SESSION['cart']->processSeatSelections()) {
-        //         echo '<form action="controller.php" method="post" class="payment-form">';
-        //         echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
-        //         echo '<button type="submit">'
-        //             . 'Pay securely with Stripe</button>';
-        //         echo '</form>';
-        //     }
-        //     echo '</div>';
-        //     echo '</div>';
-        // }
-        
+       
         function searchDiv() {
             $cart = $_SESSION['cart'] ?? null;
 
