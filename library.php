@@ -31,7 +31,33 @@
         return $_GET['cmd'] ?? $_POST['cmd'] ?? '';
     }
 
-    function renderAirlineNavLink($url, $label, $commands) {
+    function airlineCartHasFlights() {
+        $cart = $_SESSION['cart'] ?? null;
+        return $cart instanceof Cart && !empty($cart->getCartElements());
+    }
+
+    function airlineSeatsSelected() {
+        $cart = $_SESSION['cart'] ?? null;
+        if (!($cart instanceof Cart) || empty($cart->getCartElements())) {
+            return false;
+        }
+
+        foreach ($cart->getCartElements() as $flight) {
+            $seats = $flight['seatSelections'] ?? array();
+            if (count($seats) !== (int)$flight['seatCount']) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function renderAirlineNavLink($url, $label, $commands, $enabled = true) {
+        if (!$enabled) {
+            echo '<span class="nav-disabled" aria-disabled="true">' . esc($label) . '</span>';
+            return;
+        }
+
         $active = in_array(airlineCurrentCommand(), $commands, true);
 
         echo '<a href="' . esc($url) . '"';
@@ -282,7 +308,8 @@
             renderAirlineNavLink(
                 'controller.php?cmd=showCheckout',
                 'Cart',
-                array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats')
+                array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats'),
+                airlineCartHasFlights()
             );
 
             renderAirlineNavLink(
@@ -294,7 +321,8 @@
                     'startStripeCheckout',
                     'stripeSuccess',
                     'stripeCancel'
-                )
+                ),
+                airlineSeatsSelected()
             );
 
             if ($loggedIn) {
@@ -652,7 +680,8 @@
             renderAirlineNavLink(
                 'controller.php?cmd=showCheckout',
                 'Cart',
-                array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats')
+                array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats'),
+                airlineCartHasFlights()
             );
 
             renderAirlineNavLink(
@@ -664,7 +693,8 @@
                     'startStripeCheckout',
                     'stripeSuccess',
                     'stripeCancel'
-                )
+                ),
+                airlineSeatsSelected()
             );
 
             if ($loggedIn) {
@@ -1659,54 +1689,64 @@
         }
     }
  
-    /**
-     * Displays the session Cart to a Guest.
-     */
-    class GuestCartView extends PublicBaseView {
+    trait CartWorkspace {
 
-        public function __construct() {
-            $this->top(false, 'insidestyles.css');
-            $this->menu();
-            $this->renderIdentity();
-            $this->content();
-            $this->bottom();
-        }
+        protected function renderCartContent($isGuest) {
+            $cart = $_SESSION['cart'] ?? null;
+            $hasFlights = $cart && !empty($cart->getCartElements());
 
-        public function content() {
             echo '<div id="content" class="cart-page">';
 
-            // echo '<div class="cart-heading-row">';
-            // echo '<h1>Your Shopping Cart</h1>';
-            // echo '<span class="step-indicator">Step 1/2</span>';
-            // echo '</div>';
-            $cart = $_SESSION['cart'] ?? null;
             echo '<div class="cart-heading-row">';
             echo '<div class="workflow-heading">';
             echo '<h1>Your Shopping Cart</h1>';
             echo '<span class="seat-selection-title">Details</span>';
             echo '</div>';
 
-            if ($cart && !empty($cart->getCartElements())) {
-                echo '<a class="button cart-select-seats-button"
-                    href="controller.php?cmd=showSeatSelection">
-                    Select Seats
-                </a>';
+            if ($hasFlights) {
+                echo '<a class="button cart-select-seats-button"'
+                    . ' href="controller.php?cmd=showSeatSelection">Select Seats</a>';
             }
 
             echo '<span class="step-indicator">Step 1/2</span>';
             echo '</div>';
 
-     //       $cart = $_SESSION['cart'] ?? null;
-
-            if ($cart) {
-                $cart->displayCart();
-
-            } 
-            else {
+            if (!$hasFlights) {
                 echo '<p>Your Cart is currently empty.</p>';
+                echo '<a href="controller.php">Back to search</a>';
+                echo '</div>';
+                return;
+            }
+
+            $cart->displayCart();
+
+            if (!$isGuest
+                && $cart->hasCompletePassengerDetails()
+                && $cart->processSeatSelections()) {
+                echo '<div class="cart-actions">';
+                echo '<form action="controller.php" method="post" class="payment-form">';
+                echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
+                echo '<button type="submit">Pay securely with Stripe</button>';
+                echo '</form>';
+                echo '</div>';
             }
 
             echo '</div>';
+        }
+    }
+
+    /**
+     * Displays the session Cart to a Guest.
+     */
+    class GuestCartView extends PublicBaseView {
+        use CartWorkspace;
+
+        public function __construct() {
+            $this->top(false, 'insidestyles.css');
+            $this->menu();
+            $this->renderIdentity();
+            $this->renderCartContent(true);
+            $this->bottom();
         }
     }
 
@@ -1958,55 +1998,14 @@
      * Displays the checkout page.
      */
     class CustomerCartView extends CustomerHomeView {
+        use CartWorkspace;
 
         public function __construct($info) {
             $this->top($info);
             $this->menu($info);
-            $this->searchDiv();
+            $this->renderCartContent(false);
             $this->bottom();
         }
-       
-        function searchDiv() {
-            $cart = $_SESSION['cart'] ?? null;
-
-            echo '<div id="content" class="cart-page">';
-
-            echo '<div class="cart-heading-row">';
-            echo '<h1>Your Shopping Cart</h1>';
-
-            if ($cart && !empty($cart->getCartElements())) {
-                echo '<a class="button cart-select-seats-button"
-                    href="controller.php?cmd=showSeatSelection">
-                    Select Seats
-                </a>';
-            }
-
-            echo '<span class="step-indicator">Step 2/2</span>';
-            echo '</div>';
-
-            if ($cart && !empty($cart->getCartElements())) {
-                $cart->displayCart();
-
-                echo '<div class="cart-actions">';
-
-                if (
-                    $cart->hasCompletePassengerDetails()
-                    && $cart->processSeatSelections()
-                ) {
-                    echo '<form action="controller.php" method="post" class="payment-form">';
-                    echo '<input type="hidden" name="cmd" value="startStripeCheckout">';
-                    echo '<button type="submit">Pay securely with Stripe</button>';
-                    echo '</form>';
-                }
-
-                echo '</div>';
-            } else {
-                echo '<p>Your Cart is currently empty.</p>';
-            }
-
-            echo '</div>';
-        }
-
     }
 
     // Renders the administrator route-management page.

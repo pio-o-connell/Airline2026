@@ -1684,3 +1684,33 @@ body:has(#content.checkout-page) #content {
         justify-self: end;
     }
 }
+
+/* Select Seats: same green as Enter Passenger Details */
+a.button.cart-select-seats-button {
+    background-color: var(--deep-green);
+    border-color: var(--deep-green);
+    color: #fff;
+}
+
+a.button.cart-select-seats-button:hover {
+    background-color: var(--deep-teal-green);
+    border-color: var(--deep-teal-green);
+}
+
+/* Continue to payment: grey until the form is valid */
+.checkout-heading-actions:disabled {
+    border-color: var(--sage-grey);
+    background: #e8ebe7;
+    color: var(--muted-grey);
+    cursor: not-allowed;
+}
+
+/* Disabled menu items */
+#menu .nav-disabled {
+    display: inline-block;
+    padding: 8px 13px;
+    color: var(--muted-grey);
+    font-weight: 600;
+    opacity: 0.55;
+    cursor: not-allowed;
+}

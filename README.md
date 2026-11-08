@@ -10,18 +10,23 @@ This repository was developed as a learning project for the **Higher Diploma in 
 - It is not intended for production deployment or real-world booking operations.
 - The codebase demonstrates legacy web application patterns and is best treated as an educational reference.
 
-<img src="assets/Images/guest/home-search.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/guest/home-booked.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/latest/Homeview-guest-initial.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/latest/Homeview-guest-search.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/latest/Homeview-guest-addtocart.jpg" alt="Airline2026 home screen" width="40%">
 
-<img src="assets/Images/guest/Cart-one-of-two.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/guest/cart-two-of-two.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/guest/cart-multiple-one-of-two.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/guest/cart-two-of-two-seat-selected.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/latest/HomeView-guest-cartdetails.jpg" alt="Airline2026 cart screen" width="40%">
+<img src="assets/Images/latest/Homeview-guest-selectyouseats.jpg" alt="Airline2026 cart screen" width="40%">
+<img src="assets/Images/latest/Homeview-guest-seatselected.jpg" alt="Airline2026 cart screen" width="40%">
 
-<img src="assets/Images/guest/checkout-one-of-two.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/guest/checkout-two-of-two.jpg" alt="Airline2026 home screen" width="40%">
 
-<img src="assets/Images/guest/checkout-multiple-ojne-of-two.jpg" alt="Airline2026 home screen" width="40%">
+<img src="assets/Images/latest/Checkout-guest-enterpassangerdetails.jpg" alt="Airline2026 checkout screen" width="40%">
+
+<img src="assets/Images/latest/Checkout-guest-passengrdetailsenterred.jpg" alt="Airline2026 checkout screen" width="40%">
+<img src="assets/Images/latest/Checkout-guest-payment-login.jpg" alt="Airline2026 checkout screen" width="40%">
+
+<img src="assets/Images/latest/login-authenticate.jpg" alt="Airline2026 login screen" width="40%">
+<img src="assets/Images/latest/checkout-stripe.jpg" alt="Airline2026 checkout with stripe screen" width="40%">
+
 
 
 ## Technology
@@ -71,6 +76,7 @@ The legacy Cart has been replaced with a session-based `Cart` class.
 Current functionality includes:
 
 - Add selected flights to the Cart.
+- Use one shared cart workspace for guest and authenticated customer pages.
 - Support multiple flight selections.
 - Display flight details, passenger quantities and fares.
 - Calculate and display the Cart total.
@@ -87,6 +93,15 @@ Passenger details are stored once at booking level rather than being duplicated 
 All flight legs in a Cart must use the same passenger count. The current `Cart::addFlight()` method also limits the passenger count to 20.
 
 A flight added to the Cart is not a confirmed booking. The Cart represents temporary session state.
+
+The navigation reflects the booking state:
+
+- Cart is disabled while the Cart is empty.
+- Cart becomes available after a flight is added.
+- Checkout remains disabled until the required seats have been selected and saved.
+- The controller performs the authoritative seat validation when passenger details are requested.
+
+Both guest and customer cart pages display **Your Shopping Cart**, **Details**, and **Step 1/2**. The Select Seats action uses the same primary green styling as Enter Passenger Details. Cart route and time values are formatted for display, such as `Dublin to Heathrow` and `08:15`, without changing the stored flight identifiers or fare values.
 
 ### Aircraft-specific seat selection
 
@@ -584,6 +599,9 @@ Booking persistence runs in a MySQL transaction. It revalidates every selected s
 | Client-side passenger-count selection limit | Implemented |
 | Server-side seat-selection validation | Implemented |
 | Passenger-details view | Implemented for guests and customers |
+| Shared cart workspace and progress presentation | Implemented for guests and customers |
+| Cart and Checkout navigation state gating | Implemented |
+| Cart route and time display formatting | Implemented |
 | Guest passenger details before login | Implemented; the Cart and booking state are retained in the session |
 | Stripe Checkout payment | Implemented through the Stripe HTTP API |
 | Payment verification | Implemented on the server when Stripe redirects back |
@@ -596,11 +614,9 @@ The aircraft configurations in the database are authoritative. The AC180 and AC2
 
 The next development stages are:
 
-1. Verify the Cart-to-passenger-details workflow across guest and customer sessions.
-2. Verify that selections for every Cart flight are retained correctly.
-3. Add a Stripe webhook endpoint for asynchronous payment and dispute events.
-4. Generate a richer confirmation itinerary and email it to the passenger.
-5. Improve payment and booking observability for production deployment.
+1. Add a Stripe webhook endpoint for asynchronous payment and dispute events.
+2. Generate a richer confirmation itinerary and email it to the passenger.
+3. Improve payment and booking observability for production deployment.
 
 The browser's seat map is a presentation of current availability, not a reservation lock. Seat availability must be checked again when the booking is confirmed.
 
