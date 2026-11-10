@@ -70,6 +70,94 @@
     }
 
 
+    // class StripeGateway {
+
+    //     private $secretKey;
+
+    //     public function __construct() {
+    //         $this->secretKey = getenv('STRIPE_SECRET_KEY');
+    //     }
+
+    //     public function createCheckoutSession(Cart $cart, $successUrl, $cancelUrl) {
+    //         if (!$this->secretKey) {
+    //             throw new RuntimeException('Stripe payment is temporarily unavailable.');
+    //         }
+
+    //         $fields = array(
+    //             'mode' => 'payment',
+    //             'success_url' => $successUrl . '&session_id={CHECKOUT_SESSION_ID}',
+    //             'cancel_url' => $cancelUrl,
+    //             'payment_method_types[0]' => 'card',
+    //         );
+
+    //         $line = 0;
+    //         foreach ($cart->getCartElements() as $flight) {
+    //             $fields['line_items[' . $line . '][price_data][currency]'] = 'eur';
+    //             $fields['line_items[' . $line . '][price_data][product_data][name]'] =
+    //                 'PHP Airlines ' . ($flight['flight_code'] ?? 'flight');
+    //             $fields['line_items[' . $line . '][price_data][unit_amount]'] =
+    //                 (int)round((float)$flight['unitFare'] * 100);
+    //             $fields['line_items[' . $line . '][quantity]'] =
+    //                 (int)$flight['seatCount'];
+    //             $line++;
+    //         }
+
+    //         $response = $this->request('POST', '/v1/checkout/sessions', $fields);
+
+    //         if (empty($response['id']) || empty($response['url'])) {
+    //             throw new RuntimeException('Stripe did not return a checkout session.');
+    //         }
+
+    //         return $response;
+    //     }
+
+    //     public function retrieveCheckoutSession($sessionId) {
+    //         if (!$this->secretKey) {
+    //             throw new RuntimeException('Stripe payment is temporarily unavailable.');
+    //         }
+
+    //         if (!preg_match('/^cs_[A-Za-z0-9_]+$/', $sessionId)) {
+    //             throw new InvalidArgumentException('Invalid Stripe checkout session.');
+    //         }
+
+    //         return $this->request('GET', '/v1/checkout/sessions/' . rawurlencode($sessionId));
+    //     }
+
+    //     private function request($method, $path, $fields = array()) {
+    //         if (!function_exists('curl_init')) {
+    //             throw new RuntimeException('Stripe payment is temporarily unavailable.');
+    //         }
+
+    //         $curl = curl_init('https://api.stripe.com' . $path);
+    //         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    //         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+    //             'Authorization: Bearer ' . $this->secretKey,
+    //             'Content-Type: application/x-www-form-urlencoded'
+    //         ));
+
+    //         if ($method === 'POST') {
+    //             curl_setopt($curl, CURLOPT_POST, true);
+    //             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($fields));
+    //         }
+
+    //         $body = curl_exec($curl);
+    //         $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    //         $error = curl_error($curl);
+    //         curl_close($curl);
+
+    //         if ($body === false || $error) {
+    //             throw new RuntimeException('Stripe payment is temporarily unavailable.');
+    //         }
+
+    //         $response = json_decode($body, true);
+    //         if ($status < 200 || $status >= 300 || !is_array($response)) {
+    //             throw new RuntimeException('Stripe payment is temporarily unavailable.');
+    //         }
+
+    //         return $response;
+    //     }
+    // }
+
     class StripeGateway {
 
         private $secretKey;
@@ -87,10 +175,11 @@
                 'mode' => 'payment',
                 'success_url' => $successUrl . '&session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => $cancelUrl,
-                'payment_method_types[0]' => 'card',
+                // 'payment_method_types[0]' => 'card',
             );
 
             $line = 0;
+
             foreach ($cart->getCartElements() as $flight) {
                 $fields['line_items[' . $line . '][price_data][currency]'] = 'eur';
                 $fields['line_items[' . $line . '][price_data][product_data][name]'] =
@@ -99,6 +188,7 @@
                     (int)round((float)$flight['unitFare'] * 100);
                 $fields['line_items[' . $line . '][quantity]'] =
                     (int)$flight['seatCount'];
+
                 $line++;
             }
 
@@ -120,7 +210,10 @@
                 throw new InvalidArgumentException('Invalid Stripe checkout session.');
             }
 
-            return $this->request('GET', '/v1/checkout/sessions/' . rawurlencode($sessionId));
+            return $this->request(
+                'GET',
+                '/v1/checkout/sessions/' . rawurlencode($sessionId)
+            );
         }
 
         private function request($method, $path, $fields = array()) {
@@ -129,6 +222,7 @@
             }
 
             $curl = curl_init('https://api.stripe.com' . $path);
+
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_HTTPHEADER, array(
                 'Authorization: Bearer ' . $this->secretKey,
@@ -143,20 +237,50 @@
             $body = curl_exec($curl);
             $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
             $error = curl_error($curl);
+            $errorNumber = curl_errno($curl);
+
             curl_close($curl);
 
-            if ($body === false || $error) {
-                throw new RuntimeException('Stripe payment is temporarily unavailable.');
+            // Diagnostic: cURL transport failure
+            if ($body === false || $error !== '') {
+                error_log(
+                    'Stripe cURL error: ' . $errorNumber . ' | ' . $error
+                );
+
+                throw new RuntimeException(
+                    'Stripe payment is temporarily unavailable.'
+                );
             }
 
             $response = json_decode($body, true);
+
+            // Diagnostic: Stripe API rejection or unexpected response
             if ($status < 200 || $status >= 300 || !is_array($response)) {
-                throw new RuntimeException('Stripe payment is temporarily unavailable.');
+
+                $stripeError = (
+                    is_array($response) &&
+                    isset($response['error']) &&
+                    is_array($response['error'])
+                ) ? $response['error'] : [];
+
+                error_log(
+                    'Stripe API error: HTTP ' . $status .
+                    ' | ' . ($stripeError['type'] ?? 'unknown') .
+                    ' | ' . ($stripeError['code'] ?? 'unknown') .
+                    ' | ' . ($stripeError['message'] ?? 'No error message')
+                );
+
+                throw new RuntimeException(
+                    'Stripe payment is temporarily unavailable.'
+                );
             }
 
             return $response;
         }
     }
+
+
+
 
     class FlashMessage{
         private const SESSION_KEY = '_flash_messages';

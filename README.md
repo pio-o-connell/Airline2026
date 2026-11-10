@@ -27,6 +27,14 @@ This repository was developed as a learning project for the **Higher Diploma in 
 <img src="assets/Images/latest/login-authenticate.jpg" alt="Airline2026 login screen" width="40%">
 <img src="assets/Images/latest/checkout-stripe.jpg" alt="Airline2026 checkout with stripe screen" width="40%">
 
+<img src="assets/Images/latest/payment-initial.jpg" alt="Airline2026 login screen" width="40%">
+<img src="assets/Images/latest/payment-details.jpg" alt="Airline2026 checkout with stripe screen" width="40%">
+<img src="assets/Images/latest/payment-success.jpg" alt="Airline2026 login screen" width="40%">
+
+
+
+
+
 
 
 ## Technology
@@ -155,7 +163,24 @@ The guest's Cart and booking information must be preserved through login or regi
 
 Authentication is intended to be required at checkout only. Guests should not be forced to log in before searching, adding flights or selecting seats.
 
-Passenger-details and checkout views are part of the existing PHP view structure. Completing the full end-to-end payment and booking-confirmation process remains outstanding.
+Passenger-details and checkout views are part of the existing PHP view structure. The complete single-hop booking workflow has now been successfully tested in Stripe test mode, from passenger details through payment verification, booking persistence and confirmation.
+
+### Stripe payment integration
+
+The completed Stripe payment integration provides:
+
+- Stripe Checkout Session creation using the Stripe HTTP API.
+- Redirect to Stripe-hosted Checkout.
+- Successful test payment processing.
+- Retrieval of the Checkout Session from Stripe.
+- Verification that `payment_status = paid` and `status = complete`.
+- An idempotency check using the Stripe payment session ID.
+- Transactional persistence of the booking, associated flights and passenger seat allocations.
+- Generation of a unique booking reference.
+- Display of the booking confirmation page.
+- Retention of Cart state if booking confirmation fails.
+
+A complete test booking was successfully completed on **10 November 2026**, confirming that Stripe payment verification, MySQL booking persistence, seat allocation and booking confirmation work together. This test used Stripe test mode and did not use live payment processing.
 
 ### Aircraft Seating Plans
 
@@ -204,10 +229,7 @@ The guest can progress through flight search, Cart handling, seat selection and 
 
 Guests must log in or register before payment. The temporary guest Cart and booking details are transferred to the authenticated session unless that account already has saved booking state, in which case the account state takes precedence. Customer booking state is saved by account when logging out and restored on the next login.
 
-The remaining work includes:
-
-- Adding asynchronous Stripe webhook handling.
-- Generating a richer confirmation itinerary and sending it to the passenger.
+The remaining work includes Stripe webhook handling, a richer booking confirmation itinerary, passenger confirmation emails, further payment and booking error logging and observability, and production configuration and security review before any live payments.
 
 ## Colour scheme
 
@@ -575,7 +597,9 @@ The seat-selection methods validate the submitted number of seats, reject duplic
 
 After passenger details are saved, guests and authenticated customers can start a Stripe Checkout payment. The return handler retrieves the Checkout Session from Stripe and verifies both `status=complete` and `payment_status=paid` before creating the booking.
 
-Booking persistence runs in a MySQL transaction. It revalidates every selected seat, inserts the booking, flight links and passenger allocations, and clears the Cart only after a successful commit. A unique Stripe session ID prevents a refreshed success URL from creating a second booking.
+Booking persistence runs in a MySQL transaction. It revalidates every selected seat, inserts the booking, flight links and passenger allocations, and clears the Cart only after a successful commit. A unique Stripe session ID prevents a refreshed success URL from creating a second booking. If booking confirmation fails, the Cart is retained.
+
+The `booking` table includes a nullable `payment_session_id VARCHAR(255)` column and the unique index `uq_booking_payment_session`. Together, these associate a Stripe Checkout Session with no more than one booking and support the idempotency check.
 
 ## Current implementation and remaining work
 
@@ -614,13 +638,15 @@ The aircraft configurations in the database are authoritative. The AC180 and AC2
 
 The next development stages are:
 
-1. Add a Stripe webhook endpoint for asynchronous payment and dispute events.
-2. Generate a richer confirmation itinerary and email it to the passenger.
-3. Improve payment and booking observability for production deployment.
+1. Add Stripe webhook handling for asynchronous payment and dispute events.
+2. Generate a richer booking confirmation itinerary.
+3. Send passenger confirmation emails.
+4. Improve payment and booking error logging and observability.
+5. Complete production configuration and security review before any live payments.
 
 The browser's seat map is a presentation of current availability, not a reservation lock. Seat availability must be checked again when the booking is confirmed.
 
-The final booking operation should:
+The completed booking operation:
 
 - Revalidate each selected flight.
 - Confirm that every selected seat belongs to the aircraft assigned to that flight.
