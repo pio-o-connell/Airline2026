@@ -391,6 +391,71 @@
                         }
                     });
                 });
+
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.querySelectorAll("#menu.old").forEach(function(menu, index) {
+                        var toggle = document.createElement("button");
+                        var menuId = "airline-menu-" + index;
+
+                        toggle.type = "button";
+                        toggle.className = "menu-toggle";
+                        toggle.setAttribute("aria-expanded", "false");
+                        toggle.setAttribute("aria-controls", menuId);
+                        toggle.textContent = "Menu";
+
+                        menu.id = menu.id || menuId;
+                        toggle.setAttribute("aria-controls", menu.id);
+                        menu.insertBefore(toggle, menu.firstChild);
+
+                        toggle.addEventListener("click", function() {
+                            var expanded = toggle.getAttribute("aria-expanded") === "true";
+                            toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+                            menu.classList.toggle("is-open", !expanded);
+                        });
+                    });
+
+                    document.querySelectorAll(".flight-workspace").forEach(function(workspace) {
+                        var panels = [
+                            { selector: ".workspace-search-column", label: "Search flights", open: true },
+                            { selector: ".flight-results", label: "Available flights", open: false },
+                            { selector: ".flight-details-card", label: "Selected flight details", open: false }
+                        ];
+
+                        panels.forEach(function(panel, index) {
+                            var element = workspace.querySelector(panel.selector);
+                            if (!element) {
+                                return;
+                            }
+
+                            var contentId = "flight-panel-" + index + "-" + Date.now();
+                            var toggle = document.createElement("button");
+                            var heading = element.querySelector("h2");
+                            var label = heading ? heading.textContent.trim() : panel.label;
+                            var isOpen = panel.open
+                                || (panel.selector === ".flight-results"
+                                    && element.querySelector(".flight-card"))
+                                || (panel.selector === ".flight-details-card"
+                                    && element.querySelector("form, .cart-status-pill"));
+
+                            toggle.type = "button";
+                            toggle.className = "workspace-panel-toggle";
+                            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                            toggle.setAttribute("aria-controls", contentId);
+                            toggle.textContent = label;
+
+                            element.classList.add("workspace-panel");
+                            element.classList.toggle("is-open", isOpen);
+                            element.id = contentId;
+                            element.insertBefore(toggle, element.firstChild);
+
+                            toggle.addEventListener("click", function() {
+                                var expanded = toggle.getAttribute("aria-expanded") === "true";
+                                toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+                                element.classList.toggle("is-open", !expanded);
+                            });
+                        });
+                    });
+                });
                 </script>
                 ';
         }
@@ -744,6 +809,71 @@
                         }
                     });
                 });
+
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.querySelectorAll("#menu.old").forEach(function(menu, index) {
+                        var toggle = document.createElement("button");
+                        var menuId = "airline-menu-" + index;
+
+                        toggle.type = "button";
+                        toggle.className = "menu-toggle";
+                        toggle.setAttribute("aria-expanded", "false");
+                        toggle.setAttribute("aria-controls", menuId);
+                        toggle.textContent = "Menu";
+
+                        menu.id = menu.id || menuId;
+                        toggle.setAttribute("aria-controls", menu.id);
+                        menu.insertBefore(toggle, menu.firstChild);
+
+                        toggle.addEventListener("click", function() {
+                            var expanded = toggle.getAttribute("aria-expanded") === "true";
+                            toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+                            menu.classList.toggle("is-open", !expanded);
+                        });
+                    });
+
+                    document.querySelectorAll(".flight-workspace").forEach(function(workspace) {
+                        var panels = [
+                            { selector: ".workspace-search-column", label: "Search flights", open: true },
+                            { selector: ".flight-results", label: "Available flights", open: false },
+                            { selector: ".flight-details-card", label: "Selected flight details", open: false }
+                        ];
+
+                        panels.forEach(function(panel, index) {
+                            var element = workspace.querySelector(panel.selector);
+                            if (!element) {
+                                return;
+                            }
+
+                            var contentId = "flight-panel-" + index + "-" + Date.now();
+                            var toggle = document.createElement("button");
+                            var heading = element.querySelector("h2");
+                            var label = heading ? heading.textContent.trim() : panel.label;
+                            var isOpen = panel.open
+                                || (panel.selector === ".flight-results"
+                                    && element.querySelector(".flight-card"))
+                                || (panel.selector === ".flight-details-card"
+                                    && element.querySelector("form, .cart-status-pill"));
+
+                            toggle.type = "button";
+                            toggle.className = "workspace-panel-toggle";
+                            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                            toggle.setAttribute("aria-controls", contentId);
+                            toggle.textContent = label;
+
+                            element.classList.add("workspace-panel");
+                            element.classList.toggle("is-open", isOpen);
+                            element.id = contentId;
+                            element.insertBefore(toggle, element.firstChild);
+
+                            toggle.addEventListener("click", function() {
+                                var expanded = toggle.getAttribute("aria-expanded") === "true";
+                                toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+                                element.classList.toggle("is-open", !expanded);
+                            });
+                        });
+                    });
+                });
                 </script>
                 ';
         }
@@ -844,7 +974,8 @@
 
         public function menu($info = false) {
 
-            echo '<nav id="menu" class="old" aria-label="Administrator navigation">';
+            echo '<nav id="menu" class="old" aria-label="Administrator navigation">
+                <div class="menu-left">';
 
             renderAirlineNavLink(
                 'controller.php',
@@ -876,7 +1007,7 @@
                 array()
             );
 
-            echo '</nav>';
+            echo '</div></nav>';
 
             $this->renderIdentity();
         }

@@ -300,3 +300,4 @@ SELECT flight_id, route, date, seatNo, COUNT(*) AS duplicate_count
 FROM passangers
 GROUP BY flight_id, route, date, seatNo
 HAVING COUNT(*) > 1;
+

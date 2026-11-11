@@ -10,32 +10,116 @@ This repository was developed as a learning project for the **Higher Diploma in 
 - It is not intended for production deployment or real-world booking operations.
 - The codebase demonstrates legacy web application patterns and is best treated as an educational reference.
 
-<img src="assets/Images/latest/Homeview-guest-initial.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/latest/Homeview-guest-search.jpg" alt="Airline2026 home screen" width="40%">
-<img src="assets/Images/latest/Homeview-guest-addtocart.jpg" alt="Airline2026 home screen" width="40%">
 
-<img src="assets/Images/latest/HomeView-guest-cartdetails.jpg" alt="Airline2026 cart screen" width="40%">
-<img src="assets/Images/latest/Homeview-guest-selectyouseats.jpg" alt="Airline2026 cart screen" width="40%">
-<img src="assets/Images/latest/Homeview-guest-seatselected.jpg" alt="Airline2026 cart screen" width="40%">
+<img src="assets/Images/latest/Homeview-guest-addtocart.jpg" alt="Airline2026 home screen" width="80%">
 
 
-<img src="assets/Images/latest/Checkout-guest-enterpassangerdetails.jpg" alt="Airline2026 checkout screen" width="40%">
+### Desktop
 
-<img src="assets/Images/latest/Checkout-guest-passengrdetailsenterred.jpg" alt="Airline2026 checkout screen" width="40%">
-<img src="assets/Images/latest/Checkout-guest-payment-login.jpg" alt="Airline2026 checkout screen" width="40%">
+<details>
+  <summary><strong>View Desktop Screenshots</strong></summary>
 
-<img src="assets/Images/latest/login-authenticate.jpg" alt="Airline2026 login screen" width="40%">
-<img src="assets/Images/latest/checkout-stripe.jpg" alt="Airline2026 checkout with stripe screen" width="40%">
+#### Guest Home and Flight Selection
 
-<img src="assets/Images/latest/payment-initial.jpg" alt="Airline2026 login screen" width="40%">
-<img src="assets/Images/latest/payment-details.jpg" alt="Airline2026 checkout with stripe screen" width="40%">
-<img src="assets/Images/latest/payment-success.jpg" alt="Airline2026 login screen" width="40%">
+<details>
+  <summary>Home and Flight Search</summary>
+
+  <img src="assets/Images/latest/Homeview-guest-initial.jpg" alt="Airline2026 home screen" width="40%">
+  <img src="assets/Images/latest/Homeview-guest-search.jpg" alt="Airline2026 flight search" width="40%">
+  <img src="assets/Images/latest/Homeview-guest-addtocart.jpg" alt="Airline2026 add flight to cart" width="40%">
+
+</details>
+
+#### Cart and Seat Selection
+
+<details>
+  <summary>Cart and Seat Selection</summary>
+
+  <img src="assets/Images/latest/HomeView-guest-cartdetails.jpg" alt="Airline2026 cart screen" width="40%">
+  <img src="assets/Images/latest/Homeview-guest-selectyouseats.jpg" alt="Airline2026 seat selection" width="40%">
+  <img src="assets/Images/latest/Homeview-guest-seatselected.jpg" alt="Airline2026 selected seats" width="40%">
+
+</details>
+
+#### Passenger Details and Authentication
+
+<details>
+  <summary>Passenger Details and Login</summary>
+
+  <img src="assets/Images/latest/Checkout-guest-enterpassangerdetails.jpg" alt="Airline2026 passenger details form" width="40%">
+  <img src="assets/Images/latest/Checkout-guest-passengrdetailsenterred.jpg" alt="Airline2026 completed passenger details" width="40%">
+  <img src="assets/Images/latest/Checkout-guest-payment-login.jpg" alt="Airline2026 guest payment login" width="40%">
+  <img src="assets/Images/latest/login-authenticate.jpg" alt="Airline2026 login authentication" width="40%">
+
+</details>
+
+#### Stripe Payment and Confirmation
+
+<details>
+  <summary>Payment and Confirmation</summary>
+
+  <img src="assets/Images/latest/checkout-stripe.jpg" alt="Airline2026 Stripe checkout" width="40%">
+  <img src="assets/Images/latest/payment-initial.jpg" alt="Airline2026 initial payment screen" width="40%">
+  <img src="assets/Images/latest/payment-details.jpg" alt="Airline2026 payment details" width="40%">
+  <img src="assets/Images/latest/payment-success.jpg" alt="Airline2026
+
+</details>
+
+</details>
 
 
+### Mobile 320px
 
+<details>
+  <summary><strong>View Mobile 320px Screenshots</strong></summary>
 
+#### Guest Home and Flight Selection
 
+<details>
+  <summary>Home and Flight Search</summary>
 
+  <img src="assets/Images/latest/320px/homescreen-initial.jpg" alt="Airline2026 home screen" width="40%">
+  <img src="assets/Images/latest/320px/Homescreen-search-results.jpg" alt="Airline2026 flight search" width="40%">
+  <img src="assets/Images/latest/320px/homescreen-selected-flight.jpg" alt="Airline2026 add flight to cart" width="40%">
+  <img src="assets/Images/latest/320px/homescreen-added-to-cart.jpg" alt="Airline2026 add flight to cart" width="40%">
+
+</details>
+
+#### Cart and Seat Selection
+
+<details>
+  <summary>Cart and Seat Selection</summary>
+
+  <img src="assets/Images/latest/320px/Cart-initial.jpg" alt="Airline2026 cart screen" width="40%">
+  <img src="assets/Images/latest/320px/Cart-select-seats-1.jpg" alt="Airline2026 seat selection" width="40%">
+  <img src="assets/Images/latest/320px/cart-select-seats-2.jpg" alt="Airline2026 selected seats" width="40%">
+  <img src="assets/Images/latest/320px/Cart-Enter-Passenger0details.jpg" alt="Airline2026 selected seats" width="40%">
+
+</details>
+
+#### Passenger Details and Authentication
+
+<details>
+  <summary>Passenger Details and Login</summary>
+
+  <img src="assets/Images/latest/320px/Checkout-initial.jpg" alt="Airline2026 passenger details form" width="40%">
+  <img src="assets/Images/latest/320px/Checkout-details-enterred.jpg" alt="Airline2026 completed passenger details" width="40%">
+  <img src="assets/Images/latest/320px/checkout-payment-authenticate.jpg alt="Airline2026 guest payment login" width="40%">
+  <img src="assets/Images/latest/320px/Checkout-payment.jpg" alt="Airline2026 login authentication" width="40%">
+
+</details>
+
+#### Stripe Payment and Confirmation
+
+<details>
+  <summary>Payment and Confirmation</summary>
+
+  <img src="assets/Images/latest/320px/stripe-loaded.jpg" alt="Airline2026 Stripe checkout" width="40%">
+  <img src="assets/Images/latest/320px/stripe-detals-enterred.jpg" alt="Airline2026 initial payment screen" width="40%">
+  <img src="assets/Images/latest/320px/Stripe-booking-confirmed.jpg" alt="Airline2026 payment details" width="40%">
+
+</details>
+</details>
 
 ## Technology
 
@@ -508,7 +592,11 @@ The local PHP configuration in `library.php` uses host `127.0.0.1`, port `3307`,
 - `assets/Images/seating-plans/` — additional illustrative aircraft seating-plan images.
 - `old/airline2026_backup.sql` — historical backup/reference only.
 
-The page frame is responsive up to approximately 1000 pixels wide. The application retains traditional PHP rendering and its original MVC organisation rather than adopting a modern frontend framework.
+The original Airline application was designed around 2013/2014, when desktop-first web design was common; it was not designed using a mobile-first approach. The current responsive implementation modernises and adapts that desktop-oriented design so the existing application works effectively across desktop, tablet and mobile devices while preserving its MVC architecture, visual identity, navigation structure and functionality.
+
+Responsive behaviour is implemented in the existing server-rendered views and stylesheets without Bootstrap, jQuery or a frontend framework. The shared navigation becomes an accessible hamburger menu on narrow screens, with keyboard-operable controls and preserved destinations. The flight workspace retains its three-pane desktop layout and uses collapsible Search Flights, Available Flights and Flight Details panels on mobile. The cart, checkout forms, seat-selection area and administrator tables use fluid layouts, narrow-screen stacking and local horizontal scrolling where tabular or seating content requires it.
+
+The primary responsive breakpoints are 700px for mobile layout changes and 400px for the smallest-screen spacing and form adjustments. The page frame remains responsive up to approximately 1000 pixels wide, while the seat map is allowed to scroll within its own area rather than causing page-level horizontal overflow. The application retains traditional PHP rendering and its original MVC organisation rather than adopting a modern frontend framework.
 
 `controller.php` dispatches requests to the views and handlers in `library.php`. Supporting classes handle page presentation, Cart operations, seat processing and database access.
 

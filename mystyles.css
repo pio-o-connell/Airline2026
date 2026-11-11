@@ -1684,3 +1684,181 @@ body:has(#content.checkout-page) #content {
         justify-self: end;
     }
 }
+
+/* Mobile navigation and progressive flight workspace */
+.menu-toggle,
+.workspace-panel-toggle {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    #main.old {
+        width: 100%;
+    }
+
+    #menu.old {
+        display: block;
+        padding: 8px 12px;
+        text-align: left;
+    }
+
+    #menu.old .menu-toggle {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--sage-grey);
+        border-radius: 6px;
+        background: #fff;
+        color: var(--deep-green);
+        font-weight: 700;
+        text-align: left;
+    }
+
+    #menu.old .menu-left,
+    #menu.old .menu-right {
+        display: none;
+        width: 100%;
+        margin: 8px 0 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+
+    #menu.old.is-open .menu-left,
+    #menu.old.is-open .menu-right {
+        display: flex;
+    }
+
+    #menu.old .menu-left a,
+    #menu.old .menu-right a,
+    #menu.old .nav-disabled {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    .workspace-panel {
+        min-width: 0;
+    }
+
+    .workspace-panel-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin: -1px 0 14px;
+        padding: 11px 12px;
+        border: 1px solid var(--sage-grey);
+        border-radius: 7px;
+        background: var(--off-white);
+        color: var(--deep-green);
+        font-size: 1rem;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    .workspace-panel-toggle::after {
+        content: "+";
+        font-size: 1.3rem;
+        line-height: 1;
+    }
+
+    .workspace-panel.is-open > .workspace-panel-toggle::after {
+        content: "−";
+    }
+
+    .workspace-panel:not(.is-open) > :not(.workspace-panel-toggle) {
+        display: none;
+    }
+
+    .flight-workspace.triple-pane {
+        gap: 12px;
+    }
+
+    .trip-tabs {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 8px;
+    }
+
+    .trip-tab {
+        flex: 1 0 auto;
+        padding: 9px 12px;
+    }
+
+    .flight-top {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .flight-top .airline {
+        min-width: 0;
+    }
+
+    .flight-top .price {
+        width: 100%;
+        margin-left: 44px;
+        text-align: left;
+    }
+
+    .flight-actions,
+    .flight-actions .button {
+        width: 100%;
+    }
+
+    .flight-actions .button {
+        text-align: center;
+    }
+
+    #content table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    #content input,
+    #content select,
+    #content textarea,
+    #content button,
+    #content .button {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+    body {
+        padding: 6px;
+    }
+
+    #content {
+        padding: 16px 10px 22px;
+    }
+
+    .search-card,
+    .flight-card {
+        padding: 13px;
+    }
+
+    .field-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .field.full {
+        grid-column: auto;
+    }
+
+    .route {
+        padding: 10px;
+    }
+
+    .route .line {
+        margin: 0 8px;
+    }
+}
