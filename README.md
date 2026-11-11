@@ -46,7 +46,7 @@ This repository was developed as a learning project for the **Higher Diploma in 
 <details>
   <summary>Passenger Details and Login</summary>
 
-  <img src="assets/Images/latest/Checkout-guest-enterpassangerdetails.jpg" alt="Airline2026 passenger details form" width="40%">
+  <img src="assets/Images/latest/Checkout-guest-enterpassangerdetails.jpg" alt="Airline2026 passenger details" width="40%">
   <img src="assets/Images/latest/Checkout-guest-passengrdetailsenterred.jpg" alt="Airline2026 completed passenger details" width="40%">
   <img src="assets/Images/latest/Checkout-guest-payment-login.jpg" alt="Airline2026 guest payment login" width="40%">
   <img src="assets/Images/latest/login-authenticate.jpg" alt="Airline2026 login authentication" width="40%">
@@ -61,7 +61,7 @@ This repository was developed as a learning project for the **Higher Diploma in 
   <img src="assets/Images/latest/checkout-stripe.jpg" alt="Airline2026 Stripe checkout" width="40%">
   <img src="assets/Images/latest/payment-initial.jpg" alt="Airline2026 initial payment screen" width="40%">
   <img src="assets/Images/latest/payment-details.jpg" alt="Airline2026 payment details" width="40%">
-  <img src="assets/Images/latest/payment-success.jpg" alt="Airline2026
+  <img src="assets/Images/latest/payment-success.jpg" alt="Airline2026 successful payment and booking confirmation" width="40%">
 
 </details>
 
@@ -93,7 +93,7 @@ This repository was developed as a learning project for the **Higher Diploma in 
   <img src="assets/Images/latest/320px/Cart-initial.jpg" alt="Airline2026 cart screen" width="40%">
   <img src="assets/Images/latest/320px/Cart-select-seats-1.jpg" alt="Airline2026 seat selection" width="40%">
   <img src="assets/Images/latest/320px/cart-select-seats-2.jpg" alt="Airline2026 selected seats" width="40%">
-  <img src="assets/Images/latest/320px/Cart-Enter-Passenger0details.jpg" alt="Airline2026 selected seats" width="40%">
+  <img src="assets/Images/latest/320px/Cart-Enter-Passenger0details.jpg" alt="Airline2026 passenger details entry" width="40%">
 
 </details>
 
@@ -104,7 +104,7 @@ This repository was developed as a learning project for the **Higher Diploma in 
 
   <img src="assets/Images/latest/320px/Checkout-initial.jpg" alt="Airline2026 passenger details form" width="40%">
   <img src="assets/Images/latest/320px/Checkout-details-enterred.jpg" alt="Airline2026 completed passenger details" width="40%">
-  <img src="assets/Images/latest/320px/checkout-payment-authenticate.jpg alt="Airline2026 guest payment login" width="40%">
+  <img src="assets/Images/latest/320px/checkout-payment-authenticate.jpg" alt="Airline2026 guest payment login" width="40%">
   <img src="assets/Images/latest/320px/Checkout-payment.jpg" alt="Airline2026 login authentication" width="40%">
 
 </details>
@@ -115,8 +115,8 @@ This repository was developed as a learning project for the **Higher Diploma in 
   <summary>Payment and Confirmation</summary>
 
   <img src="assets/Images/latest/320px/stripe-loaded.jpg" alt="Airline2026 Stripe checkout" width="40%">
-  <img src="assets/Images/latest/320px/stripe-detals-enterred.jpg" alt="Airline2026 initial payment screen" width="40%">
-  <img src="assets/Images/latest/320px/Stripe-booking-confirmed.jpg" alt="Airline2026 payment details" width="40%">
+  <img src="assets/Images/latest/320px/stripe-detals-enterred.jpg" alt="Airline2026 completed Stripe payment details" width="40%">
+  <img src="assets/Images/latest/320px/Stripe-booking-confirmed.jpg" alt="Airline2026 confirmed booking" width="40%">
 
 </details>
 </details>
