@@ -1,0 +1,71 @@
+name: Airline Playwright Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  playwright:
+    name: PHP, MySQL and Playwright
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7.44
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: "%"
+          MYSQL_DATABASE: airline2026
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      CI: true
+      AIRLINE_DB_HOST: 127.0.0.1
+      AIRLINE_DB_PORT: 3307
+      AIRLINE_DB_NAME: airline2026
+      AIRLINE_DB_USER: root
+      AIRLINE_DB_PASSWORD: root
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -proot --silent; do
+            sleep 2
+          done
+      - name: Create CI database
+        run: mysql -h 127.0.0.1 -P 3307 -uroot -proot < airline2026.sql
+      - name: Install Node dependencies
+        run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright tests
+        run: npm test
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: airline-playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

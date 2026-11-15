@@ -1,0 +1,24 @@
+{
+  "name": "airline2026",
+  "version": "1.0.0",
+  "description": "Airline2026 is a student project that restores and extends an original 2014 airline booking application. It keeps a traditional server-rendered, database-driven PHP MVC structure while exploring the customer booking flow, Cart handling, aircraft-specific seat selection, and administrator route and manifest management features.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test --workers=1 --reporter=list,html",
+    "test:smoke": "playwright test tests/pages/public-pages.spec.js --workers=1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pio-o-connell/Airline2026.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pio-o-connell/Airline2026/issues"
+  },
+  "homepage": "https://github.com/pio-o-connell/Airline2026#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  }
+}

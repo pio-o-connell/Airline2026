@@ -2461,9 +2461,14 @@
         private $db;
 
         public function __construct() {
-            $address = 'mysql:host=127.0.0.1;port=3307;dbname=airline2026';
-            $username = 'root';
-            $password = 'Spring57Local!';
+            $host = getenv('AIRLINE_DB_HOST') ?: '127.0.0.1';
+            $port = getenv('AIRLINE_DB_PORT') ?: '3307';
+            $database = getenv('AIRLINE_DB_NAME') ?: 'airline2026';
+            $address = 'mysql:host=' . $host
+                . ';port=' . $port
+                . ';dbname=' . $database;
+            $username = getenv('AIRLINE_DB_USER') ?: 'root';
+            $password = getenv('AIRLINE_DB_PASSWORD') ?: 'Spring57Local!';
 
             try {
                 $this->db = new PDO($address, $username, $password, array(
