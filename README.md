@@ -689,6 +689,106 @@ Booking persistence runs in a MySQL transaction. It revalidates every selected s
 
 The `booking` table includes a nullable `payment_session_id VARCHAR(255)` column and the unique index `uq_booking_payment_session`. Together, these associate a Stripe Checkout Session with no more than one booking and support the idempotency check.
 
+## Testing
+
+Manual testing should cover the main guest, customer and administrator workflows.
+
+- Check guest flight search, selection and Cart navigation.
+- Test Cart totals, removal, multiple flights and seat selection.
+- Verify booked-seat presentation and passenger-count validation.
+- Test passenger details before authentication and the checkout summary.
+- Test customer login, invalid credentials and registration validation.
+- Test administrator access restrictions, route management and manifests.
+- Test booking controls at 390px and 320px viewport widths.
+- Test Stripe payment only with Stripe test-mode credentials.
+
+Record validation results only after running the relevant tools.
+
+## Automated Testing - Playwright
+
+Airline2026 uses **Playwright Test** to automate browser-based testing of the
+server-rendered PHP application. Playwright starts the PHP development server,
+launches Chromium and runs the tests against a local or CI database.
+
+### Testing technologies
+
+- **Playwright Test** - Browser automation and assertions.
+- **Chromium** - Browser used for the automated suite.
+- **PHP built-in development server** - Runs the application during tests.
+- **JavaScript** - Test scripts and shared helpers.
+- **MySQL 5.7.44** - Database used by the GitHub Actions test job.
+- **GitHub Actions** - Runs the suite on pushes, pull requests and manual dispatch.
+
+### Test coverage
+
+The current suite contains **27 passing tests** covering:
+
+| Test area | Coverage |
+|---|---|
+| Public pages and search | Homepage, navigation, validation, flight selection and guest Cart |
+| Cart and flights | Totals, removal and multiple flights |
+| Seat selection | Aircraft maps, occupied seats, seat limits and independent flight selections |
+| Passenger checkout | Validation, passenger details and checkout summary |
+| Authentication | Valid login, invalid login and registration form |
+| Administration | Administrator access, route editor access and manifest view |
+| Responsive design | 390px and 320px booking workflows |
+
+AC180 follows its configured 30-row layout. The current AC220 renderer displays
+22 rows of ten seats, while the database defines 37 rows of six seats with a
+four-seat final row. This known discrepancy is recorded by `TC-017`; it is not
+silently treated as matching the database configuration.
+
+Stripe payment, duplicate confirmation, registration persistence, saved
+booking-state restoration and route creation/editing remain setup-dependent
+follow-up coverage.
+
+### Running the tests locally
+
+Install dependencies and Chromium:
+
+```powershell
+npm ci
+npx playwright install chromium
+```
+
+Run the complete suite:
+
+```powershell
+npm test
+```
+
+Run the smoke suite:
+
+```powershell
+npm run test:smoke
+```
+
+The default test accounts are existing local records. Their credentials and
+environment-variable overrides are documented in
+[README-TESTS.md](README-TESTS.md). Ordinary test execution must not import or
+reset the working database, create users, change passwords, add bcrypt or alter
+the schema.
+
+### Test organisation
+
+- `playwright.config.js` - Test directory, Chromium configuration, base URL and PHP server.
+- `tests/` - Playwright test suite.
+- `tests/helpers/` - Shared search, Cart and authentication helpers.
+- `tests/pages/` - Public, booking, authentication and administrator tests.
+- `tests/responsive/` - Narrow-screen booking tests.
+- `README-TESTS.md` - Credentials, safety constraints and detailed test notes.
+
+### Database setup and continuous integration
+
+GitHub Actions provisions a disposable MySQL 5.7.44 service, imports
+`airline2026.sql`, configures PHP and Node.js, installs Chromium and runs
+`npm test`. The workflow uploads the Playwright HTML report and test results as
+artifacts.
+
+The local database is not disposable by default. Mutation tests such as
+registration, route creation and booking persistence should run only against a
+separate test database.
+
 ## Current implementation and remaining work
 
 | Area | Current position |
