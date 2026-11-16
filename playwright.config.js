@@ -1,4 +1,4 @@
-const { defineConfig, devices } = require('@playwright/test');
+import { defineConfig, devices } from '@playwright/test';
 
 // Select the PHP executable for the current operating system.
 // Windows uses the locally installed PHP 8.4 executable.
@@ -9,7 +9,7 @@ const phpCommand = process.platform === 'win32'
 
 const baseURL = process.env.PW_BASE_URL || 'http://127.0.0.1:8000';
 
-module.exports = defineConfig({
+export default defineConfig({
     testDir: './tests',
     fullyParallel: false,
     reporter: [['list'], ['html']],

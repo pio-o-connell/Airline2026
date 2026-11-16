@@ -30,6 +30,7 @@ jobs:
       AIRLINE_DB_NAME: airline2026
       AIRLINE_DB_USER: root
       AIRLINE_DB_PASSWORD: root
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
     steps:
       - uses: actions/checkout@v5
