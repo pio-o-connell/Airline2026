@@ -23,7 +23,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
-
     env:
       CI: true
       AIRLINE_DB_HOST: 127.0.0.1
@@ -39,6 +38,9 @@ jobs:
           php-version: '8.4'
           extensions: pdo_mysql
           coverage: none
+  # Install PHP dependencies and generate vendor/autoload.php.
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
