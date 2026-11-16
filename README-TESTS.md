@@ -44,11 +44,23 @@ or alter the schema.
 - `tests/responsive/mobile.spec.js` — 390px and 320px checks
 - `tests/helpers/airline.js` — shared search, Cart and authentication helpers
 
-The current suite has 27 passing tests. It includes multi-flight Cart and seat
-coverage, passenger validation, checkout summaries, and responsive booking
-flows. AC220 coverage records the current renderer discrepancy: the database
-defines 37 rows of six seats, while the renderer currently displays 22 rows of
-ten seats.
+The current suite has 35 passing tests and 2 intentionally skipped tests. It
+includes multi-flight Cart and seat coverage, passenger validation, checkout
+summaries, customer booking flow, direct administrator access checks, payment
+boundary checks and responsive booking flows. AC220 coverage records the
+current renderer discrepancy: the database defines 37 rows of six seats, while
+the renderer currently displays 22 rows of ten seats.
+
+Additional coverage is organised as follows:
+
+- `tests/journeys/customer-booking.spec.js` — registered customer workflow,
+  checkout state retention, validation and logout.
+- `tests/security/access-control.spec.js` — direct administrator access,
+  customer access denial and invalid credentials.
+- `tests/integration/payment-boundaries.spec.js` — invalid and cancelled
+  payment handling, with successful payment persistence reserved for a
+  disposable database.
+- `TEST-CATALOGUE.md` — coverage mapping, test-data policy and known gaps.
 
 Stripe payment, duplicate confirmation, registration persistence, saved booking
 state restoration, and route creation/editing are setup-dependent and remain

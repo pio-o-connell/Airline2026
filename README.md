@@ -700,7 +700,9 @@ Manual testing should cover the main guest, customer and administrator workflows
 - Test customer login, invalid credentials and registration validation.
 - Test administrator access restrictions, route management and manifests.
 - Test booking controls at 390px and 320px viewport widths.
-- Test Stripe payment only with Stripe test-mode credentials.
+- Test direct access control and invalid or cancelled payment handling.
+- Test successful Stripe payment only with Stripe test-mode credentials and a
+  disposable database.
 
 Record validation results only after running the relevant tools.
 
@@ -721,7 +723,8 @@ launches Chromium and runs the tests against a local or CI database.
 
 ### Test coverage
 
-The current suite contains **27 passing tests** covering:
+The current suite contains **35 passing tests and 2 intentionally skipped
+tests** covering:
 
 | Test area | Coverage |
 |---|---|
@@ -729,8 +732,10 @@ The current suite contains **27 passing tests** covering:
 | Cart and flights | Totals, removal and multiple flights |
 | Seat selection | Aircraft maps, occupied seats, seat limits and independent flight selections |
 | Passenger checkout | Validation, passenger details and checkout summary |
-| Authentication | Valid login, invalid login and registration form |
+| Customer journey | Authenticated search, Cart retention, checkout and logout |
+| Authentication and security | Valid/invalid login, registration form and direct access control |
 | Administration | Administrator access, route editor access and manifest view |
+| Payment boundaries | Invalid Stripe sessions and cancelled payment retention |
 | Responsive design | 390px and 320px booking workflows |
 
 AC180 follows its configured 30-row layout. The current AC220 renderer displays
@@ -738,9 +743,14 @@ AC180 follows its configured 30-row layout. The current AC220 renderer displays
 four-seat final row. This known discrepancy is recorded by `TC-017`; it is not
 silently treated as matching the database configuration.
 
-Stripe payment, duplicate confirmation, registration persistence, saved
-booking-state restoration and route creation/editing remain setup-dependent
-follow-up coverage.
+Suspended-account rejection, successful Stripe payment, duplicate confirmation,
+booking persistence, registration persistence, saved booking-state restoration
+and route creation/editing remain setup-dependent or unimplemented follow-up
+coverage. The skipped tests are documented rather than treated as passing.
+
+The complete coverage mapping and known-gap audit are documented in
+[TEST-CATALOGUE.md](TEST-CATALOGUE.md). The latest execution evidence is in
+[runtime-validation-report.md](runtime-validation-report.md).
 
 ### Running the tests locally
 
@@ -775,8 +785,13 @@ the schema.
 - `tests/` - Playwright test suite.
 - `tests/helpers/` - Shared search, Cart and authentication helpers.
 - `tests/pages/` - Public, booking, authentication and administrator tests.
+- `tests/journeys/` - Complete authenticated customer journeys.
+- `tests/security/` - Direct access-control and authentication security tests.
+- `tests/integration/` - Payment-boundary and persistence-focused tests.
 - `tests/responsive/` - Narrow-screen booking tests.
 - `README-TESTS.md` - Credentials, safety constraints and detailed test notes.
+- `TEST-CATALOGUE.md` - Test IDs, coverage mapping and known gaps.
+- `runtime-validation-report.md` - Environment and execution evidence.
 
 ### Database setup and continuous integration
 
@@ -786,8 +801,10 @@ GitHub Actions provisions a disposable MySQL 5.7.44 service, imports
 artifacts.
 
 The local database is not disposable by default. Mutation tests such as
-registration, route creation and booking persistence should run only against a
-separate test database.
+registration, route creation, booking persistence and successful Stripe payment
+should run only against a separate test database. Docker is not required for
+the browser tier, but infrastructure-isolated tests require an available
+disposable database service.
 
 ## Current implementation and remaining work
 
