@@ -3,7 +3,8 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__);
-$dotenv->load();
+// $dotenv->load();
+$dotenv->safeLoad();
 
 include("library.php");
 session_start();
