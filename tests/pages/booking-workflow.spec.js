@@ -1,7 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const { addFirstFlightToCart } = require('../helpers/airline');
 
-test('TC-009: Cart displays passenger quantity, fare and total', async ({ page }) => {
+test('TC-009: Cart displays passenger quantity, fare and total @FUN @REG @E2E', {
+    tag: ['@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page, { passengers: '2' });
     await page.goto('/controller.php?cmd=showCheckout');
 
@@ -10,7 +12,9 @@ test('TC-009: Cart displays passenger quantity, fare and total', async ({ page }
     await expect(page.locator('.cart-total')).toContainText('Cart total: €');
 });
 
-test('TC-010: removing a flight empties the Cart without changing the session navigation', async ({ page }) => {
+test('TC-010: removing a flight empties the Cart without changing the session navigation @FUN @REG @E2E', {
+    tag: ['@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showCheckout');
     await page.getByRole('link', { name: 'Remove Flight' }).click();
@@ -19,7 +23,9 @@ test('TC-010: removing a flight empties the Cart without changing the session na
     await expect(page.locator('#menu').getByText('Cart')).toHaveAttribute('aria-disabled', 'true');
 });
 
-test('TC-008: adding a second flight retains both flights in the Cart', async ({ page }) => {
+test('TC-008: adding a second flight retains both flights in the Cart @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page, { route: '1', date: '2026-10-29' });
     await addFirstFlightToCart(page, { route: '2', date: '2026-11-03' });
     await page.goto('/controller.php?cmd=showCheckout');
@@ -27,12 +33,21 @@ test('TC-008: adding a second flight retains both flights in the Cart', async ({
     await expect(page.locator('.cart-flight-card')).toHaveCount(2);
 });
 
-test('TC-012 and TC-013: seat selection displays the aircraft map and saves a seat', async ({ page }) => {
+test('TC-012: seat selection displays the aircraft map @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
 
     await expect(page.locator('.aircraft-seat-map')).toBeVisible();
     await expect(page.locator('.seat-map-panel h2')).toContainText(/AC(180|220)/);
+});
+
+test('TC-013: seat selection saves a selected seat @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
+    await addFirstFlightToCart(page);
+    await page.goto('/controller.php?cmd=showSeatSelection');
 
     const availableSeat = page.locator('.seat-option input:not(:disabled)').first();
     await availableSeat.check();
@@ -40,7 +55,9 @@ test('TC-012 and TC-013: seat selection displays the aircraft map and saves a se
     await expect(page.locator('.seat-save-button')).toBeEnabled();
 });
 
-test('TC-014: seat selection prevents choosing more seats than passengers', async ({ page }) => {
+test('TC-014: seat selection prevents choosing more seats than passengers @FUN @SEC @REG @E2E', {
+    tag: ['@FUN', '@SEC', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
 
@@ -50,7 +67,9 @@ test('TC-014: seat selection prevents choosing more seats than passengers', asyn
     await expect(availableSeats.nth(1)).not.toBeChecked();
 });
 
-test('TC-015: occupied seats are disabled in the seat map', async ({ page }) => {
+test('TC-015: occupied seats are disabled in the seat map @FUN @INT @SEC @REG @E2E', {
+    tag: ['@FUN', '@INT', '@SEC', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page, { route: '1', date: '2026-10-29' });
     await page.goto('/controller.php?cmd=showSeatSelection');
 
@@ -59,7 +78,9 @@ test('TC-015: occupied seats are disabled in the seat map', async ({ page }) => 
     await expect(occupiedSeats.first()).not.toBeChecked();
 });
 
-test('TC-016: seat selections remain independent for multiple flights', async ({ page }) => {
+test('TC-016: seat selections remain independent for multiple flights @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page, { route: '1', date: '2026-10-29' });
     await addFirstFlightToCart(page, { route: '2', date: '2026-11-03' });
     await page.goto('/controller.php?cmd=showSeatSelection');
@@ -94,7 +115,9 @@ test('TC-016: seat selections remain independent for multiple flights', async ({
 // });
 
 
-test('TC-018 and TC-022: passenger details precede guest authentication', async ({ page }) => {
+test('TC-018: passenger details precede guest authentication @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
     await page.locator('.seat-option input:not(:disabled)').first().check();
@@ -106,11 +129,31 @@ test('TC-018 and TC-022: passenger details precede guest authentication', async 
     await page.getByLabel('Email address').fill('playwright@example.test');
     await page.getByLabel('Passport number').fill('PW123456');
     await page.getByRole('button', { name: 'Continue to payment' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Log in to continue' })).toBeVisible();
+});
+
+test('TC-022: guest checkout offers login and registration before payment @FUN @SEC @REG @E2E', {
+    tag: ['@FUN', '@SEC', '@REG', '@E2E']
+}, async ({ page }) => {
+    await addFirstFlightToCart(page);
+    await page.goto('/controller.php?cmd=showSeatSelection');
+    await page.locator('.seat-option input:not(:disabled)').first().check();
+    await page.locator('.seat-save-button').click();
+
+    await page.getByLabel('Full name').fill('Playwright Passenger');
+    await page.getByLabel('Email address').fill('playwright@example.test');
+    await page.getByLabel('Passport number').fill('PW123456');
+    await page.getByRole('button', { name: 'Continue to payment' }).click();
+
     await expect(page.getByRole('link', { name: 'Log in to continue' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Register to continue' })).toBeVisible();
 });
 
-test('TC-020: incomplete passenger details prevent continuing', async ({ page }) => {
+test('TC-020: incomplete passenger details prevent continuing @FUN @REG @E2E', {
+    tag: ['@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
     await page.locator('.seat-option input:not(:disabled)').first().check();
@@ -120,7 +163,9 @@ test('TC-020: incomplete passenger details prevent continuing', async ({ page })
     await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
 });
 
-test('TC-021: checkout summary contains passenger, flight, seat and total details', async ({ page }) => {
+test('TC-021: checkout summary contains passenger, flight, seat and total details @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
     await page.locator('.seat-option input:not(:disabled)').first().check();

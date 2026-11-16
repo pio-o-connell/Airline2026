@@ -1,7 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const { loginAs, addFirstFlightToCart } = require('../helpers/airline');
 
-test('TC-046: registered customer can search, select seats and retain checkout state', async ({ page }) => {
+test('TC-046: registered customer can search, select seats and retain checkout state @FUN @INT @REG @E2E', {
+    tag: ['@FUN', '@INT', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'secondCustomer');
     await addFirstFlightToCart(page, {
         route: '1',
@@ -38,7 +40,9 @@ test('TC-046: registered customer can search, select seats and retain checkout s
     await expect(page.locator('.checkout-total')).toContainText('Total: €89.00');
 });
 
-test('TC-047: customer cannot continue to payment with incomplete passenger details', async ({ page }) => {
+test('TC-047: customer cannot continue to payment with incomplete passenger details @FUN @REG @E2E', {
+    tag: ['@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'secondCustomer');
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
@@ -50,7 +54,9 @@ test('TC-047: customer cannot continue to payment with incomplete passenger deta
     await expect(page.getByRole('button', { name: 'Continue to payment' })).toBeDisabled();
 });
 
-test('TC-048: customer logout ends the authenticated browser session', async ({ page }) => {
+test('TC-048: customer logout ends the authenticated browser session @SEC @FUN @REG @E2E', {
+    tag: ['@SEC', '@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'customer');
     await page.goto('/controller.php?cmd=logout');
 

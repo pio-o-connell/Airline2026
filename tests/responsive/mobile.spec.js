@@ -3,7 +3,9 @@ const { addFirstFlightToCart } = require('../helpers/airline');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('TC-036: homepage remains usable at 390px', async ({ page }) => {
+test('TC-036: homepage remains usable at 390px @FUN @REG @RSP @E2E', {
+    tag: ['@FUN', '@REG', '@RSP', '@E2E']
+}, async ({ page }) => {
     await page.goto('/controller.php');
 
     await expect(page.getByRole('heading', { name: 'PHP Airlines.com' })).toBeVisible();
@@ -14,7 +16,9 @@ test('TC-036: homepage remains usable at 390px', async ({ page }) => {
     expect(documentWidth).toBeLessThanOrEqual(viewportWidth + 2);
 });
 
-test('TC-037: booking and seat selection remain usable at 390px', async ({ page }) => {
+test('TC-037: booking and seat selection remain usable at 390px @FUN @REG @RSP @E2E', {
+    tag: ['@FUN', '@REG', '@RSP', '@E2E']
+}, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
 
@@ -24,7 +28,9 @@ test('TC-037: booking and seat selection remain usable at 390px', async ({ page 
     await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
 });
 
-test('TC-038: booking controls remain usable at 320px', async ({ page }) => {
+test('TC-038: booking controls remain usable at 320px @FUN @REG @RSP @E2E', {
+    tag: ['@FUN', '@REG', '@RSP', '@E2E']
+}, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 700 });
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');

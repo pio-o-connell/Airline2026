@@ -1,6 +1,6 @@
 # Runtime Validation Report
 
-**Generated:** 2026-11-16T12:49:00Z  
+**Generated:** 2026-11-16T14:36:41Z
 **Target:** Airline2026
 
 ## Summary
@@ -9,8 +9,7 @@
 |---|---|---:|---|
 | Startup | PASS | n/a | PHP 8.4.26 development server started by Playwright |
 | Existing baseline | PASS | 0 | 26 tests passed |
-| Added coverage | PASS | 0 | 9 passed, 2 skipped |
-| Full regression suite | PASS | 0 | 35 passed, 2 skipped |
+| Full regression suite | PASS | 0 | 39 passed, 2 skipped |
 
 **Overall:** PASS for the available local browser and database environment.
 
@@ -34,8 +33,20 @@ The canonical command was used:
 npm test
 ```
 
-The command executed 37 tests with one worker and exited with code `0`.
-The result was 35 passed and 2 skipped.
+The command executed 41 tests with one worker and exited with code `0`.
+The result was 39 passed and 2 skipped.
+
+Category inventory checks also passed with the following discovered counts:
+
+| Category | Tests |
+|---|---:|
+| `@SMK` | 5 |
+| `@FUN` | 38 |
+| `@INT` | 14 |
+| `@REG` | 38 |
+| `@SEC` | 14 |
+| `@RSP` | 3 |
+| `@E2E` | 32 |
 
 Added runnable coverage:
 

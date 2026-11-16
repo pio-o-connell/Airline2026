@@ -111,6 +111,37 @@ jobs:
           const skipped = Number(stats.skipped ?? 0);
           const total = passed + failed + flaky + skipped;
           const duration = (Number(stats.duration ?? 0) / 1000).toFixed(1);
+          const categoryNames = ['SMK', 'FUN', 'INT', 'REG', 'SEC', 'RSP', 'E2E'];
+          const categoryCounts = Object.fromEntries(
+            categoryNames.map((category) => [category, 0])
+          );
+          const failedTests = [];
+
+          // Walk nested Playwright suites and use the explicit title tags for
+          // category totals and failure identifiers.
+          const visitSuite = (suite) => {
+            for (const spec of suite.specs ?? []) {
+              const title = spec.title ?? '';
+              for (const category of categoryNames) {
+                if (title.includes(`@${category}`)) {
+                  categoryCounts[category] += 1;
+                }
+              }
+
+              for (const test of spec.tests ?? []) {
+                if (test.status === 'unexpected') {
+                  failedTests.push(title);
+                }
+              }
+            }
+            for (const childSuite of suite.suites ?? []) {
+              visitSuite(childSuite);
+            }
+          };
+
+          for (const suite of report.suites ?? []) {
+            visitSuite(suite);
+          }
 
           // Determine the overall test result.
           const result = failed > 0
@@ -120,7 +151,7 @@ jobs:
               : '✅ Passed';
 
           // Write a compact results table to the GitHub Actions summary.
-          const summary = [
+          const summaryLines = [
             '## Airline2026 Playwright Test Results',
             '',
             `**Overall result:** ${result}`,
@@ -128,10 +159,25 @@ jobs:
             '| Total | Passed | Failed | Flaky | Skipped | Duration |',
             '|---:|---:|---:|---:|---:|---:|',
             `| ${total} | ${passed} | ${failed} | ${flaky} | ${skipped} | ${duration}s |`,
+            '',
+            '### Category inventory',
+            '',
+            '| Category | Tests |',
+            '|---|---:|',
+            ...categoryNames.map((category) => `| @${category} | ${categoryCounts[category]} |`),
             ''
-          ].join('\n');
+          ];
 
-          appendFileSync(summaryPath, summary);
+          if (failedTests.length > 0) {
+            summaryLines.push(
+              '### Failed test identifiers',
+              '',
+              ...failedTests.map((testTitle) => `- ${testTitle}`),
+              ''
+            );
+          }
+
+          appendFileSync(summaryPath, summaryLines.join('\n'));
           NODE
 
       # Retain the downloadable HTML report and test results.

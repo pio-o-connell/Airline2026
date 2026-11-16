@@ -1,57 +1,86 @@
 # Airline2026 Test Catalogue
 
-This catalogue audits the existing Playwright suite against the testing strategy
-provided for Airline2026. Tests use the real PHP server and seeded MySQL records.
+This is the central register for the automated Playwright suite. Category tags
+are assigned per test and are not inferred from the containing directory.
 
-## Execution baseline
+## Current inventory
 
-| Item | Result |
-|---|---|
-| Canonical command | `npm test` |
-| Existing baseline | 26 passed |
-| Browser tier | Playwright 1.65.1 |
-| Runtime | Node 22.20.0, PHP 8.4.26 |
-| Docker tier | Unavailable on this workstation |
-| Database safety | Ordinary tests do not import, drop or recreate the working database |
+| ID | Test | Categories | Role | Objective | Preconditions | Expected | Status | Automation | Source |
+|---|---|---|---|---|---|---|---|---|---|
+| TC-001 | Public homepage loads with search workspace | SMK, FUN, REG, E2E | Guest | Verify the public entry point and search controls | PHP server and database available | Homepage and search fields are visible | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-002 | Guest navigation exposes booking destinations | FUN, REG, E2E | Guest | Verify guest navigation state | Guest session | Home and login links work; Cart and Checkout are disabled | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-003 | Valid route/date search displays flights | SMK, FUN, INT, REG, E2E | Guest | Verify search-to-results integration | Seeded route and flight data | Matching flight results appear | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-004 | Passenger count rejects zero | FUN, REG | Guest | Verify lower passenger bound | Homepage loaded | Browser rejects zero | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-005 | Passenger count rejects values above twenty | FUN, REG | Guest | Verify upper passenger bound | Homepage loaded | Browser rejects 21 | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-006 | Selecting a flight displays details and fare | FUN, REG, E2E | Guest | Verify flight selection presentation | Search results available | Details and fare are shown | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-007 | Selected flight remains in guest Cart | FUN, INT, REG, E2E | Guest | Verify adding a flight to Cart | Searchable seeded flight | Cart contains the selected flight | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-008 | Adding a second flight retains both flights | FUN, INT, REG, E2E | Guest | Verify multi-flight Cart state | Two searchable seeded flights | Cart contains two independent flights | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-009 | Cart displays quantity, fare and total | FUN, REG, E2E | Guest | Verify Cart calculations and display | Flight added with two passengers | Quantity and EUR totals are shown | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-010 | Removing a flight empties the Cart | FUN, REG, E2E | Guest | Verify Cart removal and navigation state | Flight in Cart | Cart is empty and disabled in navigation | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-011 | Guest Cart survives page reload | FUN, INT, REG, E2E | Guest | Verify session-backed Cart retention | Flight in guest Cart | Cart still contains the flight after reload | Pass | Automated | `tests/pages/public-pages.spec.js` |
+| TC-012 | Seat selection displays aircraft map | FUN, INT, REG, E2E | Guest | Verify aircraft-specific map rendering | Flight in Cart | Seat map and aircraft code are visible | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-013 | Seat selection saves a selected seat | FUN, INT, REG, E2E | Guest | Verify available seat selection | Seat map loaded | Selected seat enables the save action | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-014 | Seat selection limits seats to passengers | FUN, SEC, REG, E2E | Guest | Verify client-side selection limit | One-passenger Cart and seat map | Additional seat cannot be selected | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-015 | Occupied seats are disabled | FUN, INT, SEC, REG, E2E | Guest | Verify database occupancy reaches the UI | Seeded occupied flight | Occupied seats are disabled | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-016 | Multiple-flight seat selections stay independent | FUN, INT, REG, E2E | Guest | Verify seat state is keyed by flight | Two-flight Cart | Each map retains its own selection | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-018 | Passenger details precede guest authentication | FUN, INT, REG, E2E | Guest | Verify passenger form occurs before auth | Flight and seat selected | Checkout form accepts passenger details | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-020 | Incomplete passenger details prevent continuation | FUN, REG, E2E | Guest | Verify required checkout fields | Checkout form loaded | Continue action remains disabled | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-021 | Checkout summary shows booking details | FUN, INT, REG, E2E | Guest | Verify passenger, seat and fare summary | Complete passenger form and selected seat | Summary and EUR total are correct | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-022 | Guest checkout offers login and registration | FUN, SEC, REG, E2E | Guest | Verify authentication gate before payment | Complete guest checkout form | Login and registration actions appear | Pass | Automated | `tests/pages/booking-workflow.spec.js` |
+| TC-023 | Valid customer credentials authenticate | SMK, FUN, SEC, REG, E2E | Customer | Verify customer login | Seeded customer account | Customer navigation is visible | Pass | Automated | `tests/pages/authentication.spec.js` |
+| TC-024 | Invalid credentials are rejected | FUN, SEC, REG | Guest | Verify authentication failure | Login page loaded | User remains Guest | Pass | Automated | `tests/pages/authentication.spec.js` |
+| TC-025 | Registration form exposes required fields | FUN, REG | Guest | Verify registration input contract | Registration page loaded | Required account fields are visible | Pass | Automated | `tests/pages/authentication.spec.js` |
+| TC-031 | Administrator login opens route management | SMK, FUN, SEC, REG, E2E | Administrator | Verify administrator authentication | Seeded `rmiller` account | Route management is visible | Pass | Automated | `tests/pages/administrator-pages.spec.js` |
+| TC-032 | Administrator dashboard requires authentication | FUN, SEC, REG | Guest | Verify direct admin access restriction | Guest session | Login page is returned | Pass | Automated | `tests/pages/administrator-pages.spec.js` |
+| TC-033 | Administrator can open route editor | FUN, REG, E2E | Administrator | Verify protected route editor navigation | Administrator session | Route editor is displayed | Pass | Automated | `tests/pages/administrator-pages.spec.js` |
+| TC-035 | Administrator can open flight manifest | SMK, FUN, REG, E2E | Administrator | Verify protected manifest access | Administrator session | Manifest page is displayed | Pass | Automated | `tests/pages/administrator-pages.spec.js` |
+| TC-036 | Homepage remains usable at 390px | FUN, REG, RSP, E2E | Guest | Verify mobile homepage layout | Browser viewport 390px | No horizontal overflow | Pass | Automated | `tests/responsive/mobile.spec.js` |
+| TC-037 | Booking and seats usable at 390px | FUN, REG, RSP, E2E | Guest | Verify mobile booking controls | Browser viewport 390px | Seat selection reaches checkout | Pass | Automated | `tests/responsive/mobile.spec.js` |
+| TC-038 | Booking controls usable at 320px | FUN, REG, RSP, E2E | Guest | Verify narrow mobile controls | Browser viewport 320px | Seat selection reaches checkout | Pass | Automated | `tests/responsive/mobile.spec.js` |
+| TC-041 | Unauthenticated users cannot open admin dashboard | SEC, FUN, REG | Guest | Verify direct URL authorization | Guest session | Login page is returned | Pass | Automated | `tests/security/access-control.spec.js` |
+| TC-042 | Customers cannot open admin routes | SEC, FUN, REG | Customer | Verify customer/admin separation | Seeded customer session | Login page is returned | Pass | Automated | `tests/security/access-control.spec.js` |
+| TC-043 | Administrator authentication grants route access | SEC, FUN, REG, E2E | Administrator | Verify authorized admin access | Seeded `rmiller` account | Add-route form is displayed | Pass | Automated | `tests/security/access-control.spec.js` |
+| TC-044 | Invalid credentials do not authenticate | SEC, FUN, REG | Guest | Verify invalid session cannot access admin | Invalid login submitted | Guest remains denied | Pass | Automated | `tests/security/access-control.spec.js` |
+| TC-045 | Suspended account is rejected | SEC, FUN, REG | Customer | Verify suspended-account enforcement | Suspended seeded account | Authentication is rejected | Skipped | Automated | `tests/security/access-control.spec.js` |
+| TC-046 | Customer retains checkout state | FUN, INT, REG, E2E | Customer | Verify authenticated customer booking flow | Seeded customer and flights | Cart, seats, passenger data and totals survive reload | Pass | Automated | `tests/journeys/customer-booking.spec.js` |
+| TC-047 | Incomplete customer details block payment | FUN, REG, E2E | Customer | Verify customer checkout validation | Customer seat selection complete | Continue action remains disabled | Pass | Automated | `tests/journeys/customer-booking.spec.js` |
+| TC-048 | Customer logout ends authenticated session | SEC, FUN, REG, E2E | Customer | Verify logout/session invalidation | Authenticated customer | Guest identity and login link return | Pass | Automated | `tests/journeys/customer-booking.spec.js` |
+| TC-049 | Invalid Stripe session cannot create booking | INT, SEC, REG, E2E | Customer | Verify invalid payment confirmation handling | Customer Cart and invalid session ID | No confirmation; Cart remains available | Pass | Automated | `tests/integration/payment-boundaries.spec.js` |
+| TC-050 | Cancelled payment preserves guest booking state | INT, REG, E2E | Guest | Verify cancellation handling | Guest Cart | Checkout returns and Cart remains available | Pass | Automated | `tests/integration/payment-boundaries.spec.js` |
+| TC-051 | Successful Stripe payment persists booking | INT, REG, E2E | Customer | Verify paid booking persistence | Stripe test key and disposable database | Booking records and confirmation are created | Skipped | Automated | `tests/integration/payment-boundaries.spec.js` |
 
-## Existing coverage map
+## Identifier audit
 
-| IDs | File | Coverage |
-|---|---|---|
-| TC-001–TC-007, TC-011 | `tests/pages/public-pages.spec.js` | Guest homepage, navigation, search, flight details and Cart retention |
-| TC-008–TC-022 | `tests/pages/booking-workflow.spec.js` | Multiple flights, Cart totals/removal, seats, passenger details and checkout |
-| TC-023–TC-024 | `tests/pages/authentication.spec.js` | Valid and invalid login |
-| Unnumbered registration test | `tests/pages/authentication.spec.js` | Registration form fields |
-| TC-031–TC-033, TC-035 | `tests/pages/administrator-pages.spec.js` | Administrator login, access control, route editor and manifest |
-| TC-036–TC-038 | `tests/responsive/mobile.spec.js` | 390px and 320px booking flows |
+There are **41 actual automated tests in 8 files**. IDs are unique. The
+inactive numeric ranges TC-026–TC-030, TC-034 and TC-039–TC-040 have no test
+claims. The former unnumbered registration test is now TC-025. TC-017 remains
+an inactive commented experiment rather than a test and is therefore not
+included in the automated count.
 
-## Added coverage
+## Category execution
 
-| IDs | File | Coverage |
-|---|---|---|
-| TC-041–TC-045 | `tests/security/access-control.spec.js` | Direct administrator access, customer access denial, invalid credentials and suspended-account gap |
-| TC-046–TC-048 | `tests/journeys/customer-booking.spec.js` | Registered customer journey, checkout persistence across reload, validation and logout |
-| TC-049–TC-051 | `tests/integration/payment-boundaries.spec.js` | Invalid Stripe-session handling, payment cancellation retention and isolated payment-persistence requirement |
+All tests use exact Playwright tags: `@SMK`, `@FUN`, `@INT`, `@REG`, `@SEC`,
+`@RSP` and `@E2E`. Category commands are:
 
-## Gaps and status
+```powershell
+npx playwright test --grep "@SMK"
+npx playwright test --grep "@FUN"
+npx playwright test --grep "@INT"
+npx playwright test --grep "@REG"
+npx playwright test --grep "@SEC"
+npx playwright test --grep "@RSP"
+npx playwright test --grep "@E2E"
+```
 
-| Area | Status | Notes |
-|---|---|---|
-| Guest journey before authentication | Covered | Existing functional tests |
-| Registered customer journey | Partially covered | Added through checkout; successful payment remains environment-dependent |
-| Administrator read-only journey | Covered | Existing tests plus direct access checks |
-| Route creation/edit/delete persistence | Not run | Requires disposable database to avoid changing working data |
-| Suspended-account enforcement | Not implemented | `authenticateUser()` does not currently enforce `user.suspend`; TC-045 is skipped |
-| Stripe successful payment | Not run | Requires Stripe test key, Stripe test payment, and disposable database |
-| Stripe cancelled/invalid payment | Covered | Added TC-049 and TC-050 |
-| Booking persistence and duplicate confirmation | Not run | Requires isolated database and Stripe test session |
-| Tablet viewport | Gap | Current responsive suite covers 390px and 320px, not 768px |
-| AC220 seat layout | Known defect | Database uses A–F rows while renderer uses a different grouping |
+## Coverage gaps and safety
 
-## Test-data policy
-
-Read-only tests use existing seeded accounts and flights. Registration, route
-mutation, booking persistence, seat allocation, and payment persistence must be
-run only when the test environment explicitly points at a disposable database.
-No new users, password changes, bcrypt migration, or schema changes are part of
-this coverage work.
+- Successful Stripe payment, booking persistence and duplicate confirmation
+  require Stripe test credentials and a disposable database.
+- Route creation, editing and deletion are not run against the working
+  database.
+- Suspended-account enforcement is not implemented by the current
+  authentication method.
+- Tablet viewport coverage at 768px is not yet implemented.
+- AC220 renderer grouping does not match the database A–F seat definitions.
+- Ordinary tests use existing seeded records and must not import, drop or
+  recreate the working database.

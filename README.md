@@ -723,8 +723,8 @@ launches Chromium and runs the tests against a local or CI database.
 
 ### Test coverage
 
-The current suite contains **35 passing tests and 2 intentionally skipped
-tests** covering:
+The current suite contains **41 tests: 39 passing and 2 intentionally skipped**
+covering:
 
 | Test area | Coverage |
 |---|---|
@@ -740,13 +740,13 @@ tests** covering:
 
 AC180 follows its configured 30-row layout. The current AC220 renderer displays
 22 rows of ten seats, while the database defines 37 rows of six seats with a
-four-seat final row. This known discrepancy is recorded by `TC-017`; it is not
-silently treated as matching the database configuration.
+four-seat final row. This known discrepancy is documented in the test catalogue
+and is not silently treated as matching the database configuration.
 
 Suspended-account rejection, successful Stripe payment, duplicate confirmation,
-booking persistence, registration persistence, saved booking-state restoration
-and route creation/editing remain setup-dependent or unimplemented follow-up
-coverage. The skipped tests are documented rather than treated as passing.
+booking persistence, registration persistence and route creation/editing remain
+setup-dependent or unimplemented follow-up coverage. The skipped tests are
+documented rather than treated as passing.
 
 The complete coverage mapping and known-gap audit are documented in
 [TEST-CATALOGUE.md](TEST-CATALOGUE.md). The latest execution evidence is in

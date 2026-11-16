@@ -44,7 +44,7 @@ or alter the schema.
 - `tests/responsive/mobile.spec.js` — 390px and 320px checks
 - `tests/helpers/airline.js` — shared search, Cart and authentication helpers
 
-The current suite has 35 passing tests and 2 intentionally skipped tests. It
+The current suite has 41 tests: 39 passing and 2 intentionally skipped. It
 includes multi-flight Cart and seat coverage, passenger validation, checkout
 summaries, customer booking flow, direct administrator access checks, payment
 boundary checks and responsive booking flows. AC220 coverage records the

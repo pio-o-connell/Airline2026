@@ -1,12 +1,16 @@
 const { test, expect } = require('@playwright/test');
 const { loginAs } = require('../helpers/airline');
 
-test('TC-023: valid customer credentials authenticate successfully', async ({ page }) => {
+test('TC-023: valid customer credentials authenticate successfully @SMK @FUN @SEC @REG @E2E', {
+    tag: ['@SMK', '@FUN', '@SEC', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'customer');
     await expect(page.locator('#menu').getByRole('link', { name: 'Logout' })).toBeVisible();
 });
 
-test('TC-024: invalid credentials are rejected', async ({ page }) => {
+test('TC-024: invalid credentials are rejected @FUN @SEC @REG', {
+    tag: ['@FUN', '@SEC', '@REG']
+}, async ({ page }) => {
     await page.goto('/controller.php?cmd=showLogin');
     await page.locator('input[name="username"]').fill('invalid_airline_test_user');
     await page.locator('input[name="password"]').fill('invalid_password');
@@ -16,7 +20,9 @@ test('TC-024: invalid credentials are rejected', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Search flights' })).toBeVisible();
 });
 
-test('registration page exposes the required account fields', async ({ page }) => {
+test('TC-025: registration page exposes the required account fields @FUN @REG', {
+    tag: ['@FUN', '@REG']
+}, async ({ page }) => {
     await page.goto('/controller.php?cmd=showRegistration');
 
     await expect(page.getByRole('heading', { name: 'Register' })).toBeVisible();

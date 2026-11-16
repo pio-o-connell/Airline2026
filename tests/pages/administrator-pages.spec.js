@@ -1,7 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const { loginAs } = require('../helpers/airline');
 
-test('TC-031: administrator login opens route management', async ({ page }) => {
+test('TC-031: administrator login opens route management @SMK @FUN @SEC @REG @E2E', {
+    tag: ['@SMK', '@FUN', '@SEC', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'admin');
 
     await expect(page.getByRole('heading', { name: 'Routes' })).toBeVisible();
@@ -9,14 +11,18 @@ test('TC-031: administrator login opens route management', async ({ page }) => {
     await expect(page.locator('#menu').getByRole('link', { name: 'View manifest' })).toBeVisible();
 });
 
-test('TC-032: administrator dashboard requires administrator authentication', async ({ page }) => {
+test('TC-032: administrator dashboard requires administrator authentication @FUN @SEC @REG', {
+    tag: ['@FUN', '@SEC', '@REG']
+}, async ({ page }) => {
     await page.goto('/controller.php?cmd=showAdminDashboard');
 
     await expect(page.getByRole('heading', { name: 'login' })).toBeVisible();
     await expect(page.locator('input[name="username"]')).toBeVisible();
 });
 
-test('TC-033: administrator can open the route editor', async ({ page }) => {
+test('TC-033: administrator can open the route editor @FUN @REG @E2E', {
+    tag: ['@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'admin');
     await page.getByRole('link', { name: 'Routes' }).click();
     await page.locator('a[href*="cmd=showEditRoute"]').first().click();
@@ -24,7 +30,9 @@ test('TC-033: administrator can open the route editor', async ({ page }) => {
     await expect(page.getByRole('heading', { name: /Administrator.*Edit Route/i })).toBeVisible();
 });
 
-test('TC-035: administrator can open the flight manifest', async ({ page }) => {
+test('TC-035: administrator can open the flight manifest @SMK @FUN @REG @E2E', {
+    tag: ['@SMK', '@FUN', '@REG', '@E2E']
+}, async ({ page }) => {
     await loginAs(page, 'admin');
     await page.locator('nav[aria-label="Administrator navigation"]')
         .getByRole('link', { name: 'View manifest' }).click();
