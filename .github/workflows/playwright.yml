@@ -1,3 +1,4 @@
+
 name: Airline Playwright Tests
 
 on:
@@ -23,6 +24,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
+
     env:
       CI: true
       AIRLINE_DB_HOST: 127.0.0.1
@@ -34,35 +36,105 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: pdo_mysql
           coverage: none
-  # Install PHP dependencies and generate vendor/autoload.php.
+
+      # Install PHP dependencies and generate vendor/autoload.php.
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist
+
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
+
       - name: Install MySQL client
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-client
+
       - name: Wait for MySQL
         run: |
           until mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -proot --silent; do
             sleep 2
           done
+
       - name: Create CI database
         run: mysql -h 127.0.0.1 -P 3307 -uroot -proot < airline2026.sql
+
       - name: Install Node dependencies
         run: npm ci
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
+
+      # Prepare the directory for Playwright's JSON report.
+      - name: Prepare Playwright report directory
+        run: mkdir -p test-results
+
+      # Run tests and generate HTML and JSON reports.
       - name: Run Playwright tests
-        run: npm test
+        run: npx playwright test --workers=1 --reporter=list,html,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
+
+      # Display the test results directly on the GitHub Actions summary page.
+      - name: Add test results to GitHub summary
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync, existsSync, readFileSync } from 'node:fs';
+
+          // Check whether Playwright generated its JSON report.
+          const reportPath = 'test-results/results.json';
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+
+          if (!existsSync(reportPath)) {
+            appendFileSync(
+              summaryPath,
+              '## Airline2026 Test Results\n\nThe JSON report was not generated. Check the test step for errors.\n'
+            );
+            process.exit(0);
+          }
+
+          // Read the test counts from Playwright's JSON report.
+          const report = JSON.parse(readFileSync(reportPath, 'utf8'));
+          const stats = report.stats ?? {};
+
+          const passed = Number(stats.expected ?? 0);
+          const failed = Number(stats.unexpected ?? 0);
+          const flaky = Number(stats.flaky ?? 0);
+          const skipped = Number(stats.skipped ?? 0);
+          const total = passed + failed + flaky + skipped;
+          const duration = (Number(stats.duration ?? 0) / 1000).toFixed(1);
+
+          // Determine the overall test result.
+          const result = failed > 0
+            ? '❌ Failed'
+            : flaky > 0
+              ? '⚠️ Passed with flaky tests'
+              : '✅ Passed';
+
+          // Write a compact results table to the GitHub Actions summary.
+          const summary = [
+            '## Airline2026 Playwright Test Results',
+            '',
+            `**Overall result:** ${result}`,
+            '',
+            '| Total | Passed | Failed | Flaky | Skipped | Duration |',
+            '|---:|---:|---:|---:|---:|---:|',
+            `| ${total} | ${passed} | ${failed} | ${flaky} | ${skipped} | ${duration}s |`,
+            ''
+          ].join('\n');
+
+          appendFileSync(summaryPath, summary);
+          NODE
+
+      # Retain the downloadable HTML report and test results.
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v5
