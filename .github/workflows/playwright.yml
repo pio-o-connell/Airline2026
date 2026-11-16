@@ -32,7 +32,7 @@ jobs:
       AIRLINE_DB_PASSWORD: root
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
@@ -41,7 +41,7 @@ jobs:
   # Install PHP dependencies and generate vendor/autoload.php.
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -64,7 +64,7 @@ jobs:
         run: npm test
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: airline-playwright-report
           path: |
