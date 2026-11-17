@@ -421,33 +421,7 @@ Both fonts use sensible fallback fonts.
 
 The colour palette and typography are intended to create a clear, accessible and consistent interface without unnecessarily changing the original application's layout and structure.
 
-## Screenshots
 
-These existing captures document the original customer and administration workflows.
-
-### Customer workflow
-
-| Screen | Description |
-|---|---|
-| ![Home screen](assets/Images/homescreen.jpg) | Guest home screen with route, ticket and date search |
-| ![Login](assets/Images/login.jpg) | Customer login form |
-| ![Registration](assets/Images/register.jpg) | Customer registration form |
-| ![Logged in](assets/Images/logged-in.jpg) | Search screen for a logged-in customer |
-| ![Search](assets/Images/search.jpg) | Route search |
-| ![Search results](assets/Images/search-results.jpg) | Available flight results |
-| ![Availability](assets/Images/availability.jpg) | Legacy seat availability |
-| ![Booked seats](assets/Images/seats-booked.jpg) | Historical seat allocation after booking |
-| ![Booked seats PNG](assets/Images/seats-booked.png) | Additional seat-allocation capture |
-| ![Purchase complete](assets/Images/purchased.jpg) | Historical completed purchase screen |
-
-### Administration workflow
-
-| Screen | Description |
-|---|---|
-| ![Edit routes](assets/Images/admin-view-edit-routes.jpg) | Administrator route list and editing options |
-| ![Add routes](assets/Images/admin-add-routes.jpg) | Add-route form |
-| ![Add route](admi-add-route.jpg) | Additional add-route capture (legacy filename) |
-| ![Flight manifest](assets/Images/admi-view-mainfest.jpg) | Flight manifest and administration view (legacy filename) |
 
 ## Database installation
 
