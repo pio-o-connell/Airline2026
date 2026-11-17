@@ -806,6 +806,44 @@ should run only against a separate test database. Docker is not required for
 the browser tier, but infrastructure-isolated tests require an available
 disposable database service.
 
+
+## Airline2026 – Automated Playwright Test Results
+
+<details>
+<summary><strong>View GitHub Actions Test Results</strong></summary>
+
+### PHP, MySQL and Playwright
+
+[View GitHub Actions Run](https://github.com/pio-o-connell/Airline2026/actions/runs/44179820436)
+
+**Overall result:** :white_check_mark: Passed
+
+| Total | Passed | Failed | Flaky | Skipped | Duration |
+|:-----:|:------:|:------:|:-----:|:-------:|:--------:|
+| 59 | 57 | 0 | 0 | 2 | 24.9s |
+
+### Test Category Coverage
+
+| Category | Tests |
+|----------|------:|
+| Smoke (`@smk`) | 8 |
+| Functional (`@fun`) | 55 |
+| Integration (`@int`) | 23 |
+| Regression (`@reg`) | 59 |
+| Security (`@sec`) | 18 |
+| Responsive (`@rsp`) | 7 |
+| End-to-End (`@e2e`) | 41 |
+
+*Note: Tests may belong to multiple categories, so category totals overlap.*
+
+### Playwright HTML Report
+
+[Download Playwright Test Report](https://github.com/pio-o-connell/Airline2026/actions/runs/44179820436/artifacts/14370444859)
+
+The downloadable artifact contains the Playwright HTML report. Extract the ZIP file and open `index.html` in a browser.
+
+</details>
+
 ## Current implementation and remaining work
 
 | Area | Current position |
