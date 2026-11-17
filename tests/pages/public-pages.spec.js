@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+﻿const { test, expect } = require('@playwright/test');
 const { addFirstFlightToCart, searchFlights } = require('../helpers/airline');
 
 test('TC-001: public homepage loads with the flight-search workspace @SMK @FUN @REG @E2E', {
@@ -70,8 +70,8 @@ test('TC-006: selecting a flight displays its details and fare @FUN @REG @E2E', 
     await expect(page.locator('.flight-details-card')).toContainText(/Add to Cart/);
 });
 
-test('TC-007: a selected flight remains in the guest Cart @FUN @INT @REG @E2E', {
-    tag: ['@FUN', '@INT', '@REG', '@E2E']
+test('TC-007: a selected flight remains in the guest Cart @SMK @FUN @INT @REG @E2E', {
+    tag: ['@SMK', '@FUN', '@INT', '@REG', '@E2E']
 }, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showCheckout');

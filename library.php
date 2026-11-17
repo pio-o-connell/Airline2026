@@ -464,23 +464,6 @@
             $this->renderCustomerMenu(false);
         }
 
-        // protected function renderCustomerMenu($loggedIn) {
-        //     echo '<nav id="menu" class="old" aria-label="Main navigation">
-        //         <div class="menu-left">
-        //             <a href="controller.php">Home</a>
-        //         </div>
-        //         <div class="menu-right">
-        //             <a href="controller.php?cmd=showCheckout">Cart</a>
-        //             <a href="controller.php?cmd=showPassengerDetails">Checkout</a>';
-
-        //     if ($loggedIn) {
-        //         echo '<a href="controller.php?cmd=logout">Logout</a>';
-        //     } else {
-        //         echo '<a href="controller.php?cmd=showLogin">Login / Register</a>';
-        //     }
-
-        //     echo '</div></nav>';
-        // }
         protected function renderCustomerMenu($loggedIn) {
 
             echo '<nav id="menu" class="old" aria-label="Main navigation">
@@ -531,10 +514,6 @@
             echo '</div></nav>';
         }
 
-        // protected function renderIdentity() {
-        //     $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
-        //     echo '<div id="identity">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</div>';
-        // }
         protected function renderIdentity() {
             $username = $_SESSION['username'] ?? 'Guest';
 
@@ -549,7 +528,7 @@
             echo '
                         <footer id="footer" class="old">
                             <span>PHP Airlines.com</span>
-                            <a href="controller.php">Public home</a>
+                            <a href="controller.php?cmd=showPublicHome">Public home</a>
                         </footer>
                     </div>
                 </body>
@@ -899,7 +878,7 @@
             echo '
                         <footer id="footer" class="old">
                             <span>PHP Airlines.com</span>
-                            <a href="controller.php">Public home</a>
+                            <a href="controller.php?cmd=showPublicHome">Public home</a>
                         </footer>
                     </div>
                 </body>
@@ -977,10 +956,17 @@
             echo '<nav id="menu" class="old" aria-label="Administrator navigation">
                 <div class="menu-left">';
 
+            // renderAirlineNavLink(
+            //     'controller.php',
+            //     'Public home',
+            //     array('')
+            // );
+
+            // Allow administrators to visit the public homepage.
             renderAirlineNavLink(
-                'controller.php',
+                'controller.php?cmd=showPublicHome',
                 'Public home',
-                array('')
+                array('showPublicHome')
             );
 
             renderAirlineNavLink(

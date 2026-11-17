@@ -1,9 +1,15 @@
-const { expect } = require('@playwright/test');
+﻿const { expect } = require('@playwright/test');
 
 const CUSTOMER_USERNAME = process.env.PW_AIRLINE_USERNAME || 'aoifebyrne';
 const CUSTOMER_PASSWORD = process.env.PW_AIRLINE_PASSWORD || 'aoife2026';
 const SECOND_CUSTOMER_USERNAME = process.env.PW_AIRLINE_SECOND_USERNAME || 'cianmurphy';
 const SECOND_CUSTOMER_PASSWORD = process.env.PW_AIRLINE_SECOND_PASSWORD || 'cian2026';
+const THIRD_CUSTOMER_USERNAME = process.env.PW_AIRLINE_THIRD_USERNAME || 'maevekelly';
+const THIRD_CUSTOMER_PASSWORD = process.env.PW_AIRLINE_THIRD_PASSWORD || 'maeve2026';
+const FOURTH_CUSTOMER_USERNAME = process.env.PW_AIRLINE_FOURTH_USERNAME || 'seanwalsh';
+const FOURTH_CUSTOMER_PASSWORD = process.env.PW_AIRLINE_FOURTH_PASSWORD || 'sean2026';
+const FIFTH_CUSTOMER_USERNAME = process.env.PW_AIRLINE_FIFTH_USERNAME || 'finnryan';
+const FIFTH_CUSTOMER_PASSWORD = process.env.PW_AIRLINE_FIFTH_PASSWORD || 'finn2026';
 const SUSPENDED_USERNAME = process.env.PW_AIRLINE_SUSPENDED_USERNAME || 'eoinnolan';
 const SUSPENDED_PASSWORD = process.env.PW_AIRLINE_SUSPENDED_PASSWORD || 'eoin2026';
 const ADMIN_USERNAME = process.env.PW_AIRLINE_ADMIN_USERNAME || 'rmiller';
@@ -22,6 +28,18 @@ async function loginAs(page, role) {
         secondCustomer: {
             username: SECOND_CUSTOMER_USERNAME,
             password: SECOND_CUSTOMER_PASSWORD
+        },
+        thirdCustomer: {
+            username: THIRD_CUSTOMER_USERNAME,
+            password: THIRD_CUSTOMER_PASSWORD
+        },
+        fourthCustomer: {
+            username: FOURTH_CUSTOMER_USERNAME,
+            password: FOURTH_CUSTOMER_PASSWORD
+        },
+        fifthCustomer: {
+            username: FIFTH_CUSTOMER_USERNAME,
+            password: FIFTH_CUSTOMER_PASSWORD
         },
         suspendedCustomer: {
             username: SUSPENDED_USERNAME,

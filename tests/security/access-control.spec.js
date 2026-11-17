@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
-const { loginAs } = require('../helpers/airline');
+﻿const { test, expect } = require('@playwright/test');
+const { loginAs, addFirstFlightToCart } = require('../helpers/airline');
 
 test('TC-041: unauthenticated users cannot open the administrator dashboard directly @SEC @FUN @REG', {
     tag: ['@SEC', '@FUN', '@REG']
@@ -48,4 +48,70 @@ test.skip('TC-045: suspended accounts are rejected during authentication @SEC @F
 }, async () => {
     // Known limitation: authenticateUser currently does not enforce user.suspend.
     // Enable this test after suspended-account handling is implemented.
+});
+
+test('TC-064: guest cannot access passenger details page without completing seat selection @SEC @FUN @REG', {
+    tag: ['@SEC', '@FUN', '@REG']
+}, async ({ page }) => {
+    // Add a flight to cart but do NOT select seats
+    await addFirstFlightToCart(page);
+
+    // Attempt direct navigation to passenger details
+    await page.goto('/controller.php?cmd=showPassengerDetails');
+
+    // The server-side guard should redirect to seat selection
+    await expect(page.locator('.seat-selection-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Checkout' })).not.toBeVisible();
+});
+
+test('TC-065: guest cannot initiate Stripe checkout directly @SEC @FUN @REG', {
+    tag: ['@SEC', '@FUN', '@REG']
+}, async ({ page }) => {
+    // Visit startStripeCheckout as a guest (no login, no cart needed)
+    await page.goto('/controller.php?cmd=startStripeCheckout');
+
+    // Application must prompt for login, not redirect to Stripe
+    await expect(page).toHaveURL(/controller\.php/);
+    await expect(page.locator('#content')).toContainText(/log in|register|login/i);
+});
+
+test('TC-066: customer cannot post to administrator mutation endpoints @SEC @FUN @REG', {
+    tag: ['@SEC', '@FUN', '@REG']
+}, async ({ page }) => {
+    await loginAs(page, 'customer');
+
+    // updateRoute requires admin
+    await page.goto('/controller.php?cmd=updateRoute');
+    await expect(page.getByRole('heading', { name: 'login' })).toBeVisible();
+    await expect(page.locator('input[name="username"]')).toBeVisible();
+
+    // Re-login as customer (previous navigation ended the check)
+    await loginAs(page, 'customer');
+
+    // deleteSelectedRoutes requires admin
+    await page.goto('/controller.php?cmd=deleteSelectedRoutes');
+    await expect(page.getByRole('heading', { name: 'login' })).toBeVisible();
+    await expect(page.locator('input[name="username"]')).toBeVisible();
+});
+
+test('TC-067: stripeSuccess with valid-format session ID shows an error and preserves the Cart @INT @SEC @REG', {
+    tag: ['@INT', '@SEC', '@REG']
+}, async ({ page }) => {
+    // Authenticated customer with a populated Cart
+    await loginAs(page, 'customer');
+    await addFirstFlightToCart(page);
+
+    // cs_test_... passes the regex check in StripeGateway::retrieveCheckoutSession,
+    // so the application calls Stripe, Stripe returns an error, the catch block fires,
+    // and the error flash is shown. This is a different failure path from TC-049
+    // (which uses cs_invalid_airline_test, a string that fails the regex and never
+    // reaches the Stripe API call).
+    await page.goto('/controller.php?cmd=stripeSuccess&session_id=cs_test_valid_format_not_real_XYZ123');
+
+    await expect(page.locator('#content')).toContainText(/payment|booking|error/i);
+
+    // Cart must be preserved â€” clearing only happens after a successful booking commit
+    await page.goto('/controller.php?cmd=showCheckout');
+    await expect(page.locator('.cart-flight-card')).toHaveCount(1);
+    await expect(page.getByRole('heading', { name: /Booking Confirmation/i })).not.toBeVisible();
 });

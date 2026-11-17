@@ -55,6 +55,11 @@ function dispatchRequest()
             }
             break;
 
+// Display the public homepage without changing the current login session.
+        case "showPublicHome":
+            new PublicHomeView();
+            break;
+
         case "showLogin":
             new LoginView($hasCookie);
             break;

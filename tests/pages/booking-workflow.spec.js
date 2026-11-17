@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+﻿const { test, expect } = require('@playwright/test');
 const { addFirstFlightToCart } = require('../helpers/airline');
 
 test('TC-009: Cart displays passenger quantity, fare and total @FUN @REG @E2E', {
@@ -115,8 +115,8 @@ test('TC-016: seat selections remain independent for multiple flights @FUN @INT 
 // });
 
 
-test('TC-018: passenger details precede guest authentication @FUN @INT @REG @E2E', {
-    tag: ['@FUN', '@INT', '@REG', '@E2E']
+test('TC-018: passenger details precede guest authentication @SMK @FUN @INT @REG @E2E', {
+    tag: ['@SMK', '@FUN', '@INT', '@REG', '@E2E']
 }, async ({ page }) => {
     await addFirstFlightToCart(page);
     await page.goto('/controller.php?cmd=showSeatSelection');
