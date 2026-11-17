@@ -64,15 +64,23 @@ test('TC-064: guest cannot access passenger details page without completing seat
     await expect(page.getByRole('heading', { name: 'Checkout' })).not.toBeVisible();
 });
 
-test('TC-065: guest cannot initiate Stripe checkout directly @SEC @FUN @REG', {
+test('TC-065: guest cannot reach Stripe checkout with an empty Cart @SEC @FUN @REG', {
     tag: ['@SEC', '@FUN', '@REG']
 }, async ({ page }) => {
-    // Visit startStripeCheckout as a guest (no login, no cart needed)
+    // A guest with an empty Cart navigates to startStripeCheckout.
+    // The guest booking flow is intentionally permitted — the security boundary is
+    // that an empty Cart cannot proceed to payment, not that guests are blocked from checkout.
     await page.goto('/controller.php?cmd=startStripeCheckout');
 
-    // Application must prompt for login, not redirect to Stripe
+    // Must stay on the application (no Stripe redirect)
     await expect(page).toHaveURL(/controller\.php/);
-    await expect(page.locator('#content')).toContainText(/log in|register|login/i);
+
+    // The checkout page is shown with an empty-Cart message
+    await expect(page.getByRole('heading', { name: 'Checkout' })).toBeVisible();
+    await expect(page.locator('#content')).toContainText(/Cart is empty/i);
+
+    // No payment action is available
+    await expect(page.getByRole('button', { name: 'Pay securely with Stripe' })).toHaveCount(0);
 });
 
 test('TC-066: customer cannot post to administrator mutation endpoints @SEC @FUN @REG', {

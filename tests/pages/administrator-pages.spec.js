@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+﻿const { test, expect } = require('@playwright/test');
 const { loginAs } = require('../helpers/airline');
 
 test('TC-031: administrator login opens route management @SMK @FUN @SEC @REG @E2E', {
@@ -70,6 +70,7 @@ test('TC-076: flight manifest detail page shows passenger and seat data @FUN @IN
     const firstLink = page.locator('#content a').first();
     await firstLink.click();
 
-    // displayFlightManifestDetails outputs route, revenue, flight name and passenger rows.
-    await expect(page.locator('#content')).toContainText(/Route:|Revenue|Customers/i);
+    // displayFlightManifestDetails echoes directly into the page body — no #content wrapper.
+    await expect(page.locator('body')).toContainText(/Route:|Revenue|Customers/i);
+    await expect(page.locator('body')).toContainText('Aoife Byrne');
 });

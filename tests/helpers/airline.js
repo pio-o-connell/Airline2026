@@ -64,7 +64,7 @@ async function searchFlights(page, {
     date = '2026-10-29',
     passengers = '1'
 } = {}) {
-    await page.goto('/controller.php');
+    await page.goto('/controller.php?cmd=showPublicHome');
     await page.locator('#route').selectOption(route);
     await page.locator('#date').fill(date);
     await page.locator('#seatCount').fill(passengers);
