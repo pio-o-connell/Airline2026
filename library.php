@@ -2218,29 +2218,88 @@
         }
     }
 
+    // class BookingConfirmationView extends PublicBaseView {
+
+    //         private $reference;
+
+    //         public function __construct($reference) {
+    //             $this->reference = $reference;
+    //             $this->top();
+    //             $this->menu();
+    //             $this->content();
+    //             $this->bottom();
+    //         }
+
+    //         public function content() {
+    //             echo '<div id="content" class="checkout-page">';
+    //             echo '<h1>Booking confirmed</h1>';
+    //             echo '<p>Thank you. Your booking reference is <strong>'
+    //                 . esc($this->reference)
+    //                 . '</strong>.</p>';
+    //             echo '<p>Your payment was confirmed and your seats have been allocated.</p>';
+    //             echo '<p><a class="button" href="controller.php">Return to home</a></p>';
+    //             echo '</div>';
+    //         }
+    // }
+
     class BookingConfirmationView extends PublicBaseView {
 
-            private $reference;
+        private $reference;
 
-            public function __construct($reference) {
-                $this->reference = $reference;
-                $this->top();
+        public function __construct($reference) {
+            $this->reference = $reference;
+
+            // Retain the existing public page layout and stylesheet.
+            $this->top();
+
+            // Display the appropriate menu for the current session.
+            $this->renderConfirmationMenu();
+
+            $this->content();
+            $this->bottom();
+        }
+
+        private function renderConfirmationMenu() {
+            $username = $_SESSION['username'] ?? 'Guest';
+
+            // Guests retain the existing public navigation.
+            if ($username === 'Guest') {
                 $this->menu();
-                $this->content();
-                $this->bottom();
+                return;
             }
 
-            public function content() {
-                echo '<div id="content" class="checkout-page">';
-                echo '<h1>Booking confirmed</h1>';
-                echo '<p>Thank you. Your booking reference is <strong>'
-                    . esc($this->reference)
-                    . '</strong>.</p>';
-                echo '<p>Your payment was confirmed and your seats have been allocated.</p>';
-                echo '<p><a class="button" href="controller.php">Return to home</a></p>';
-                echo '</div>';
-            }
+            // Reuse CustomerBaseView's existing menu without rendering
+            // another page or duplicating any customer navigation logic.
+            $customerMenu = new class extends CustomerBaseView {
+
+                public function renderMenuOnly() {
+                    // This also renders the correct customer/admin identity.
+                    $this->menu();
+                }
+            };
+
+            $customerMenu->renderMenuOnly();
+        }
+
+        public function content() {
+            $username = $_SESSION['username'] ?? 'Guest';
+
+            // Match the existing Home destination for each account type.
+            $homeUrl = ($username === 'rmiller')
+                ? 'controller.php?cmd=showPublicHome'
+                : 'controller.php';
+
+            echo '<div id="content" class="checkout-page">';
+            echo '<h1>Booking confirmed</h1>';
+            echo '<p>Thank you. Your booking reference is <strong>'
+                . esc($this->reference)
+                . '</strong>.</p>';
+            echo '<p>Your payment was confirmed and your seats have been allocated.</p>';
+            echo '<p><a class="button" href="' . esc($homeUrl) . '">Return to home</a></p>';
+            echo '</div>';
+        }
     }
+
 
     // Renders the flight search form (logged-in customer).
     class CustomerHomeView extends CustomerBaseView {
