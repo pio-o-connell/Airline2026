@@ -897,15 +897,70 @@
             $this->renderIdentity();
         }
 
+        // protected function renderCustomerMenu($loggedIn) {
+
+        //     echo '<nav id="menu" class="old" aria-label="Main navigation">
+        //         <div class="menu-left">';
+
+        //     renderAirlineNavLink(
+        //         'controller.php',
+        //         'Home',
+        //         array('', 'showHome', 'searchFlights', 'selectFlight', 'addFlightToCart')
+        //     );
+
+        //     echo '</div><div class="menu-right">';
+
+        //     renderAirlineNavLink(
+        //         'controller.php?cmd=showCheckout',
+        //         'Cart',
+        //         array('showCheckout', 'removeCartItem', 'showSeatSelection', 'updateCartSeats'),
+        //         airlineCartHasFlights()
+        //     );
+
+        //     renderAirlineNavLink(
+        //         'controller.php?cmd=showPassengerDetails',
+        //         'Checkout',
+        //         array(
+        //             'showPassengerDetails',
+        //             'submitPassengerDetails',
+        //             'startStripeCheckout',
+        //             'stripeSuccess',
+        //             'stripeCancel'
+        //         ),
+        //         airlineSeatsSelected()
+        //     );
+
+        //     if ($loggedIn) {
+        //         renderAirlineNavLink(
+        //             'controller.php?cmd=logout',
+        //             'Logout',
+        //             array()
+        //         );
+        //     } else {
+        //         renderAirlineNavLink(
+        //             'controller.php?cmd=showLogin',
+        //             'Login / Register',
+        //             array('showLogin', 'showRegistration', 'authenticateUser')
+        //         );
+        //     }
+
+        //     echo '</div></nav>';
+        // }
+
         protected function renderCustomerMenu($loggedIn) {
+
+            // Identify the administrator without changing the logged-in session.
+            $isAdmin = (($_SESSION['username'] ?? '') === 'rmiller');
 
             echo '<nav id="menu" class="old" aria-label="Main navigation">
                 <div class="menu-left">';
 
+            // Administrators return to the customer booking homepage;
+            // ordinary customers retain the existing Home destination.
             renderAirlineNavLink(
-                'controller.php',
+                $isAdmin ? 'controller.php?cmd=showPublicHome' : 'controller.php',
                 'Home',
-                array('', 'showHome', 'searchFlights', 'selectFlight', 'addFlightToCart')
+                array('', 'showHome', 'showPublicHome', 'searchFlights', 'selectFlight', 'addFlightToCart')
             );
 
             echo '</div><div class="menu-right">';
@@ -931,11 +986,22 @@
             );
 
             if ($loggedIn) {
+
+                // Only rmiller sees the link back to the administrator dashboard.
+                if ($isAdmin) {
+                    renderAirlineNavLink(
+                        'controller.php?cmd=showAdminDashboard',
+                        'Return to Admin',
+                        array('showAdminDashboard')
+                    );
+                }
+
                 renderAirlineNavLink(
                     'controller.php?cmd=logout',
                     'Logout',
                     array()
                 );
+
             } else {
                 renderAirlineNavLink(
                     'controller.php?cmd=showLogin',
@@ -946,6 +1012,7 @@
 
             echo '</div></nav>';
         }
+
 
     }
 

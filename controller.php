@@ -55,9 +55,13 @@ function dispatchRequest()
             }
             break;
 
-// Display the public homepage without changing the current login session.
+        // Display the appropriate homepage without changing the login session.
         case "showPublicHome":
-            new PublicHomeView();
+            if (($_SESSION['username'] ?? 'Guest') === 'Guest') {
+                new PublicHomeView();
+            } else {
+                new CustomerHomeView($hasCookie);
+            }
             break;
 
         case "showLogin":
